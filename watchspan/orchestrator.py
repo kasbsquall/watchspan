@@ -39,6 +39,7 @@ class Orchestrator:
     calibrator: Calibrator = field(default_factory=Calibrator)
     routed: list[RoutingResult] = field(default_factory=list)
     drift_declarations: list[dict] = field(default_factory=list)
+    drift_active: bool = False
     audit_log: list[dict] = field(default_factory=list)
 
     def route_request(self, request: ApprovalRequest) -> RoutingResult:
@@ -86,7 +87,10 @@ class Orchestrator:
             "drift_degraded": verdict.degraded,
             "proposal": None,
         }
-        if verdict.degraded:
+        # Declare only on the transition into degradation, not on every
+        # decision while it persists.
+        if verdict.degraded and not self.drift_active:
+            self.drift_active = True
             declaration = {
                 "at": decision.decided_at,
                 "reason": verdict.reason,
@@ -99,6 +103,8 @@ class Orchestrator:
             }
             self.drift_declarations.append(declaration)
             self.audit_log.append({"event": "drift_declared", **declaration})
+        elif not verdict.degraded:
+            self.drift_active = False
 
         proposal = self.calibrator.evaluate(
             meter_out["team_fraction"], verdict, decision.decided_at

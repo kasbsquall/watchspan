@@ -33,3 +33,7 @@ Thumbs.db
 *.db
 .coverage
 htmlcov/
+
+# Playwright verification artifacts
+.playwright-mcp/
+/*.png
