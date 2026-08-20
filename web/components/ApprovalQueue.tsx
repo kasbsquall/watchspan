@@ -16,7 +16,7 @@ const ROUTE_META = {
     color: "text-ink-300",
   },
   auto_execute: {
-    label: "auto + audit",
+    label: "auto-run, logged",
     icon: Robot,
     color: "text-ink-500",
   },
@@ -44,12 +44,17 @@ export default function ApprovalQueue({
         <Stamp size={15} weight="light" aria-hidden />
         Request stream
         <span className="ml-auto font-data normal-case tracking-normal">
-          last {recent.length} of {events.length}
+          {events.length <= 8
+            ? `${events.length} routed`
+            : `last ${recent.length} of ${events.length}`}
         </span>
       </div>
+      <p className="mt-1 text-[10px] text-ink-500">
+        Risk scored 0 to 100. Scores of 70 and above shown in amber.
+      </p>
       {recent.length === 0 ? (
         <p className="mt-4 text-sm text-ink-500">
-          No requests routed yet. Press play to run the fleet.
+          No requests routed yet. Select &ldquo;Run the fleet&rdquo; to start.
         </p>
       ) : (
         <ul className="mt-2">
@@ -59,7 +64,7 @@ export default function ApprovalQueue({
             return (
               <li
                 key={e.request_id}
-                className={`${live ? "" : "row-rise "}grid grid-cols-[52px_1fr_92px_112px] items-center gap-3 border-t border-ink-100/8 py-2 text-sm first:border-t-0`}
+                className={`${live ? "" : "row-rise "}grid grid-cols-[52px_1fr] gap-x-3 gap-y-1 border-t border-ink-100/8 py-2 text-sm first:border-t-0 sm:grid-cols-[52px_1fr_96px_128px] sm:items-center`}
                 style={{ ["--i" as string]: i }}
               >
                 <span className="font-data text-[11px] text-ink-500">
@@ -71,14 +76,13 @@ export default function ApprovalQueue({
                   </span>
                   <span className="text-[11px] text-ink-500">{e.agent_id}</span>
                 </span>
-                <span className="flex items-center gap-1.5">
+                <span className="col-start-2 flex items-center gap-1.5 sm:col-start-auto">
                   <span
                     className="h-1 w-14 overflow-hidden rounded-sm bg-ink-800"
-                    role="img"
-                    aria-label={`risk ${(e.risk_score * 100).toFixed(0)} of 100`}
+                    aria-hidden
                   >
                     <span
-                      className="block h-full bg-ink-300"
+                      className="block h-full"
                       style={{
                         width: `${e.risk_score * 100}%`,
                         background:
@@ -88,11 +92,13 @@ export default function ApprovalQueue({
                       }}
                     />
                   </span>
-                  <span className="font-data text-[11px] text-ink-400">
+                  <span className="font-data w-6 text-right text-[11px] text-ink-400">
                     {(e.risk_score * 100).toFixed(0)}
                   </span>
                 </span>
-                <span className={`flex items-center gap-1.5 text-[11px] ${meta.color}`}>
+                <span
+                  className={`col-start-2 flex items-center gap-1.5 text-[11px] sm:col-start-auto ${meta.color}`}
+                >
                   <Icon size={14} weight="light" aria-hidden />
                   {meta.label}
                 </span>

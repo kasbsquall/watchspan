@@ -4,7 +4,8 @@ import { Detective } from "@phosphor-icons/react";
 import type { TimelineEvent } from "@/lib/api";
 import { formatClock } from "./BudgetTimeline";
 
-/* Requests the Sentinel pulled out of band (ATR-2026-00118 patterns). */
+/* Requests the Sentinel held back (approval-fatigue exploitation patterns:
+   bursts, minimizing language, risk hidden in benign batches). */
 export default function SentinelAlerts({
   events,
   live = false,
@@ -18,10 +19,12 @@ export default function SentinelAlerts({
     <div>
       <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-ink-500">
         <Detective size={15} weight="light" aria-hidden />
-        Sentinel — fatigue exploitation
+        Sentinel · requests held for review
       </div>
       {paused.length === 0 ? (
-        <p className="mt-3 text-sm text-ink-500">No exploitation patterns detected.</p>
+        <p className="mt-3 text-sm text-ink-500">
+          No suspicious timing or batching patterns detected.
+        </p>
       ) : (
         <ul className="mt-2">
           {paused.map((e, i) => (
@@ -39,7 +42,7 @@ export default function SentinelAlerts({
                 </span>
                 <span className="text-[11px] text-ink-500">
                   {e.agent_id} · risk {(e.risk_score * 100).toFixed(0)} of 100 ·
-                  paused out of band
+                  held for direct review, outside the approval queue
                 </span>
               </span>
             </li>

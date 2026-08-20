@@ -3,18 +3,21 @@
 import { ChartLine } from "@phosphor-icons/react";
 import type { TimelineEvent } from "@/lib/api";
 
-/* Budget over the run: the falling line is the whole story. Draw-on for the
-   main stroke only. Drift declaration marked as a vertical event band. */
+/* Budget over the run: the falling line is the whole story. Draw-on runs only
+   after the run finishes; while live the line simply grows. The region past
+   the degradation moment is tinted, not just marked with a hairline. */
 export default function BudgetTimeline({
   events,
   upTo,
   driftAt,
   totalSeconds,
+  live = false,
 }: {
   events: TimelineEvent[];
   upTo: number;
   driftAt: number | null;
   totalSeconds: number;
+  live?: boolean;
 }) {
   const width = 640;
   const height = 150;
@@ -45,10 +48,18 @@ export default function BudgetTimeline({
         viewBox={`0 0 ${width} ${height}`}
         className="mt-2"
         role="img"
-        aria-label="Team attention budget falling across the simulated run"
+        aria-label="Attention budget falling across the simulated run"
       >
         {/* Reference lines: full and calibration floor. Thresholds visible in UI. */}
-        <line x1={pad} x2={width - pad} y1={y(1)} y2={y(1)} stroke="var(--color-ink-800)" strokeWidth="1" />
+        <line
+          x1={pad}
+          x2={width - pad}
+          y1={y(1)}
+          y2={y(1)}
+          stroke="var(--color-ink-800)"
+          strokeWidth="1"
+          vectorEffect="non-scaling-stroke"
+        />
         <line
           x1={pad}
           x2={width - pad}
@@ -57,12 +68,21 @@ export default function BudgetTimeline({
           stroke="var(--color-ink-700)"
           strokeWidth="1"
           strokeDasharray="3 5"
+          vectorEffect="non-scaling-stroke"
         />
-        <text x={width - pad} y={y(0.35) - 4} textAnchor="end" className="font-data" fontSize="9" fill="var(--color-ink-500)">
+        <text x={width - pad} y={y(0.35) - 4} textAnchor="end" className="font-data" fontSize="10" fill="var(--color-ink-500)">
           35% floor
         </text>
         {driftVisible && (
           <>
+            <rect
+              x={x(driftAt!)}
+              y={pad}
+              width={width - pad - x(driftAt!)}
+              height={height - pad * 2}
+              fill="var(--color-alarm-500)"
+              opacity="0.05"
+            />
             <line
               x1={x(driftAt!)}
               x2={x(driftAt!)}
@@ -70,12 +90,13 @@ export default function BudgetTimeline({
               y2={height - pad}
               stroke="var(--color-alarm-500)"
               strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
             />
             <text
               x={x(driftAt!) + 5}
-              y={pad + 9}
+              y={pad + 10}
               className="font-data"
-              fontSize="9"
+              fontSize="10"
               fill="var(--color-alarm-500)"
             >
               oversight degraded · {formatClock(driftAt!)}
@@ -89,8 +110,8 @@ export default function BudgetTimeline({
             stroke="var(--color-ember-500)"
             strokeWidth="2"
             strokeLinejoin="round"
-            className="draw-on"
-            style={{ ["--dash" as string]: 1400 }}
+            className={live ? undefined : "draw-on"}
+            style={live ? undefined : { ["--dash" as string]: 1400 }}
           />
         )}
       </svg>

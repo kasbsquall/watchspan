@@ -4,6 +4,8 @@ import { useState } from "react";
 import { DownloadSimple, FileText } from "@phosphor-icons/react";
 import { fetchDossier } from "@/lib/api";
 
+const REVOKE_DELAY_MS = 10_000;
+
 /* Article 14 dossier: the auditable proof that oversight was effective. */
 export default function EvidenceExport({ ready }: { ready: boolean }) {
   const [busy, setBusy] = useState(false);
@@ -23,10 +25,12 @@ export default function EvidenceExport({ ready }: { ready: boolean }) {
       const a = document.createElement("a");
       a.href = url;
       a.download = "watchspan-article14-dossier.json";
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
     } catch {
-      setError("Could not generate the dossier. Is the API running?");
+      setError("Could not generate the dossier. Retry, or contact your administrator.");
     } finally {
       setBusy(false);
     }
@@ -39,8 +43,9 @@ export default function EvidenceExport({ ready }: { ready: boolean }) {
         Article 14 evidence
       </div>
       <p className="mt-3 text-[12px] leading-relaxed text-ink-400">
-        Who reviewed what, with how much attention available, and when oversight
-        degraded. The record EU AI Act Article 14 asks you to demonstrate.
+        Who reviewed what, with how much attention available, and when
+        oversight degraded. The evidence of effective human oversight that EU
+        AI Act Article 14 requires.
       </p>
       {summary && (
         <p className="mt-2 border-t border-ink-100/8 pt-2 text-[12px] leading-relaxed text-ink-300">
@@ -51,7 +56,7 @@ export default function EvidenceExport({ ready }: { ready: boolean }) {
       <button
         onClick={exportDossier}
         disabled={!ready || busy}
-        className="mt-3 flex items-center gap-1.5 rounded-sm border border-ink-100/15 px-4 py-2 text-sm text-ink-300 transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-ink-100/30 hover:text-ink-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-400 active:scale-[0.97] disabled:opacity-40"
+        className="mt-3 flex items-center gap-1.5 rounded-sm border border-ink-100/15 px-4 py-2 text-sm text-ink-300 transition-[transform,background-color,border-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:border-ink-100/30 hover:text-ink-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-400 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-40"
       >
         <DownloadSimple size={15} weight="light" aria-hidden />
         {busy ? "Generating…" : "Export dossier (JSON)"}

@@ -28,20 +28,31 @@ export default function ControlRoom() {
   const [sim, setSim] = useState<SimulationResponse | null>(null);
   const [upTo, setUpTo] = useState(0);
   const [proposal, setProposal] = useState<PendingProposal | null>(null);
+  const [proposalFetchFailed, setProposalFetchFailed] = useState(false);
   const [policyNote, setPolicyNote] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const start = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setPhase("loading");
     setPolicyNote(null);
     setProposal(null);
+    setProposalFetchFailed(false);
     setUpTo(0);
     try {
-      const result = await runSimulation(true);
+      const result = await runSimulation(true, controller.signal);
+      if (controller.signal.aborted) return;
+      if (result.timeline.length === 0) {
+        setPhase("error");
+        return;
+      }
       setSim(result);
       setPhase("playing");
     } catch {
-      setPhase("error");
+      if (!controller.signal.aborted) setPhase("error");
     }
   }, []);
 
@@ -61,13 +72,21 @@ export default function ControlRoom() {
   useEffect(() => {
     if (phase === "playing" && sim && upTo >= sim.timeline.length) {
       setPhase("done");
-      getProposal().then(setProposal).catch(() => setProposal(null));
+      const signal = abortRef.current?.signal;
+      getProposal(signal)
+        .then((p) => {
+          if (!signal?.aborted) setProposal(p);
+        })
+        .catch(() => {
+          if (!signal?.aborted) setProposalFetchFailed(true);
+        });
     }
   }, [phase, sim, upTo]);
 
   const visible = sim ? sim.timeline.slice(0, upTo) : [];
   const current = visible.length > 0 ? visible[visible.length - 1] : null;
-  const fraction = current ? current.team_fraction : 1;
+  const fraction =
+    phase === "idle" || phase === "loading" ? null : current ? current.team_fraction : 1;
   const driftPassed =
     sim?.drift_declared_at != null && current != null && current.at >= sim.drift_declared_at;
 
@@ -98,7 +117,7 @@ export default function ControlRoom() {
           <button
             onClick={start}
             disabled={phase === "loading" || phase === "playing"}
-            className="flex items-center gap-2 rounded-sm bg-ember-600 px-5 py-2.5 text-sm text-ink-950 transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-ember-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-500 active:scale-[0.97] disabled:opacity-50"
+            className="flex items-center gap-2 rounded-sm bg-ember-600 px-5 py-2.5 text-sm text-ink-950 transition-[transform,background-color] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] hover:bg-ember-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember-500 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50"
           >
             {phase === "done" || phase === "error" ? (
               <ArrowCounterClockwise size={16} weight="light" aria-hidden />
@@ -118,20 +137,20 @@ export default function ControlRoom() {
 
       {phase === "error" && (
         <div role="alert" className="mt-8 rounded-sm border border-alarm-500/40 bg-alarm-500/10 px-4 py-3 text-sm text-alarm-500">
-          The Watchspan API is not reachable. Start it with{" "}
-          <span className="font-data">uvicorn api.main:app</span> and run again.
+          Could not connect to the Watchspan service. Check that the backend is
+          running, then run again.
         </div>
       )}
 
-      <section className="mt-10 grid gap-x-12 gap-y-10 lg:grid-cols-[320px_1fr]">
+      <section className="mt-10 grid items-start gap-x-12 gap-y-10 lg:grid-cols-[320px_1fr]">
         <div className="rise flex flex-col gap-8" style={{ ["--block" as string]: 1 }}>
           <AttentionGauge fraction={fraction} degraded={!!driftPassed} />
           <dl className="grid grid-cols-4 gap-3 border-t border-ink-100/8 pt-4">
             {(
               [
-                ["Routed", counts.routed, "requests"],
-                ["Human", counts.escalated, "escalated"],
-                ["Auto", counts.auto, "with audit"],
+                ["Routed", counts.routed, "total requests"],
+                ["Escalated", counts.escalated, "to a human"],
+                ["Auto-run", counts.auto, "logged for audit"],
                 ["Paused", counts.paused, "by Sentinel"],
               ] as const
             ).map(([label, value, hint]) => (
@@ -139,9 +158,13 @@ export default function ControlRoom() {
                 <dt className="text-[10px] uppercase tracking-[0.16em] text-ink-500">
                   {label}
                 </dt>
-                <dd className="font-data mt-1 text-xl text-ink-100">
+                <dd className="font-data mt-1 text-2xl text-ink-100">
                   {phase === "idle" || phase === "loading" ? (
-                    <span className="inline-block h-6 w-8 animate-pulse rounded-sm bg-ink-800" aria-label="loading" />
+                    <span
+                      role="status"
+                      aria-label={`${label} value loading`}
+                      className="inline-block h-6 w-8 animate-pulse rounded-sm bg-ink-800"
+                    />
                   ) : (
                     <NumberFlow
                       value={value}
@@ -155,14 +178,23 @@ export default function ControlRoom() {
             ))}
           </dl>
           <DriftAlert declaredAt={sim?.drift_declared_at ?? null} active={!!driftPassed} />
+          <SentinelAlerts events={visible} live={phase === "playing"} />
         </div>
 
         <div className="rise flex flex-col gap-10" style={{ ["--block" as string]: 2 }}>
           {phase === "idle" || phase === "loading" ? (
-            <div className="flex h-[150px] items-center justify-center rounded-sm border border-ink-100/8 bg-ink-900">
-              <span className={`text-sm text-ink-500 ${phase === "loading" ? "animate-pulse" : ""}`}>
-                {phase === "loading" ? "Preparing the run…" : "The budget line renders here during a run"}
-              </span>
+            <div>
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-ink-500">
+                <span className="inline-block h-[15px] w-[15px]" aria-hidden />
+                Attention budget across the run
+              </div>
+              <div className="mt-2 flex aspect-[640/150] w-full items-center justify-center rounded-sm border border-ink-100/8 bg-ink-900">
+                <span className={`text-sm text-ink-500 ${phase === "loading" ? "animate-pulse" : ""}`}>
+                  {phase === "loading"
+                    ? "Preparing the run…"
+                    : "The attention budget renders here during a run"}
+                </span>
+              </div>
             </div>
           ) : (
             <BudgetTimeline
@@ -170,22 +202,23 @@ export default function ControlRoom() {
               upTo={upTo}
               driftAt={sim!.drift_declared_at}
               totalSeconds={TOTAL_SECONDS}
+              live={phase === "playing"}
             />
           )}
           <ApprovalQueue events={visible} live={phase === "playing"} />
         </div>
       </section>
 
-      <section className="rise mt-14 grid gap-x-12 gap-y-10 border-t border-ink-100/8 pt-8 md:grid-cols-3" style={{ ["--block" as string]: 3 }}>
-        <SentinelAlerts events={visible} live={phase === "playing"} />
+      <section className="rise mt-24 grid gap-x-12 gap-y-6 border-t border-ink-100/8 pt-8 md:grid-cols-2" style={{ ["--block" as string]: 3 }}>
         <div>
           <PolicyProposal
             proposal={proposal}
+            fetchFailed={proposalFetchFailed}
             onResolved={(approved, threshold) => {
               setProposal(null);
               setPolicyNote(
                 approved
-                  ? `Recalibration applied. Escalation threshold is now ${threshold.toFixed(2)}: fewer interruptions, each one reviewed with real attention.`
+                  ? `Recalibration applied. Escalation threshold is now ${threshold.toFixed(2)}. Requests below it will auto-run with an audit log.`
                   : "Proposal rejected. The current policy stays active.",
               );
             }}
@@ -199,9 +232,9 @@ export default function ControlRoom() {
         <EvidenceExport ready={phase === "done"} />
       </section>
 
-      <footer className="mt-16 border-t border-ink-100/8 pt-4 text-[11px] text-ink-500">
-        Watchspan · the human attention budget for agent fleets · demo fleet of
-        3 agents, 30 simulated minutes
+      <footer className="mt-16 flex flex-wrap justify-between gap-2 border-t border-ink-100/8 pt-4 text-[11px] text-ink-500">
+        <span>Watchspan · the human attention budget for agent fleets</span>
+        <span className="font-data">demo fleet of three agents · 30 simulated minutes</span>
       </footer>
     </main>
   );

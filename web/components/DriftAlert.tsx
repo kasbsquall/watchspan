@@ -32,7 +32,7 @@ export default function DriftAlert({
       <SealWarning size={20} weight="light" className="text-alarm-500" aria-hidden />
       <div>
         <p className="text-sm text-alarm-500">
-          Oversight stopped being effective at {formatClock(declaredAt)}
+          Oversight degraded at {formatClock(declaredAt)}
         </p>
         <p className="text-[11px] text-ink-400">
           Decision time collapsed while action complexity held. Reviews are now

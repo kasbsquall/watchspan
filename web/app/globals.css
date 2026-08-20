@@ -9,7 +9,7 @@
   --color-ink-850: oklch(24% 0.01 75);
   --color-ink-800: oklch(28% 0.011 75);
   --color-ink-700: oklch(38% 0.012 75);
-  --color-ink-500: oklch(56% 0.012 75);
+  --color-ink-500: oklch(62% 0.012 75);
   --color-ink-400: oklch(66% 0.011 75);
   --color-ink-300: oklch(76% 0.009 75);
   --color-ink-100: oklch(92% 0.006 75);
@@ -111,5 +111,6 @@ h3 {
   }
   * {
     transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
   }
 }

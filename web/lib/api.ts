@@ -33,18 +33,22 @@ export interface PendingProposal {
 
 export async function runSimulation(
   injectAttack = true,
+  signal?: AbortSignal,
 ): Promise<SimulationResponse> {
   const res = await fetch(`${API}/simulate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ minutes: 30, inject_attack: injectAttack, reset: true }),
+    signal,
   });
   if (!res.ok) throw new Error(`simulate failed: ${res.status}`);
   return res.json();
 }
 
-export async function getProposal(): Promise<PendingProposal | null> {
-  const res = await fetch(`${API}/proposal`);
+export async function getProposal(
+  signal?: AbortSignal,
+): Promise<PendingProposal | null> {
+  const res = await fetch(`${API}/proposal`, { signal });
   if (!res.ok) throw new Error(`proposal failed: ${res.status}`);
   const data = await res.json();
   return data.pending;
