@@ -60,7 +60,7 @@ computed fallbacks.
 ```bash
 # 1. Backend (Python 3.12+)
 pip install -r requirements.txt
-python -m pytest tests/          # 20 tests should pass
+python -m pytest tests/          # 22 tests should pass
 uvicorn api.main:app --port 8000
 
 # 2. Frontend (Node 20+), in a second terminal
@@ -138,7 +138,7 @@ gcloud run services delete watchspan-api watchspan-web --region us-central1
 
 ### Notes from wiring this against the live platform
 
-Three things the documentation does not spell out, each found by calling the
+Four things the documentation does not spell out, each found by calling the
 services rather than reading about them:
 
 - `gemini-3.5-flash` on Vertex AI is served from the `global` location. Asking
