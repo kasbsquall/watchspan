@@ -1,0 +1,10 @@
+# Explicit list so .env.production (build-time public API URL) is uploaded;
+# without this file gcloud falls back to .gitignore, which excludes .env.*
+.git
+node_modules
+.next
+*.png
+.playwright-mcp
+# Next.js gives .env.local priority over .env.production; keep the local
+# development URL out of cloud builds.
+.env.local

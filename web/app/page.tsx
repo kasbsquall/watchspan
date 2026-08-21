@@ -182,7 +182,7 @@ export default function ControlRoom() {
         </div>
 
         <div className="rise flex flex-col gap-10" style={{ ["--block" as string]: 2 }}>
-          {phase === "idle" || phase === "loading" ? (
+          {phase === "idle" || phase === "loading" || sim === null ? (
             <div>
               <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-ink-500">
                 <span className="inline-block h-[15px] w-[15px]" aria-hidden />
@@ -192,7 +192,9 @@ export default function ControlRoom() {
                 <span className={`text-sm text-ink-500 ${phase === "loading" ? "animate-pulse" : ""}`}>
                   {phase === "loading"
                     ? "Preparing the run…"
-                    : "The attention budget renders here during a run"}
+                    : phase === "error"
+                      ? "No run data. Resolve the connection and run again."
+                      : "The attention budget renders here during a run"}
                 </span>
               </div>
             </div>
