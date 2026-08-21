@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap">
+<style>
+  :root { --ink-950:oklch(16% .008 75); --ink-800:oklch(28% .011 75); --ink-500:oklch(62% .012 75); --ink-100:oklch(92% .006 75); --ember:#e8a33d; }
+  body { margin:0; background:var(--ink-950); color:var(--ink-100); font-family:Archivo,system-ui,sans-serif; padding:48px 56px; }
+  h1 { font-size:13px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-500); font-weight:500; margin:0 0 40px; }
+  .row { display:grid; grid-template-columns:repeat(3,1fr); gap:56px; margin-bottom:64px; }
+  .cell { }
+  .name { font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-500); margin-bottom:18px; }
+  .idea { font-size:12px; line-height:1.5; color:var(--ink-500); margin-top:16px; max-width:32ch; }
+  .big { color:var(--ink-100); }
+  .big svg { width:96px; height:96px; }
+  .lockup { display:flex; align-items:center; gap:14px; margin-top:28px; color:var(--ink-100); }
+  .lockup svg { width:34px; height:34px; }
+  .word { font-size:25px; font-weight:600; letter-spacing:-.022em; }
+  .sizes { display:flex; align-items:flex-end; gap:18px; margin-top:24px; color:var(--ink-100); }
+  .sizes svg:nth-child(1){width:48px;height:48px} .sizes svg:nth-child(2){width:32px;height:32px}
+  .sizes svg:nth-child(3){width:24px;height:24px} .sizes svg:nth-child(4){width:16px;height:16px}
+  .onlight { background:#f2efe9; color:#1a1815; padding:18px 20px; border-radius:2px; margin-top:24px; display:flex; align-items:center; gap:12px; }
+  .onlight svg{width:30px;height:30px} .onlight .word{font-size:21px}
+</style></head><body>
+<h1>Watchspan · mark exploration</h1>
+<div class="row" id="row"></div>
+<script>
+const marks = [
+ ['01 · Arc','mark-arc.svg','The product\u2019s own instrument. The arc is the attention budget; amber is what remains, and the tick marks the calibration floor.'],
+ ['02 · Span','mark-span.svg','Watch-span, the interval itself. Two measurement serifs bound it; the line steps down as attention is spent.'],
+ ['03 · Tally','mark-tally.svg','The reviewer’s own hand. Firm at the first approval, barely a stroke by the last. Attention spent, one decision at a time.']
+];
+Promise.all(marks.map(m => fetch(m[1]).then(r=>r.text()))).then(svgs => {
+  document.getElementById('row').innerHTML = marks.map((m,i) => `
+    <div class="cell">
+      <div class="name">${m[0]}</div>
+      <div class="big">${svgs[i]}</div>
+      <div class="lockup">${svgs[i]}<span class="word">Watchspan</span></div>
+      <div class="sizes">${svgs[i]}${svgs[i]}${svgs[i]}${svgs[i]}</div>
+      <div class="onlight">${svgs[i]}<span class="word">Watchspan</span></div>
+      <p class="idea">${m[2]}</p>
+    </div>`).join('');
+});
+</script></body></html>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Watchspan mark: decaying tally">
+  <!-- Concept: the reviewer's own hand. Tally marks for each approval, firm at
+       first and barely a stroke by the last: attention spent, one decision at
+       a time. The final mark is amber, the one that got stamped. -->
+  <g stroke-linecap="round" fill="none">
+    <path d="M 12 16 L 12 48" stroke="currentColor" stroke-width="4"/>
+    <path d="M 24 19 L 24 45" stroke="currentColor" stroke-width="3.2" stroke-opacity="0.82"/>
+    <path d="M 36 24 L 36 40" stroke="currentColor" stroke-width="2.4" stroke-opacity="0.6"/>
+    <path d="M 47 29 L 47 35" stroke="currentColor" stroke-width="1.8" stroke-opacity="0.38"/>
+    <path d="M 56 32 L 56 32.5" stroke="#e8a33d" stroke-width="1.6"/>
+  </g>
+</svg>

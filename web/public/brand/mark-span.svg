@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Watchspan mark: measured span">
+  <!-- Concept: watch-span, the interval itself. Two measurement serifs bound
+       the span; the line between them steps down as attention is spent. -->
+  <g fill="none" stroke="currentColor" stroke-linecap="square">
+    <path d="M 10 16 L 10 48" stroke-width="2.4"/>
+    <path d="M 54 16 L 54 48" stroke-width="2.4" stroke-opacity="0.55"/>
+  </g>
+  <path d="M 10 24 L 22 24 L 22 31 L 34 31 L 34 39 L 44 39 L 44 45 L 54 45"
+        fill="none" stroke="#e8a33d" stroke-width="2.6" stroke-linejoin="miter" stroke-linecap="butt"/>
+</svg>
