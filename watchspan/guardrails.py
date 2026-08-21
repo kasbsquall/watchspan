@@ -1,13 +1,19 @@
 """Model Armor guardrails for the governance agents.
 
 Every prompt that reaches Gemini through Watchspan's agents passes a Model
-Armor sanitization callback first (prompt injection, jailbreak, data-loss
-patterns). Offline, a conservative local screen applies instead so the code
-path is identical with and without Google Cloud.
+Armor sanitization call first (prompt injection, jailbreak, malicious URIs).
+Offline, a conservative local screen applies instead, so the code path is
+identical with and without Google Cloud.
 
 Wire-up: pass `before_model_callback=model_armor_before_model` when building
 each ADK LlmAgent. Note: ADK plugins are silently ignored under `adk web`,
 which is why we use callbacks rather than the plugin form.
+
+Failure policy, deliberately split:
+  * misconfiguration (no template set, transport unavailable) falls back to
+    the local screen, because blocking every prompt would be a silent outage;
+  * a template that is set but whose call fails blocks, because a guardrail
+    that cannot answer must not wave traffic through.
 """
 
 from __future__ import annotations
@@ -19,16 +25,20 @@ BLOCK_MESSAGE = "Request blocked by input guardrails."
 # Local fallback screen: the same adversarial cues Sentinel treats as signals.
 SUSPICIOUS_FRAGMENTS = (
     "ignore previous instructions",
+    "ignore all previous instructions",
     "disregard your instructions",
     "system prompt",
     "just approve everything",
+    "developer mode",
 )
 
 
+def _template() -> str | None:
+    return os.environ.get("WATCHSPAN_MODEL_ARMOR_TEMPLATE") or None
+
+
 def model_armor_available() -> bool:
-    return bool(os.environ.get("GOOGLE_CLOUD_PROJECT")) and bool(
-        os.environ.get("WATCHSPAN_MODEL_ARMOR_TEMPLATE")
-    )
+    return bool(os.environ.get("GOOGLE_CLOUD_PROJECT")) and bool(_template())
 
 
 def _local_screen(text: str) -> bool:
@@ -36,37 +46,41 @@ def _local_screen(text: str) -> bool:
     return any(fragment in lowered for fragment in SUSPICIOUS_FRAGMENTS)
 
 
-def _model_armor_screen(text: str) -> bool:
-    """Returns True if Model Armor flags the prompt. Fails closed on API
-    errors for the governance fleet: a guardrail that cannot answer blocks."""
-    from google.cloud import modelarmor_v1
+def _model_armor_screen(text: str, template: str) -> bool:
+    """Call Model Armor over REST. True when the prompt is flagged.
 
-    client = modelarmor_v1.ModelArmorClient(
-        client_options={
-            "api_endpoint": (
-                f"modelarmor.{os.environ.get('GOOGLE_CLOUD_LOCATION', 'us-central1')}"
-                ".rep.googleapis.com"
-            )
-        }
+    REST keeps this dependency-free beyond google-auth, which the rest of the
+    stack already needs.
+    """
+    import google.auth
+    import google.auth.transport.requests
+    import requests
+
+    location = template.split("/locations/")[1].split("/")[0]
+    credentials, _ = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/cloud-platform"]
     )
-    response = client.sanitize_user_prompt(
-        request=modelarmor_v1.SanitizeUserPromptRequest(
-            name=os.environ["WATCHSPAN_MODEL_ARMOR_TEMPLATE"],
-            user_prompt_data=modelarmor_v1.DataItem(text=text),
-        )
+    credentials.refresh(google.auth.transport.requests.Request())
+    response = requests.post(
+        f"https://modelarmor.{location}.rep.googleapis.com/v1/{template}:sanitizeUserPrompt",
+        headers={"Authorization": f"Bearer {credentials.token}"},
+        json={"user_prompt_data": {"text": text}},
+        timeout=20,
     )
-    match_state = response.sanitization_result.filter_match_state
-    return match_state == modelarmor_v1.FilterMatchState.MATCH_FOUND
+    response.raise_for_status()
+    result = response.json().get("sanitizationResult", {})
+    return result.get("filterMatchState") == "MATCH_FOUND"
 
 
 def screen_prompt(text: str) -> bool:
     """True when the prompt must be blocked."""
-    if model_armor_available():
-        try:
-            return _model_armor_screen(text)
-        except Exception:
-            return True  # fail closed
-    return _local_screen(text)
+    template = _template()
+    if not model_armor_available() or template is None:
+        return _local_screen(text)
+    try:
+        return _model_armor_screen(text, template)
+    except Exception:
+        return True  # a configured guardrail that cannot answer blocks
 
 
 def model_armor_before_model(callback_context, llm_request):

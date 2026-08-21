@@ -7,52 +7,49 @@ attention as what it really is: a finite, measurable, consumable resource.
 
 ```mermaid
 flowchart TB
-    subgraph FLEET["Demo fleet · Agent Runtime (GEAP)"]
-        P[Procurement agent]
-        D[Data ops agent]
-        C[Comms agent]
+    subgraph FLEET["Demo fleet · GEAP Agent Runtime"]
+        direction LR
+        P[Procurement] ~~~ D[Data ops] ~~~ C[Comms]
     end
 
-    subgraph WS["Watchspan governance agents · ADK + Gemini 3.5 Flash via Vertex AI"]
-        SENT[Sentinel<br/>fatigue-exploitation detection]
-        POL[Calibrated approval policy]
-        METER[Meter<br/>attention budget]
-        DRIFT[Drift<br/>rubber-stamp detection]
-        CAL[Calibrator<br/>policy proposals]
-    end
+    SENT["<b>Sentinel</b><br/>fatigue-exploitation patterns"]
+    POL{"<b>Calibrated policy</b><br/>risk ≥ threshold(budget)?"}
+    HUMAN(["Human reviewer"])
+    AUTO["Auto-run, logged for audit"]
+    METER["<b>Meter</b><br/>shared attention budget"]
+    DRIFT["<b>Drift</b><br/>rubber-stamp detection"]
+    CAL["<b>Calibrator</b><br/>policy proposal"]
+    DOSSIER[["Article 14 dossier"]]
 
-    subgraph GEAP["GEAP services"]
-        REG[Agent Registry<br/>fleet cataloging]
-        MB[Memory Bank<br/>cross-session ledger]
-        MA[Model Armor<br/>input guardrails]
-        OBS[Agent Observability<br/>OpenTelemetry traces]
-    end
-
-    HUMAN((Human reviewer))
-    FRONT[Control room<br/>Next.js on Cloud Run]
-    API[FastAPI backend<br/>Cloud Run, scale to zero]
-    DOSSIER[Article 14 dossier]
-
-    P & D & C -->|approval requests| SENT
+    FLEET -->|approval requests| SENT
     SENT -->|clean| POL
-    SENT -->|exploitation pattern| HUMAN
-    POL -->|"risk >= threshold(budget)"| HUMAN
-    POL -->|below threshold| AUDIT[Auto-run with audit log]
+    SENT -.->|held out of band| HUMAN
+    POL -->|yes| HUMAN
+    POL -->|no| AUTO
     HUMAN -->|decisions| METER
-    METER -->|signal windows| DRIFT
     METER -->|budget fraction| POL
-    DRIFT -->|degradation state| CAL
-    CAL -->|policy proposal| HUMAN
-    HUMAN -->|approve or reject| POL
-
-    FLEET -.cataloged in.-> REG
-    METER -.persists ledger.-> MB
-    WS -.prompts screened by.-> MA
-    WS -.traces.-> OBS
+    METER --> DRIFT
+    DRIFT -->|degradation declared| CAL
+    CAL -->|waits for approval| HUMAN
     METER & DRIFT & CAL --> DOSSIER
 
-    FRONT --> API
-    API --> WS
+    subgraph GEAP["GEAP services"]
+        direction LR
+        REG["Agent Registry<br/>fleet cataloging"] ~~~ MB["Memory Bank<br/>cross-session ledger"] ~~~ MA["Model Armor<br/>input guardrails"] ~~~ OBS["Observability<br/>OpenTelemetry"]
+    end
+
+    subgraph CLOUD["Cloud Run · scale to zero"]
+        direction LR
+        FRONT["Control room<br/>Next.js"] --> API["Watchspan API<br/>FastAPI"]
+    end
+
+    METER -.- GEAP
+    API -.- POL
+
+    classDef gov fill:#221f1c,stroke:#c98a3a,stroke-width:1px,color:#eae6e0
+    classDef plain fill:#1a1815,stroke:#3a352f,color:#cfc9c1
+    class SENT,METER,DRIFT,CAL gov
+    class AUTO,DOSSIER,REG,MB,MA,OBS,FRONT,API,P,D,C plain
 ```
 
 Export note: the submission's architecture image is rendered from this Mermaid

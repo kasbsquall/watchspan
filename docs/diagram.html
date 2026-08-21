@@ -1,0 +1,61 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  body { margin:0; background:#12100e; }
+  #d { padding: 40px; margin:0; }
+  #d svg { width: 1400px !important; max-width: none !important; height: auto; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+</head><body><pre class="mermaid" id="d">
+flowchart TB
+    subgraph FLEET["Demo fleet · GEAP Agent Runtime"]
+        direction LR
+        P[Procurement] ~~~ D[Data ops] ~~~ C[Comms]
+    end
+
+    SENT["<b>Sentinel</b><br/>fatigue-exploitation patterns"]
+    POL{"<b>Calibrated policy</b><br/>risk ≥ threshold(budget)?"}
+    HUMAN(["Human reviewer"])
+    AUTO["Auto-run, logged for audit"]
+    METER["<b>Meter</b><br/>shared attention budget"]
+    DRIFT["<b>Drift</b><br/>rubber-stamp detection"]
+    CAL["<b>Calibrator</b><br/>policy proposal"]
+    DOSSIER[["Article 14 dossier"]]
+
+    FLEET -->|approval requests| SENT
+    SENT -->|clean| POL
+    SENT -.->|held out of band| HUMAN
+    POL -->|yes| HUMAN
+    POL -->|no| AUTO
+    HUMAN -->|decisions| METER
+    METER -->|budget fraction| POL
+    METER --> DRIFT
+    DRIFT -->|degradation declared| CAL
+    CAL -->|waits for approval| HUMAN
+    METER & DRIFT & CAL --> DOSSIER
+
+    subgraph GEAP["GEAP services"]
+        direction LR
+        REG["Agent Registry<br/>fleet cataloging"] ~~~ MB["Memory Bank<br/>cross-session ledger"] ~~~ MA["Model Armor<br/>input guardrails"] ~~~ OBS["Observability<br/>OpenTelemetry"]
+    end
+
+    subgraph CLOUD["Cloud Run · scale to zero"]
+        direction LR
+        FRONT["Control room<br/>Next.js"] --> API["Watchspan API<br/>FastAPI"]
+    end
+
+    METER -.- GEAP
+    API -.- POL
+
+    classDef gov fill:#221f1c,stroke:#c98a3a,stroke-width:1px,color:#eae6e0
+    classDef plain fill:#1a1815,stroke:#3a352f,color:#cfc9c1
+    class SENT,METER,DRIFT,CAL gov
+    class AUTO,DOSSIER,REG,MB,MA,OBS,FRONT,API,P,D,C plain
+</pre>
+<script>
+mermaid.initialize({startOnLoad:true, theme:'dark', themeVariables:{
+  darkMode:true, background:'#12100e', primaryColor:'#221f1c', primaryTextColor:'#eae6e0',
+  primaryBorderColor:'#3a352f', lineColor:'#8a8178', fontFamily:'Archivo, system-ui, sans-serif',
+  fontSize:'15px'
+}});
+</script></body></html>
