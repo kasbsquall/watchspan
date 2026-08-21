@@ -60,7 +60,7 @@ computed fallbacks.
 ```bash
 # 1. Backend (Python 3.12+)
 pip install -r requirements.txt
-python -m pytest tests/          # 18 tests should pass
+python -m pytest tests/          # 20 tests should pass
 uvicorn api.main:app --port 8000
 
 # 2. Frontend (Node 20+), in a second terminal
@@ -97,16 +97,54 @@ Optional GEAP wiring (each degrades gracefully when unset):
 | Variable | Enables |
 |---|---|
 | `WATCHSPAN_AGENT_ENGINE_ID` | Memory Bank cross-session attention ledger |
-| `WATCHSPAN_MODEL_ARMOR_TEMPLATE` | Model Armor prompt screening (fails closed) |
+| `WATCHSPAN_MODEL_ARMOR_TEMPLATE` | Model Armor prompt screening |
 
-Fleet cataloging in the Agent Registry: `python -m fleet.registry`.
-Fleet deployment to Agent Runtime: `adk deploy agent_engine fleet/agent_app.py`.
+**Catalog the fleet in the Agent Registry** so other departments can discover it:
+
+```bash
+python -m fleet.registry              # register the seven agents
+python -m fleet.registry --list       # show the catalog
+python -m fleet.registry --search fatigue   # cross-department discovery
+```
+
+**Create the Model Armor template** (prompt injection and jailbreak screening):
+
+```bash
+gcloud services enable modelarmor.googleapis.com
+TOKEN=$(gcloud auth print-access-token)
+HOST=https://modelarmor.us-central1.rep.googleapis.com/v1
+PARENT=projects/YOUR_PROJECT/locations/us-central1
+curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" "$HOST/$PARENT/templates?template_id=watchspan-guardrail" -d '{"filterConfig":{"piAndJailbreakFilterSettings":{"filterEnforcement":"ENABLED","confidenceLevel":"LOW_AND_ABOVE"},"maliciousUriFilterSettings":{"filterEnforcement":"ENABLED"}}}'
+```
+
+**Deploy the fleet to Agent Runtime** (long-running execution, persistent
+sessions, Memory Bank, OpenTelemetry tracing):
+
+```bash
+gcloud storage buckets create gs://watchspan-staging-YOUR_SUFFIX --location us-central1
+python deploy/deploy_agent_engine.py
+```
 
 Tear down after the demo:
 
 ```bash
 gcloud run services delete watchspan-api watchspan-web --region us-central1
 ```
+
+### Notes from wiring this against the live platform
+
+Three things the documentation does not spell out, each found by calling the
+services rather than reading about them:
+
+- `gemini-3.5-flash` on Vertex AI is served from the `global` location. Asking
+  for it in `us-central1` returns 404 even where the rest of the stack runs.
+- The Agent Registry does not create agents directly. You register a *service*
+  whose `agentSpec` carries an A2A agent card, `interfaces` must be empty for
+  `A2A_AGENT_CARD` because the card's own `url` carries the connection details,
+  and search takes `searchString` (passing `query` returns zero results with no
+  error).
+- Agent Runtime rejects `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` in
+  `env_vars`: they are reserved names the service injects itself.
 
 ## Repository map
 

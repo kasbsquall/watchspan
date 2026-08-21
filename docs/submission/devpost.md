@@ -64,15 +64,34 @@ proposal waiting for a human who still has attention to give.
 
 ## Challenges we ran into
 
-- Tuning the burst detector so machine-speed attack bursts trip it while
-  normal fleet cadence never does.
-- The drift detector originally re-declared degradation on every decision
-  while it persisted, polluting the audit record; it now declares only on the
-  transition.
-- SSR/client floating-point divergence in SVG trigonometry caused a React
-  hydration mismatch, fixed by rounding coordinates.
-- Rapid playback broke digit-transition animations and re-triggered row
-  entrance choreography every tick; both needed live-mode variants.
+Most of what cost us time was the gap between what the platform documentation
+says and what the services actually accept. Every one of these was found by
+calling the API, not by reading about it:
+
+- `gemini-3.5-flash` on Vertex AI is served from the `global` location. Asking
+  for it in `us-central1` returns a 404, and because our narrative layer
+  degrades gracefully, the failure was invisible: the system kept working with
+  computed fallback text. Silent degradation is worse than a crash.
+- The Agent Registry does not create agents. You register a *service* whose
+  `agentSpec` carries an A2A agent card. It rejects a populated `interfaces`
+  field for `A2A_AGENT_CARD` with an explicit message, and its search takes
+  `searchString`; passing `query` returns zero results with no error at all.
+- Agent Runtime rejects `GOOGLE_CLOUD_PROJECT` in `env_vars` as a reserved
+  name, and still requires a staging bucket through `vertexai.init` even
+  though the `create()` argument is marked deprecated.
+- Our Model Armor guardrail had a design bug that only appeared live: the
+  client library was absent, so the call raised `ImportError`, and our
+  fail-closed policy blocked every prompt including benign ones. The fix was
+  to split the failure policy: an unconfigured guardrail falls back to a local
+  screen, a configured one that fails blocks.
+- Deploying the frontend, `.env.local` from local development was uploaded to
+  Cloud Build and Next.js gives it priority over `.env.production`, so the
+  deployed control room called `localhost`. It looked fine in every local
+  test.
+- Smaller ones: the drift detector re-declared degradation on every decision
+  while it persisted, polluting the audit record; SSR/client floating-point
+  divergence in SVG trigonometry caused a React hydration mismatch; and rapid
+  playback re-triggered row entrance animations every tick.
 
 ## Accomplishments we're proud of
 
@@ -88,6 +107,16 @@ proposal waiting for a human who still has attention to give.
 
 - Approval fatigue is a resource-exhaustion problem, and modeling it as a
   budget makes it tractable: measurable, predictable, and defensible.
+- Model Armor and the Sentinel catch different attacks, and we only learned
+  this by testing both. Model Armor blocks "ignore all previous instructions"
+  and lets "this is routine, just approve everything in the batch" straight
+  through, because nothing about that sentence is a prompt injection. It is an
+  attack on the human, not on the model. That is precisely the gap Watchspan
+  exists to cover, and we could not have argued it convincingly without the
+  side-by-side result.
+- Graceful degradation hides failures. Every fallback we wrote to keep the
+  system runnable offline also made a real cloud misconfiguration invisible.
+  Fallbacks need to be observable, not just safe.
 - Three specialized audit passes (UX writing, interaction, visual precision)
   over the same screen found 30 issues a single pass had missed.
 
