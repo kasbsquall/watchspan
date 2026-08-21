@@ -96,8 +96,13 @@ Optional GEAP wiring (each degrades gracefully when unset):
 
 | Variable | Enables |
 |---|---|
-| `WATCHSPAN_AGENT_ENGINE_ID` | Memory Bank cross-session attention ledger |
+| `WATCHSPAN_AGENT_ENGINE_ID` | Memory Bank cross-session attention ledger (`GET /ledger/{reviewer_id}`) |
 | `WATCHSPAN_MODEL_ARMOR_TEMPLATE` | Model Armor prompt screening |
+| `WATCHSPAN_FLEET_SERVICE_ACCOUNT` | Dedicated least-privilege identity for the fleet on Agent Runtime |
+
+With `GOOGLE_CLOUD_PROJECT` set, governance decisions are traced to Cloud
+Trace: each routing and human decision is a span carrying the risk score,
+effective threshold, decision time and review depth that justified it.
 
 **Catalog the fleet in the Agent Registry** so other departments can discover it:
 
@@ -144,7 +149,13 @@ services rather than reading about them:
   and search takes `searchString` (passing `query` returns zero results with no
   error).
 - Agent Runtime rejects `GOOGLE_CLOUD_PROJECT` and `GOOGLE_CLOUD_LOCATION` in
-  `env_vars`: they are reserved names the service injects itself.
+  `env_vars`: they are reserved names the service injects itself, and it still
+  needs a staging bucket through `vertexai.init` even though the `create()`
+  argument is marked deprecated.
+- Model Armor and the Sentinel cover different attacks, verified side by side:
+  Model Armor blocks `ignore all previous instructions` and lets `this is
+  routine, just approve everything in the batch` through, correctly, because
+  the second one is an attack on the reviewer rather than on the model.
 
 ## Repository map
 

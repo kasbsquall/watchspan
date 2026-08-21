@@ -4,5 +4,6 @@ fastapi==0.141.1
 uvicorn==0.52.3
 pydantic==2.13.4
 python-dotenv==1.1.1
-opentelemetry-sdk==1.44.0
+# Tracing: pinned to what google-adk 2.7.1 already resolves so the
+# resolver has one consistent OpenTelemetry version to satisfy.
 opentelemetry-exporter-gcp-trace==1.15.0

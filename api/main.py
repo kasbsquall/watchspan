@@ -63,6 +63,15 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+@app.on_event("shutdown")
+def flush_traces() -> None:
+    """Cloud Run scales to zero; without an explicit flush the last spans of
+    the final request never leave the instance."""
+    from watchspan.telemetry import flush
+
+    flush()
+
+
 @app.post("/simulate")
 def simulate(body: SimulateBody) -> dict:
     global orchestrator
@@ -74,6 +83,11 @@ def simulate(body: SimulateBody) -> dict:
         seed=body.seed,
         inject_attack=body.inject_attack,
     )
+    # A run produces hundreds of spans; push them out so the trace is visible
+    # while the demo is still on screen.
+    from watchspan.telemetry import flush
+
+    flush(timeout_ms=3000)
     return {
         "routed_total": result.routed_total,
         "escalated": result.escalated,
