@@ -22,6 +22,7 @@ from watchspan.memory import build_attention_memory
 from watchspan.meter import Meter
 from watchspan.policy import PolicyProposal
 from watchspan.sentinel import Sentinel, SentinelAlert
+from watchspan.telemetry import span
 
 
 @dataclass
@@ -46,6 +47,15 @@ class Orchestrator:
     audit_log: list[dict] = field(default_factory=list)
 
     def route_request(self, request: ApprovalRequest) -> RoutingResult:
+        with span(
+            "route_request",
+            agent_id=request.agent_id,
+            action=request.action,
+            risk_score=request.risk_score,
+        ):
+            return self._route_request(request)
+
+    def _route_request(self, request: ApprovalRequest) -> RoutingResult:
         team_fraction = self.meter.state.team_budget.team_fraction(request.created_at)
         threshold = self.calibrator.policy.effective_threshold(team_fraction)
 
@@ -82,6 +92,16 @@ class Orchestrator:
         return result
 
     def record_decision(self, decision: Decision) -> dict:
+        with span(
+            "record_decision",
+            reviewer_id=decision.reviewer_id,
+            decision_time_s=decision.decision_time_s,
+            review_depth=decision.review_depth,
+            approved=decision.approved,
+        ):
+            return self._record_decision(decision)
+
+    def _record_decision(self, decision: Decision) -> dict:
         meter_out = self.meter.record_decision(decision)
         verdict = drift_mod.assess(self.meter.state.team_window)
 

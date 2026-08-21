@@ -124,7 +124,29 @@ Armor guards the model's input; the Sentinel guards the reviewer's attention.
 ## Security posture
 
 - No secrets in the repo; non-secret config travels via `--set-env-vars`.
-- Cloud Run: scale to zero, `--max-instances 2`, 512Mi / 1 CPU caps.
-- Agent Identity attaches a SPIFFE identity per agent at deploy time.
-- OpenTelemetry tracing is enabled by default for ADK agents on Agent
-  Runtime; the audit log adds the governance-level record.
+- Cloud Run: scale to zero, `--max-instances 2`, 512Mi / 1 CPU caps, so an
+  idle demo costs nothing and a runaway one cannot escalate.
+- **Agent identity**: the fleet runs on Agent Runtime under its own service
+  account (`watchspan-fleet@`) holding only `aiplatform.user`,
+  `logging.logWriter` and `cloudtrace.agent`, rather than the default compute
+  identity. The SPIFFE `identity_type=AGENT_IDENTITY` mode named in the
+  platform documentation is not exposed by `google-cloud-aiplatform` 1.165.1,
+  so a dedicated least-privilege service account is the strongest per-agent
+  identity available today; the deploy script takes it as a parameter and will
+  accept the SPIFFE mode when the SDK ships it.
+
+## Observability
+
+Two layers, because they answer different questions:
+
+- ADK agents on Agent Runtime emit OpenTelemetry traces by default, covering
+  the model calls and tool invocations inside the fleet.
+- The governance decisions run in our own service, so they are instrumented
+  explicitly (`watchspan/telemetry.py`): every routing decision and every
+  human decision becomes a span carrying the numbers that justified it, the
+  risk score, the effective threshold, the remaining budget, the review depth.
+  That is what makes the reasoning chain auditable rather than merely logged.
+  Spans are force-flushed, since batch export would otherwise drop the tail of
+  a short request on a scale-to-zero service.
+- The audit log adds the governance-level record that feeds the Article 14
+  dossier.

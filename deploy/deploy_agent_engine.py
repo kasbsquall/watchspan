@@ -33,6 +33,12 @@ REQUIREMENTS = [
     "google-cloud-aiplatform[agent-engines]==1.165.1",
 ]
 EXTRA_PACKAGES = ["fleet", "watchspan", "attention"]
+# Agent Identity: the fleet runs as its own service account with least
+# privilege (Vertex AI user, log writer, trace agent) rather than the default
+# compute identity. Note: the SPIFFE `identity_type=AGENT_IDENTITY` mode named
+# in the platform docs is not exposed by google-cloud-aiplatform 1.165.1, so a
+# dedicated service account is the strongest per-agent identity available here.
+SERVICE_ACCOUNT = os.environ.get("WATCHSPAN_FLEET_SERVICE_ACCOUNT") or None
 
 
 def main() -> int:
@@ -67,6 +73,7 @@ def main() -> int:
                 "WATCHSPAN_MODEL_ARMOR_TEMPLATE", ""
             ),
         },
+        service_account=SERVICE_ACCOUNT,
         min_instances=0,
         max_instances=1,
     )
