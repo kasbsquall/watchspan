@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import NumberFlow from "@number-flow/react";
 import { Play, ArrowCounterClockwise } from "@phosphor-icons/react";
 import AttentionGauge from "@/components/AttentionGauge";
+import Logo from "@/components/Logo";
 import ApprovalQueue from "@/components/ApprovalQueue";
 import BudgetTimeline from "@/components/BudgetTimeline";
 import DriftAlert from "@/components/DriftAlert";
@@ -103,8 +104,11 @@ export default function ControlRoom() {
     <main className="mx-auto max-w-6xl px-6 py-10">
       <header className="rise flex flex-wrap items-end justify-between gap-4" style={{ ["--block" as string]: 0 }}>
         <div>
-          <p className="font-data text-[11px] uppercase tracking-[0.24em] text-ember-500">
-            Watchspan
+          <p className="flex items-center gap-2.5 text-ink-300">
+            <Logo size={22} />
+            <span className="font-data text-[11px] uppercase tracking-[0.24em] text-ember-500">
+              Watchspan
+            </span>
           </p>
           <h1 className="mt-1 text-3xl font-medium tracking-[-0.018em] text-ink-100">
             Fleet oversight control room

@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Watchspan mark: depleting arc">
-  <!-- Concept: the attention gauge itself. The arc is the budget; the amber
-       segment is what remains. The tick is the calibration floor. -->
-  <g fill="none" stroke-linecap="round">
-    <path d="M 8 46 A 24 24 0 0 1 56 46" stroke="currentColor" stroke-opacity="0.28" stroke-width="4"/>
-    <path d="M 8 46 A 24 24 0 0 1 25.4 23.1" stroke="#e8a33d" stroke-width="4"/>
-    <path d="M 39.5 20.6 L 43.2 14.2" stroke="currentColor" stroke-opacity="0.7" stroke-width="2.2"/>
-  </g>
-</svg>
