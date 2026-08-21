@@ -52,10 +52,13 @@ proposal waiting for a human who still has attention to give.
   reproducible and auditable.
 - **Google ADK** defines the fleet and governance agents;
   `before_model_callback` wires **Model Armor** screening (fails closed).
-- **GEAP**: Agent Registry cards for cross-department discovery, Agent
-  Runtime deployment via `adk deploy agent_engine`, Memory Bank for the
-  cross-session attention ledger, Agent Identity per agent, OpenTelemetry
-  observability on by default.
+- **GEAP**, all six wired against the live platform: the seven agents are
+  catalogued in the **Agent Registry** and findable by cross-department search;
+  the fleet runs on **Agent Runtime**; the attention ledger persists per
+  reviewer in **Memory Bank**; **Model Armor** screens every prompt;
+  **Agent Identity** gives the fleet its own least-privilege service account;
+  and governance decisions are traced to **Cloud Trace**, each span carrying
+  the numbers that justified the decision.
 - **Cloud Run** hosts both the FastAPI backend and the Next.js control room,
   scale to zero, max 2 instances.
 - The demo fleet (procurement, data ops, comms) generates approval requests
@@ -135,9 +138,10 @@ Observability), Cloud Run, OpenTelemetry, Next.js, TypeScript, Tailwind CSS.
 ---
 
 Checklist for submission day:
-- [ ] Hosted URL (Cloud Run web service, may be torn down after judging proof)
-- [ ] Repo URL public (or shared with testing@devpost.com and cloudhackathons@google.com)
-- [ ] Architecture diagram image exported from docs/ARCHITECTURE.md mermaid
+- [x] Hosted URL: https://watchspan-web-45ejdvuucq-uc.a.run.app
+- [x] API URL: https://watchspan-api-45ejdvuucq-uc.a.run.app
+- [x] Repo public: https://github.com/kasbsquall/watchspan
+- [x] Architecture diagram exported (architecture.png, from docs/ARCHITECTURE.md)
 - [ ] 4-minute video on YouTube, public, showing Google Cloud console
 - [ ] Social post with #AllThingsAgenticHackathon
 - [ ] Optional blog post declaring it was created for this hackathon
