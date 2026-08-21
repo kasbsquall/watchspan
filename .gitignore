@@ -37,3 +37,7 @@ htmlcov/
 # Playwright verification artifacts
 .playwright-mcp/
 /*.png
+
+# Stitch exploration output (kept locally, not part of the build)
+stitch-out/
+stitch_watchspan_control_room/
