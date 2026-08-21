@@ -55,11 +55,10 @@ export default function AttentionGauge({
         <BatteryMedium size={15} weight="light" aria-hidden />
         Attention budget remaining
       </div>
-      <div className="relative mt-2">
+      <div className="relative mt-2 w-full max-w-[300px]">
         <svg
-          width="300"
-          height="168"
           viewBox="0 0 300 168"
+          className="h-auto w-full max-w-[300px]"
           role="img"
           aria-label={
             pct === null

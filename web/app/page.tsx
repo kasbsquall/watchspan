@@ -85,8 +85,10 @@ export default function ControlRoom() {
 
   const visible = sim ? sim.timeline.slice(0, upTo) : [];
   const current = visible.length > 0 ? visible[visible.length - 1] : null;
-  const fraction =
-    phase === "idle" || phase === "loading" ? null : current ? current.team_fraction : 1;
+  // No run data means no value to show. Painting 100% here would assert a
+  // full budget that was never measured.
+  const hasData = sim !== null && current !== null;
+  const fraction = hasData ? current!.team_fraction : null;
   const driftPassed =
     sim?.drift_declared_at != null && current != null && current.at >= sim.drift_declared_at;
 
@@ -145,7 +147,7 @@ export default function ControlRoom() {
       <section className="mt-10 grid items-start gap-x-12 gap-y-10 lg:grid-cols-[320px_1fr]">
         <div className="rise flex flex-col gap-8" style={{ ["--block" as string]: 1 }}>
           <AttentionGauge fraction={fraction} degraded={!!driftPassed} />
-          <dl className="grid grid-cols-4 gap-3 border-t border-ink-100/8 pt-4">
+          <dl className="grid grid-cols-2 gap-x-3 gap-y-4 border-t border-ink-100/8 pt-4 sm:grid-cols-4 sm:gap-y-0">
             {(
               [
                 ["Routed", counts.routed, "total requests"],
@@ -159,12 +161,16 @@ export default function ControlRoom() {
                   {label}
                 </dt>
                 <dd className="font-data mt-1 text-2xl text-ink-100">
-                  {phase === "idle" || phase === "loading" ? (
+                  {phase === "loading" ? (
                     <span
                       role="status"
                       aria-label={`${label} value loading`}
                       className="inline-block h-6 w-8 animate-pulse rounded-sm bg-ink-800"
                     />
+                  ) : !hasData ? (
+                    <span className="text-ink-500" aria-label={`${label}: no data yet`}>
+                      &ndash;
+                    </span>
                   ) : (
                     <NumberFlow
                       value={value}
