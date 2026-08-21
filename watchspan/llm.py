@@ -27,10 +27,12 @@ def narrate(prompt: str, fallback: str) -> str:
     try:
         from google import genai
 
+        # gemini-3.5-flash is served from the "global" location on Vertex AI,
+        # independent of where the rest of the stack runs.
         client = genai.Client(
             vertexai=True,
             project=os.environ["GOOGLE_CLOUD_PROJECT"],
-            location=os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1"),
+            location=os.environ.get("WATCHSPAN_GEMINI_LOCATION", "global"),
         )
         response = client.models.generate_content(model=MODEL, contents=prompt)
         text = (response.text or "").strip()
