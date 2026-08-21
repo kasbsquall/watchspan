@@ -18,6 +18,7 @@ from attention.signals import ApprovalRequest, Decision
 from watchspan import drift as drift_mod
 from watchspan import llm
 from watchspan.calibrator import Calibrator
+from watchspan.memory import build_attention_memory
 from watchspan.meter import Meter
 from watchspan.policy import PolicyProposal
 from watchspan.sentinel import Sentinel, SentinelAlert
@@ -40,6 +41,8 @@ class Orchestrator:
     routed: list[RoutingResult] = field(default_factory=list)
     drift_declarations: list[dict] = field(default_factory=list)
     drift_active: bool = False
+    # Cross-session ledger: Memory Bank on Google Cloud, in-process locally.
+    memory: object = field(default_factory=build_attention_memory)
     audit_log: list[dict] = field(default_factory=list)
 
     def route_request(self, request: ApprovalRequest) -> RoutingResult:
@@ -103,6 +106,12 @@ class Orchestrator:
             }
             self.drift_declarations.append(declaration)
             self.audit_log.append({"event": "drift_declared", **declaration})
+            self._remember(
+                decision.reviewer_id,
+                f"Oversight degraded while {decision.reviewer_id} was reviewing: "
+                f"{verdict.reason}. Attention remaining: "
+                f"{meter_out['reviewer_fraction']:.0%}.",
+            )
         elif not verdict.degraded:
             self.drift_active = False
 
@@ -149,3 +158,21 @@ class Orchestrator:
 
     def pending_proposal(self) -> PolicyProposal | None:
         return self.calibrator.pending
+
+    def _remember(self, reviewer_id: str, fact: str) -> None:
+        """Write to the cross-session ledger. A ledger outage must never stop
+        governance, so failures are logged rather than raised."""
+        try:
+            self.memory.remember(reviewer_id, fact)
+        except Exception as exc:  # noqa: BLE001 - recorded, not swallowed
+            self.audit_log.append(
+                {"event": "memory_write_failed", "reviewer_id": reviewer_id,
+                 "error": type(exc).__name__}
+            )
+
+    def prior_history(self, reviewer_id: str) -> list[str]:
+        """What this reviewer carries in from previous sessions."""
+        try:
+            return self.memory.recall(reviewer_id)
+        except Exception:
+            return []

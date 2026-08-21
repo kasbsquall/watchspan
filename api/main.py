@@ -163,6 +163,19 @@ def resolve_proposal(proposal_id: str, body: ProposalResolution) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+@app.get("/ledger/{reviewer_id}")
+def ledger(reviewer_id: str) -> dict:
+    """What this reviewer carries in from previous sessions. Backed by GEAP
+    Memory Bank when configured, in-process otherwise."""
+    from watchspan.memory import memory_bank_available
+
+    return {
+        "reviewer_id": reviewer_id,
+        "backend": "memory_bank" if memory_bank_available() else "local",
+        "history": orchestrator.prior_history(reviewer_id),
+    }
+
+
 @app.get("/audit")
 def audit(limit: int = 200) -> dict:
     return {"events": orchestrator.audit_log[-limit:]}

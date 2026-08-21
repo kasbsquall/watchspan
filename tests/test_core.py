@@ -209,3 +209,34 @@ class TestGuardrails:
 
         monkeypatch.setattr(guardrails, "_model_armor_screen", boom)
         assert guardrails.screen_prompt("renew the vendor contract")
+
+
+class TestCrossSessionLedger:
+    """The attention ledger must survive the session, and a ledger outage must
+    never stop governance."""
+
+    def test_degradation_is_written_to_the_ledger(self):
+        orch = Orchestrator()
+        for i in range(10):
+            orch.record_decision(make_decision(t=i, time_s=20.0, complexity=0.5, depth=3))
+        for i in range(10, 20):
+            orch.record_decision(make_decision(t=i, time_s=3.0, complexity=0.5, depth=0))
+        assert orch.drift_declarations, "drift should have been declared"
+        assert any("Oversight degraded" in f for f in orch.prior_history("r1"))
+
+    def test_ledger_failure_is_recorded_not_raised(self):
+        class BrokenMemory:
+            def remember(self, reviewer_id, fact):
+                raise RuntimeError("ledger unavailable")
+
+            def recall(self, reviewer_id):
+                raise RuntimeError("ledger unavailable")
+
+        orch = Orchestrator(memory=BrokenMemory())
+        for i in range(10):
+            orch.record_decision(make_decision(t=i, time_s=20.0, complexity=0.5, depth=3))
+        for i in range(10, 20):
+            orch.record_decision(make_decision(t=i, time_s=3.0, complexity=0.5, depth=0))
+        assert orch.drift_declarations, "governance continues despite ledger outage"
+        assert any(e["event"] == "memory_write_failed" for e in orch.audit_log)
+        assert orch.prior_history("r1") == []
