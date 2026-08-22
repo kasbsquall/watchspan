@@ -47,20 +47,20 @@ export const Captions: React.FC = () => {
           maxWidth: 1360,
           padding: '15px 34px',
           borderRadius: 18,
-          background: 'rgba(6,14,32,0.74)',
+          background: 'rgba(15,13,9,0.82)',
           border: '1px solid rgba(255,255,255,0.10)',
           boxShadow: '0 18px 50px rgba(0,0,0,0.35)',
           textAlign: 'center',
           fontFamily: INTER,
           fontWeight: 700,
-          fontSize: 40,
+          fontSize: 38,
           lineHeight: 1.28,
         }}
       >
         {line.words.map((w, i) => {
           const active = t >= w.t - 0.04;
           return (
-            <span key={i} style={{color: active ? C.white : 'rgba(255,255,255,0.42)'}}>
+            <span key={i} style={{color: active ? C.ink100 : 'rgba(231,228,224,0.55)'}}>
               {w.w}{' '}
             </span>
           );

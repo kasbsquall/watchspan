@@ -41,3 +41,11 @@ htmlcov/
 # Stitch exploration output (kept locally, not part of the build)
 stitch-out/
 stitch_watchspan_control_room/
+
+# Video build artefacts (renders, recordings, node_modules)
+video/node_modules/
+video/rec/
+video/remotion/node_modules/
+video/remotion/out/
+video/audio_out/scenes/
+video/chk_*.png

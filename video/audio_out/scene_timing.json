@@ -1,0 +1,68 @@
+{
+  "vo": 155.402,
+  "scenes": [
+    {
+      "id": "hook",
+      "start": 1.6,
+      "end": 8.967,
+      "dur": 7.367,
+      "words": 17
+    },
+    {
+      "id": "what",
+      "start": 9.247,
+      "end": 29.544,
+      "dur": 20.297,
+      "words": 59
+    },
+    {
+      "id": "budget",
+      "start": 29.824,
+      "end": 47.691,
+      "dur": 17.868,
+      "words": 48
+    },
+    {
+      "id": "collapse",
+      "start": 47.971,
+      "end": 64.533,
+      "dur": 16.562,
+      "words": 51
+    },
+    {
+      "id": "attack",
+      "start": 64.813,
+      "end": 92.947,
+      "dur": 28.134,
+      "words": 76
+    },
+    {
+      "id": "ceiling",
+      "start": 93.227,
+      "end": 117.599,
+      "dur": 24.372,
+      "words": 58
+    },
+    {
+      "id": "evidence",
+      "start": 117.879,
+      "end": 134.415,
+      "dur": 16.536,
+      "words": 47
+    },
+    {
+      "id": "cloud",
+      "start": 134.695,
+      "end": 150.394,
+      "dur": 15.7,
+      "words": 39
+    },
+    {
+      "id": "close",
+      "start": 150.674,
+      "end": 155.402,
+      "dur": 4.728,
+      "words": 14
+    }
+  ]
+}

@@ -2,6 +2,10 @@ import {AbsoluteFill, Audio, Series, staticFile} from 'remotion';
 import {SCENES} from './timing';
 import {C} from './theme';
 import {Captions} from './lib/Captions';
+import {Hook} from './scenes/Hook';
+import {What} from './scenes/What';
+import {Budget} from './scenes/Budget';
+import {Collapse} from './scenes/Collapse';
 
 // 1. Create one component per scene under src/scenes/ (use the lib primitives).
 // 2. Map each scene id (from scripts/audio_gen.py SCENES) to its component here.
@@ -11,25 +15,21 @@ import {Captions} from './lib/Captions';
 // import {Problem} from './scenes/Problem';
 // ...
 const MAP: Record<string, React.FC> = {
-  // hook: Hook,
-  // problem: Problem,
-  // solution: Solution,
-  // demo: Demo,
-  // proof: Proof,
-  // business: Business,
-  // whatsnext: WhatsNext,
-  // close: Close,
+  hook: Hook,
+  what: What,
+  budget: Budget,
+  collapse: Collapse,
 };
 
 const Placeholder: React.FC<{id: string}> = ({id}) => (
-  <AbsoluteFill style={{background: C.navy, alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 60}}>
+  <AbsoluteFill style={{background: C.ink900, alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 60}}>
     {id}
   </AbsoluteFill>
 );
 
 export const Video: React.FC = () => {
   return (
-    <AbsoluteFill style={{background: C.ink}}>
+    <AbsoluteFill style={{background: C.ink950}}>
       <Series>
         {SCENES.map((s) => {
           const Comp = MAP[s.id];
