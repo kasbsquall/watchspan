@@ -12,7 +12,7 @@ Built for the All Things Agentic Hackathon (Google Cloud), track:
 |---|---|
 | **Live control room** | https://watchspan-web-45ejdvuucq-uc.a.run.app |
 | **API** | https://watchspan-api-45ejdvuucq-uc.a.run.app |
-| **Demo video** | *(add the YouTube link on submission)* |
+| **Demo video** | https://www.youtube.com/watch?v=5WEkPN-muDI |
 | **Architecture** | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | **Required stack** | Gemini 3.5 Flash via Vertex AI · Google ADK · Cloud Run |
 

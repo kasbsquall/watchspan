@@ -142,6 +142,6 @@ Checklist for submission day:
 - [x] API URL: https://watchspan-api-45ejdvuucq-uc.a.run.app
 - [x] Repo public: https://github.com/kasbsquall/watchspan
 - [x] Architecture diagram exported (architecture.png, from docs/ARCHITECTURE.md)
-- [ ] 4-minute video on YouTube, public, showing Google Cloud console
+- [x] Demo video, public: https://www.youtube.com/watch?v=5WEkPN-muDI
 - [ ] Social post with #AllThingsAgenticHackathon
 - [ ] Optional blog post declaring it was created for this hackathon
