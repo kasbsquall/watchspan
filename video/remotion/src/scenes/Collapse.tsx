@@ -24,7 +24,7 @@ export const Collapse: React.FC = () => {
   const disclose = interpolate(f, [12, 24], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   return (
     <AbsoluteFill style={{background: C.ink950}}>
-      <OffthreadVideo src={staticFile('vid/demo.mp4')} startFrom={30}
+      <OffthreadVideo src={staticFile('vid/demo.mp4')} startFrom={660}
         style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center'}} />
 
       {/* Browser chrome carrying the deployed URL: the claim is "this is live". */}

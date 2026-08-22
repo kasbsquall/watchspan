@@ -6,6 +6,11 @@ import {Hook} from './scenes/Hook';
 import {What} from './scenes/What';
 import {Budget} from './scenes/Budget';
 import {Collapse} from './scenes/Collapse';
+import {Attack} from './scenes/Attack';
+import {Ceiling} from './scenes/Ceiling';
+import {Evidence} from './scenes/Evidence';
+import {Cloud} from './scenes/Cloud';
+import {Close} from './scenes/Close';
 
 // 1. Create one component per scene under src/scenes/ (use the lib primitives).
 // 2. Map each scene id (from scripts/audio_gen.py SCENES) to its component here.
@@ -19,6 +24,11 @@ const MAP: Record<string, React.FC> = {
   what: What,
   budget: Budget,
   collapse: Collapse,
+  attack: Attack,
+  ceiling: Ceiling,
+  evidence: Evidence,
+  cloud: Cloud,
+  close: Close,
 };
 
 const Placeholder: React.FC<{id: string}> = ({id}) => (
@@ -31,6 +41,12 @@ export const Video: React.FC = () => {
   return (
     <AbsoluteFill style={{background: C.ink950}}>
       <Series>
+        {/* The mix opens with a silent lead-in before the voice enters, so the
+            picture has to hold for exactly that long or every scene lands 1.6s
+            early against its own narration. */}
+        <Series.Sequence durationInFrames={SCENES[0].startF}>
+          <AbsoluteFill style={{background: C.ink950}} />
+        </Series.Sequence>
         {SCENES.map((s) => {
           const Comp = MAP[s.id];
           return (

@@ -52,8 +52,12 @@ export const Budget: React.FC = () => {
 
       <div style={{marginTop: 30, paddingTop: 22, borderTop: `1px solid ${C.line}`,
         fontFamily: FONT.text, fontSize: 22, color: floorHit ? C.ember : C.ink400, maxWidth: 1100}}>
-        Below <span style={{fontFamily: MONO}}>35%</span>, Watchspan stops trusting the review.
-        That floor is our decision, and it is on screen.
+        <span style={{fontFamily: MONO, fontSize: 26, color: floorHit ? C.ember : C.ink300}}>
+          LOW_BUDGET_FRACTION = 0.35
+        </span>
+        <span style={{marginLeft: 18, fontSize: 19, color: C.ink500}}>
+          attention/budget.py &middot; the floor, in the code and on the screen
+        </span>
       </div>
       <Sfx src="whoosh.mp3" at={1} vol={0.14} />
       <Sfx src="click.mp3" at={24} vol={0.06} />
