@@ -89,6 +89,50 @@ the end.
 If the API runs on a port other than 8000, set `NEXT_PUBLIC_API_URL` in
 `web/.env.local`.
 
+### Reproducible testing
+
+Everything below runs from a clean clone with no Google Cloud account and no
+API key. The simulation is seeded, so these numbers reproduce exactly.
+
+```bash
+git clone https://github.com/kasbsquall/watchspan.git
+cd watchspan
+pip install -r requirements.txt
+python -m pytest tests/ -q
+```
+
+Expected: `24 passed`. The suite covers the attention budget, the drift
+detector, the calibrated policy and its safety floor, the Sentinel, and the
+Article 14 dossier.
+
+```bash
+uvicorn api.main:app --port 8000
+curl -s -X POST localhost:8000/simulate -H "content-type: application/json" -d "{}"
+```
+
+Expected from the default seed 7, over a 30-minute run: `routed_total` 370,
+`escalated` 69, `auto_executed` 294, `paused_by_sentinel` 7, and
+`drift_declared_at` 306.9 seconds, which is the 05:06 mark the film and the
+control room both show. The Calibrator ends the run holding a pending proposal
+to move the base threshold from 0.30 to 0.45.
+
+Reproduce the threshold finding quoted under "Things worth knowing":
+
+```bash
+python video/threshold_experiment.py
+```
+
+Expected: interruptions fall from 69 to 61, oversight holds 35% longer
+(306.9s to 414.2s), attentive reviews stay at 14 under both policies, and
+removing `ALWAYS_ESCALATE_ABOVE` at the higher threshold sends 34 actions
+above risk 0.70 straight to auto-execution.
+
+To test the deployed instance instead, the live control room is at
+https://watchspan-web-45ejdvuucq-uc.a.run.app and needs no credentials. Select
+"Run the fleet" and let the run play through, then export the Article 14
+dossier. The first request may take a few seconds while Cloud Run wakes the
+instance.
+
 ### Deploy to Google Cloud
 
 ```powershell

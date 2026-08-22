@@ -11,7 +11,29 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fleet import simulator
 from watchspan.orchestrator import Orchestrator
 from watchspan.policy import ApprovalPolicy
+from watchspan import policy as policy_module
 from evidence import article14_dossier
+
+
+def high_risk_auto_executed(threshold: float, ceiling: float) -> int:
+    """How many actions above risk 0.70 run without a human ever seeing them.
+
+    Called once with the real ceiling and once with it lifted, because the
+    ceiling is the whole reason the higher threshold is safe to ship.
+    """
+    original = policy_module.ALWAYS_ESCALATE_ABOVE
+    policy_module.ALWAYS_ESCALATE_ABOVE = ceiling
+    try:
+        orch = Orchestrator()
+        orch.calibrator.policy = ApprovalPolicy(base_threshold=threshold)
+        result = simulator.run(orch, minutes=30.0, seed=7, inject_attack=True)
+        return sum(
+            1
+            for e in result.timeline
+            if e["risk_score"] >= 0.7 and e["route"] == "auto_execute"
+        )
+    finally:
+        policy_module.ALWAYS_ESCALATE_ABOVE = original
 
 
 def run(threshold: float) -> dict:
@@ -49,3 +71,9 @@ print(f"Backup deletion still stopped at the higher bar: "
       f"{b['backup_deletion_route']}")
 print(f"High-risk actions rubber-stamped: {a['dangerous_stamped']} -> {b['dangerous_stamped']}"
       f"  ({b['dangerous_stamped'] - a['dangerous_stamped']:+d})")
+print()
+with_floor = high_risk_auto_executed(0.45, policy_module.ALWAYS_ESCALATE_ABOVE)
+without_floor = high_risk_auto_executed(0.45, 1.1)
+print(f"At 0.45, actions above risk 0.70 that auto-execute unseen:")
+print(f"  with ALWAYS_ESCALATE_ABOVE={policy_module.ALWAYS_ESCALATE_ABOVE}: {with_floor}")
+print(f"  with the floor removed:      {without_floor}")
