@@ -1,6 +1,8 @@
 import {AbsoluteFill, useCurrentFrame, interpolate, Easing} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
+import {Ground} from '../lib/Ground';
+import {Alive} from '../lib/Alive';
 
 /* Two live calls against the deployed API, side by side. The first is held.
    The second is the same action reworded, and it walks straight past. Showing
@@ -49,7 +51,10 @@ export const Attack: React.FC = () => {
   const head = interpolate(f, [0, 12], [0, 1], {extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
   const close = interpolate(f, [430, 450], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   return (
-    <AbsoluteFill style={{background: C.ink950}}>
+    <AbsoluteFill>
+      <Ground tint={"alarm"} />
+      <Alive dur={851} zoom={0.06} origin={'50% 42%'}>
+      <AbsoluteFill style={{}}>
       <div style={{position: 'absolute', width: 700, height: 480, borderRadius: '50%', left: 1050, top: 240,
         background: 'radial-gradient(circle, rgba(230,67,67,0.10) 0%, transparent 64%)', filter: 'blur(30px)'}} />
 
@@ -80,5 +85,7 @@ export const Attack: React.FC = () => {
       <Sfx src="stamp.mp3" at={52} vol={0.30} />
       <Sfx src="reject.mp3" at={322} vol={0.26} />
     </AbsoluteFill>
+      </Alive>
+      </AbsoluteFill>
   );
 };

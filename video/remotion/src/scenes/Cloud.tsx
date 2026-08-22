@@ -1,6 +1,8 @@
 import {AbsoluteFill, useCurrentFrame, interpolate, Easing} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
+import {Ground} from '../lib/Ground';
+import {Alive} from '../lib/Alive';
 
 /* Google Cloud, named against what each service actually holds. Every line is
    something that exists in the deployed project, not a stack list. */
@@ -22,7 +24,10 @@ export const Cloud: React.FC = () => {
   const f = useCurrentFrame();
   const head = interpolate(f, [0, 12], [0, 1], {extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
   return (
-    <AbsoluteFill style={{background: C.ink950, padding: '120px 110px'}}>
+    <AbsoluteFill>
+      <Ground tint={"ember"} />
+      <Alive dur={478} zoom={0.06} origin={'40% 50%'}>
+      <AbsoluteFill style={{padding: '120px 110px'}}>
       <div style={{opacity: head}}>
         <div style={{fontFamily: FONT.text, fontSize: 15, letterSpacing: '0.18em',
           textTransform: 'uppercase', color: C.ink500}}>Running on Google Cloud</div>
@@ -48,5 +53,7 @@ export const Cloud: React.FC = () => {
       <Sfx src="whoosh.mp3" at={1} vol={0.14} />
       {[24, 64, 104, 144, 184, 224].map((a) => <Sfx key={a} src="pop.mp3" at={a} vol={0.06} />)}
     </AbsoluteFill>
+      </Alive>
+      </AbsoluteFill>
   );
 };

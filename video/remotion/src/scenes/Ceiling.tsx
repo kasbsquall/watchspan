@@ -1,6 +1,8 @@
 import {AbsoluteFill, useCurrentFrame, interpolate, Easing} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
+import {Ground} from '../lib/Ground';
+import {Alive} from '../lib/Alive';
 
 /* The defect a judge found, and its fix, in numbers. The honest version: the
    calibration buys longer before oversight degrades, not more attentive
@@ -29,7 +31,10 @@ export const Ceiling: React.FC = () => {
   const fix = interpolate(f, [430, 448], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
     easing: Easing.bezier(0.16, 1, 0.3, 1)});
   return (
-    <AbsoluteFill style={{background: C.ink950, padding: '110px 100px'}}>
+    <AbsoluteFill>
+      <Ground tint={"ok"} />
+      <Alive dur={739} zoom={0.065} origin={'34% 48%'}>
+      <AbsoluteFill style={{padding: '110px 100px'}}>
       <div style={{opacity: head}}>
         <div style={{fontFamily: FONT.text, fontSize: 15, letterSpacing: '0.18em',
           textTransform: 'uppercase', color: C.ink500}}>Raising the bar, measured</div>
@@ -69,5 +74,7 @@ export const Ceiling: React.FC = () => {
       <Sfx src="reject.mp3" at={332} vol={0.22} />
       <Sfx src="confirm.mp3" at={434} vol={0.26} />
     </AbsoluteFill>
+      </Alive>
+      </AbsoluteFill>
   );
 };

@@ -58,9 +58,17 @@ export const Captions: React.FC = () => {
         }}
       >
         {line.words.map((w, i) => {
-          const active = t >= w.t - 0.04;
+          const spoken = t >= w.t - 0.04;
+          const speaking = spoken && t < w.e + 0.06;
           return (
-            <span key={i} style={{color: active ? C.ink100 : 'rgba(231,228,224,0.55)'}}>
+            <span
+              key={i}
+              style={{
+                color: speaking ? C.ember : spoken ? C.ink100 : 'rgba(231,228,224,0.5)',
+                textShadow: speaking ? '0 0 22px rgba(237,153,14,0.55)' : 'none',
+                transition: 'none',
+              }}
+            >
               {w.w}{' '}
             </span>
           );

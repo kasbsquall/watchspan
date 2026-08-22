@@ -1,6 +1,8 @@
 import {AbsoluteFill, OffthreadVideo, staticFile, useCurrentFrame, interpolate, Easing} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
+import {Ground} from '../lib/Ground';
+import {Alive} from '../lib/Alive';
 
 /* The real product, running, with the Cloud Run URL in shot. The decision
    times overlay as they land; the complexity column beside them does not move,
@@ -23,7 +25,10 @@ export const Collapse: React.FC = () => {
   const f = useCurrentFrame();
   const disclose = interpolate(f, [12, 24], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   return (
-    <AbsoluteFill style={{background: C.ink950}}>
+    <AbsoluteFill>
+      <Ground tint={"ember"} />
+      <Alive dur={504} zoom={0.05} origin={'50% 30%'}>
+      <AbsoluteFill style={{}}>
       <OffthreadVideo src={staticFile('vid/demo.mp4')} startFrom={660}
         style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center'}} />
 
@@ -54,5 +59,7 @@ export const Collapse: React.FC = () => {
       <Sfx src="click.mp3" at={112} vol={0.07} />
       <Sfx src="click.mp3" at={196} vol={0.07} />
     </AbsoluteFill>
+      </Alive>
+      </AbsoluteFill>
   );
 };

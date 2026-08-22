@@ -1,47 +1,60 @@
-import {AbsoluteFill, useCurrentFrame, interpolate, Easing, spring, useVideoConfig} from 'remotion';
-import {C, FONT, MONO} from '../theme';
+import {AbsoluteFill, useCurrentFrame, interpolate, Easing} from 'remotion';
+import {C, FONT} from '../theme';
 import {Sfx} from '../lib/Sfx';
+import {Ground} from '../lib/Ground';
+import {Alive, Odometer, DrawLine} from '../lib/Alive';
 
-/* What the product IS, in plain words, and the three numbers that are the
-   autonomous action the event scores at 40%. All three are spoken. */
-const Counter: React.FC<{to: number; delay: number; label: string; sub: string; hero?: boolean}> = ({
-  to, delay, label, sub, hero,
+/* The three routing numbers are the autonomous action the event scores at 40%.
+   They land digit by digit, each on its own beat, each with a tick under it. */
+const Stat: React.FC<{at: number; v: number; label: string; sub: string; hero?: boolean}> = ({
+  at, v, label, sub, hero,
 }) => {
   const f = useCurrentFrame();
-  const {fps} = useVideoConfig();
-  const p = spring({frame: f - delay, fps, config: {damping: 200, mass: 0.7}});
-  const v = Math.round(p * to);
+  const p = interpolate(f - at, [0, 12], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.16, 1, 0.3, 1)});
   return (
-    <div style={{opacity: interpolate(f - delay, [0, 8], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}}>
-      <div style={{fontFamily: MONO, fontSize: hero ? 128 : 76, lineHeight: 1,
-        color: hero ? C.ember : C.ink100, fontVariantNumeric: 'tabular-nums'}}>{v}</div>
-      <div style={{fontFamily: FONT.text, fontSize: 20, color: C.ink300, marginTop: 10}}>{label}</div>
-      <div style={{fontFamily: FONT.text, fontSize: 15, color: C.ink500, marginTop: 2}}>{sub}</div>
+    <div style={{opacity: p, transform: `translateY(${(1 - p) * 16}px)`}}>
+      <DrawLine at={at} w={hero ? 250 : 190} color={hero ? C.ember : C.ink700} />
+      <div style={{marginTop: 18}}>
+        <Odometer value={v} delay={at + 4} size={hero ? 140 : 84} color={hero ? C.ember : C.ink100} />
+      </div>
+      <div style={{fontFamily: FONT.text, fontSize: 21, color: C.ink300, marginTop: 12}}>{label}</div>
+      <div style={{fontFamily: FONT.text, fontSize: 16, color: C.ink500, marginTop: 3}}>{sub}</div>
     </div>
   );
 };
 
 export const What: React.FC = () => {
   const f = useCurrentFrame();
-  const line = interpolate(f, [0, 14], [0, 1], {extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
+  const l1 = interpolate(f, [0, 16], [0, 1], {extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
+  const l2 = interpolate(f, [10, 26], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.16, 1, 0.3, 1)});
   return (
-    <AbsoluteFill style={{background: C.ink950, padding: '150px 130px', justifyContent: 'center'}}>
-      <div style={{position: 'absolute', width: 760, height: 500, borderRadius: '50%', left: 90, top: 320,
-        background: 'radial-gradient(circle, rgba(237,153,14,0.09) 0%, transparent 65%)', filter: 'blur(30px)'}} />
-      <p style={{fontFamily: FONT.display, fontSize: 52, lineHeight: 1.22, color: C.ink100,
-        letterSpacing: '-0.02em', maxWidth: 1260, margin: 0,
-        opacity: line, transform: `translateY(${(1 - line) * 10}px)`}}>
-        Watchspan sits between an agent fleet and the people who approve what it does.
-      </p>
-      <div style={{display: 'flex', gap: 130, marginTop: 92, alignItems: 'flex-end'}}>
-        <Counter to={294} delay={26} label="ran on its own" sub="with an audit log" hero />
-        <Counter to={7} delay={44} label="held back" sub="looked like an attack" />
-        <Counter to={69} delay={60} label="sent to a human" sub="of 370 actions" />
-      </div>
-      <Sfx src="whoosh.mp3" at={1} vol={0.14} />
-      <Sfx src="pop.mp3" at={26} vol={0.09} />
-      <Sfx src="pop.mp3" at={44} vol={0.09} />
-      <Sfx src="pop.mp3" at={60} vol={0.09} />
+    <AbsoluteFill>
+      <Ground />
+      <Alive dur={615} zoom={0.07} origin="30% 55%">
+        <AbsoluteFill style={{padding: '150px 130px', justifyContent: 'center'}}>
+          <p style={{fontFamily: FONT.display, fontSize: 54, lineHeight: 1.2, color: C.ink100,
+            letterSpacing: '-0.022em', maxWidth: 1300, margin: 0}}>
+            <span style={{display: 'inline-block', opacity: l1,
+              transform: `translateY(${(1 - l1) * 14}px)`}}>Watchspan sits between an agent fleet</span><br />
+            <span style={{display: 'inline-block', opacity: l2,
+              transform: `translateY(${(1 - l2) * 14}px)`}}>and the people who approve what it does.</span>
+          </p>
+          <div style={{display: 'flex', gap: 120, marginTop: 86, alignItems: 'flex-end'}}>
+            <Stat at={34} v={294} label="ran on its own" sub="with an audit log" hero />
+            <Stat at={92} v={7} label="held back" sub="looked like an attack" />
+            <Stat at={140} v={69} label="sent to a human" sub="of 370 actions" />
+          </div>
+        </AbsoluteFill>
+      </Alive>
+      <Sfx src="whoosh.mp3" at={1} vol={0.10} />
+      <Sfx src="click.mp3" at={34} vol={0.05} />
+      <Sfx src="pop.mp3" at={40} vol={0.10} />
+      <Sfx src="click.mp3" at={92} vol={0.05} />
+      <Sfx src="pop.mp3" at={98} vol={0.08} />
+      <Sfx src="click.mp3" at={140} vol={0.05} />
+      <Sfx src="pop.mp3" at={146} vol={0.08} />
     </AbsoluteFill>
   );
 };

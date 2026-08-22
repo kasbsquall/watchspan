@@ -1,6 +1,8 @@
 import {AbsoluteFill, useCurrentFrame, interpolate, Easing, Img, staticFile} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
+import {Ground} from '../lib/Ground';
+import {Alive} from '../lib/Alive';
 
 /* The mark, the wordmark, the live URL and a QR beside it. A judge deliberating
    with a phone in their hand can open the product from the frame. */
@@ -12,7 +14,10 @@ export const Close: React.FC = () => {
   const tail = interpolate(f, [64, 84], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
 
   return (
-    <AbsoluteFill style={{background: C.ink950, alignItems: 'center', justifyContent: 'center'}}>
+    <AbsoluteFill>
+      <Ground tint={"ember"} />
+      <Alive dur={182} zoom={0.09} origin={'50% 46%'}>
+      <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
       <div style={{position: 'absolute', width: 900, height: 620, borderRadius: '50%',
         background: 'radial-gradient(circle, rgba(237,153,14,0.10) 0%, transparent 62%)', filter: 'blur(30px)'}} />
 
@@ -52,5 +57,7 @@ export const Close: React.FC = () => {
       <Sfx src="whoosh.mp3" at={1} vol={0.14} />
       <Sfx src="confirm.mp3" at={28} vol={0.22} />
     </AbsoluteFill>
+      </Alive>
+      </AbsoluteFill>
   );
 };

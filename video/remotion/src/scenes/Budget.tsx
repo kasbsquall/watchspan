@@ -1,6 +1,8 @@
 import {AbsoluteFill, useCurrentFrame, interpolate, Easing} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
+import {Ground} from '../lib/Ground';
+import {Alive} from '../lib/Alive';
 
 /* The mechanism, drawn rather than narrated over. A lay viewer lost the film
    here when it was a subordinate clause. */
@@ -27,7 +29,10 @@ export const Budget: React.FC = () => {
   const costs = [1, 1, 3, 1, 2, 1, 3, 1, 1, 2, 1, 3, 2, 1, 1, 3, 1, 2];
 
   return (
-    <AbsoluteFill style={{background: C.ink950, padding: '130px 130px', justifyContent: 'center'}}>
+    <AbsoluteFill>
+      <Ground tint={"ember"} />
+      <Alive dur={544} zoom={0.07} origin={'38% 55%'}>
+      <AbsoluteFill style={{padding: '130px 130px', justifyContent: 'center'}}>
       <p style={{fontFamily: FONT.display, fontSize: 46, color: C.ink100, letterSpacing: '-0.018em',
         margin: 0, opacity: title, transform: `translateY(${(1 - title) * 9}px)`}}>
         Attention is not free.
@@ -62,5 +67,7 @@ export const Budget: React.FC = () => {
       <Sfx src="whoosh.mp3" at={1} vol={0.14} />
       <Sfx src="click.mp3" at={24} vol={0.06} />
     </AbsoluteFill>
+      </Alive>
+      </AbsoluteFill>
   );
 };

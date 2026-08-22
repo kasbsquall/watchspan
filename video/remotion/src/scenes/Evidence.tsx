@@ -1,6 +1,8 @@
 import {AbsoluteFill, useCurrentFrame, interpolate, Easing, spring, useVideoConfig} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
+import {Ground} from '../lib/Ground';
+import {Alive} from '../lib/Alive';
 
 /* The Article 14 record. The ratio carries the scene, and its rule sits beside
    it: an audit number whose criterion lives only in the code is an assertion
@@ -15,7 +17,10 @@ export const Evidence: React.FC = () => {
   const law = interpolate(f, [280, 300], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
 
   return (
-    <AbsoluteFill style={{background: C.ink950, padding: '120px 110px'}}>
+    <AbsoluteFill>
+      <Ground tint={"ember"} />
+      <Alive dur={503} zoom={0.085} origin={'28% 46%'}>
+      <AbsoluteFill style={{padding: '120px 110px'}}>
       <div style={{position: 'absolute', width: 820, height: 520, borderRadius: '50%', left: 140, top: 200,
         background: 'radial-gradient(circle, rgba(237,153,14,0.09) 0%, transparent 64%)', filter: 'blur(30px)'}} />
 
@@ -53,5 +58,7 @@ export const Evidence: React.FC = () => {
       <Sfx src="stamp.mp3" at={42} vol={0.32} />
       <Sfx src="click.mp3" at={152} vol={0.07} />
     </AbsoluteFill>
+      </Alive>
+      </AbsoluteFill>
   );
 };
