@@ -240,3 +240,19 @@ class TestCrossSessionLedger:
         assert orch.drift_declarations, "governance continues despite ledger outage"
         assert any(e["event"] == "memory_write_failed" for e in orch.audit_log)
         assert orch.prior_history("r1") == []
+
+
+class TestRiskCeiling:
+    """Raising the bar to protect attention must never buy the saving by
+    letting a genuinely dangerous action run unseen."""
+
+    def test_high_risk_escalates_even_on_an_empty_budget(self):
+        policy = ApprovalPolicy(base_threshold=0.45, budget_sensitivity=0.4)
+        # Without the ceiling the effective threshold reaches 0.85 here.
+        assert policy.effective_threshold(0.0) > 0.8
+        assert policy.should_escalate(0.75, budget_fraction=0.0)
+        assert policy.should_escalate(0.90, budget_fraction=0.0)
+
+    def test_the_ceiling_does_not_drag_routine_work_to_a_human(self):
+        policy = ApprovalPolicy(base_threshold=0.45, budget_sensitivity=0.4)
+        assert not policy.should_escalate(0.40, budget_fraction=0.0)

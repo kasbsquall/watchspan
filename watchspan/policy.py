@@ -4,11 +4,20 @@ The naive policy escalates everything above a fixed risk threshold. Watchspan's
 calibrated policy moves that threshold with the remaining attention budget:
 low budget raises the bar, so fewer requests escalate and each one lands on a
 reviewer who still has attention to give.
+
+That trade has a floor. Raising the bar to protect attention must never buy the
+saving by letting a genuinely dangerous action run unseen, so risk above
+ALWAYS_ESCALATE_ABOVE reaches a human whatever the budget says. Without it the
+calibrated threshold climbs to 0.85 on an empty budget and actions between 0.70
+and 0.85 auto-execute, which is the opposite of what the calibration is for.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+# No amount of reviewer fatigue justifies auto-running an action this risky.
+ALWAYS_ESCALATE_ABOVE = 0.7
 
 
 @dataclass
@@ -25,6 +34,8 @@ class ApprovalPolicy:
         return min(0.95, self.base_threshold + self.budget_sensitivity * depletion)
 
     def should_escalate(self, risk_score: float, budget_fraction: float) -> bool:
+        if risk_score >= ALWAYS_ESCALATE_ABOVE:
+            return True
         return risk_score >= self.effective_threshold(budget_fraction)
 
 
