@@ -54,3 +54,5 @@ video/audio_out/
 deliverables/*.mp4
 deliverables/*.png
 video/remotion/public/final_audio.wav
+deliverables/gallery/*.png
+arch_raw.png
