@@ -1,6 +1,7 @@
 import {Composition, Still} from 'remotion';
 import {Thumb} from './Thumb';
 import {Thumb32} from './Thumb32';
+import {Thumb32b} from './Thumb32b';
 import {Video} from './Video';
 import {FPS} from './theme';
 import {TOTAL_FRAMES} from './timing';
@@ -10,6 +11,7 @@ export const RemotionRoot: React.FC = () => {
     <>
       <Still id="Thumb" component={Thumb} width={1280} height={720} />
       <Still id="Thumb32" component={Thumb32} width={1200} height={800} />
+      <Still id="Thumb32b" component={Thumb32b} width={1200} height={800} />
       <Composition
       id="Video"
       component={Video}
