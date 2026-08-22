@@ -1,0 +1,14 @@
+                                   0.30       0.45
+escalated                            69         27
+auto_run                            294        336
+held                                  7          7
+meaningful                           14         14
+ratio                            0.2029     0.5185
+drift_at                          306.9      526.7
+dangerous_stamped                    51         13
+backup_deletion_route        paused_sentinel paused_sentinel
+
+Interruptions to the human:  69 -> 27  (-42)
+Reviews with real attention: 20.3% -> 51.8%
+Backup deletion still stopped at the higher bar: paused_sentinel
+High-risk actions rubber-stamped: 51 -> 13  (-38)
