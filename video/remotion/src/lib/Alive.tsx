@@ -10,48 +10,34 @@ import {C, MONO} from '../theme';
    So centred content gets scale creep and almost no translation. */
 export const Alive: React.FC<{
   children: React.ReactNode;
-  /** total scene length in frames, so the move is derived from the whole shot */
   dur: number;
-  /** kept for call-site compatibility; see the note below on why it is fixed */
   zoom?: number;
   origin?: string;
-  /** lateral travel across the whole scene, in px */
   drift?: number;
-}> = ({children, dur, zoom = 0.06, origin = '50% 46%', drift}) => {
+}> = ({children, dur, zoom = 0, origin = '50% 50%'}) => {
   const f = useCurrentFrame();
 
-  /* WHY THIS DOES NOT ANIMATE SCALE.
-     A slow scale creep is the classic shimmer: at 0.01-0.04% per frame every
-     glyph is re-rasterised at a nearly identical size and the subpixel grid
-     jitters, which reads as the whole frame vibrating. Measured on this film's
-     own scenes before the fix.
-     So the camera is a TRANSLATION over a container held at a FIXED scale. The
-     content is rasterised once at that size and then simply moved, which is
-     smooth by construction. A deliberate push-in is a different tool: large and
-     fast (see Push below), where each frame lands at a clearly different size
-     and no shimmer is possible. */
-  const p = interpolate(f, [0, dur], [0, 1], {
+  /* THE CAMERA DOES NOT DRAG THE FRAME.
+
+     Two failed attempts are worth recording. A slow scale creep shimmers,
+     because 0.01-0.04% per frame re-rasterises every glyph at a nearly
+     identical size. Replacing it with a slow translation fixed the shimmer and
+     introduced a worse problem: 120px of travel against 86px of overscan
+     pushes content off the edge, so scenes visibly slid away.
+
+     Both were the same mistake, which is moving the whole composition to
+     create life. Life belongs to the ELEMENTS: figures that count, bars that
+     grow, rules that draw, rows that arrive. The container holds still.
+
+     The only camera move allowed here is a forward push, and only as a single
+     large, fast move on a beat (see Push), never as a creep. */
+  const settle = interpolate(f, [0, 24], [1.012, 1], {
     extrapolateRight: 'clamp',
-    easing: Easing.bezier(0.5, 0, 0.25, 1),
+    easing: Easing.bezier(0.16, 1, 0.3, 1),
   });
 
-  /* A fixed overscan gives the translation room to move without exposing an
-     edge. The travel has to be big enough to SEE: 34px over 18 seconds measured
-     at 0.05% of pixels changing per frame, which is a still image with extra
-     steps. Around 120px reads as a slow camera and still cannot shimmer,
-     because translation does not resample glyphs. */
-  const fixedScale = 1 + Math.max(0.09, zoom);
-  const travel = drift ?? -120;
-  const rise = -64;
-
   return (
-    <AbsoluteFill
-      style={{
-        transform: `scale(${fixedScale}) translate3d(${travel * p}px, ${rise * p}px, 0)`,
-        transformOrigin: origin,
-        willChange: 'transform',
-      }}
-    >
+    <AbsoluteFill style={{transform: `scale(${settle})`, transformOrigin: origin}}>
       {children}
     </AbsoluteFill>
   );
