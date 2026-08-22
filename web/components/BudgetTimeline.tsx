@@ -2,6 +2,7 @@
 
 import { ChartLine } from "@phosphor-icons/react";
 import type { TimelineEvent } from "@/lib/api";
+import Panel from "./Panel";
 
 /* Budget over the run: the falling line is the whole story. Draw-on runs only
    after the run finishes; while live the line simply grows. The region past
@@ -35,18 +36,14 @@ export default function BudgetTimeline({
     driftAt !== null && visible.length > 0 && visible[visible.length - 1].at >= driftAt;
 
   return (
-    <div>
-      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-ink-500">
-        <ChartLine size={15} weight="light" aria-hidden />
-        Attention budget across the run
-        <span className="ml-auto font-data normal-case tracking-normal text-ink-500">
-          0–30 min
-        </span>
-      </div>
+    <Panel
+      label="Attention budget across the run"
+      icon={<ChartLine size={15} weight="light" aria-hidden />}
+      meta="0–30 min of the run"
+    >
       <svg
         width="100%"
         viewBox={`0 0 ${width} ${height}`}
-        className="mt-2"
         role="img"
         aria-label="Attention budget falling across the simulated run"
       >
@@ -104,6 +101,13 @@ export default function BudgetTimeline({
           </>
         )}
         {visible.length > 1 && (
+          <polygon
+            points={`${pad},${height - pad} ${points} ${x(visible[visible.length - 1].at).toFixed(1)},${height - pad}`}
+            fill="var(--color-ember-500)"
+            opacity="0.06"
+          />
+        )}
+        {visible.length > 1 && (
           <polyline
             points={points}
             fill="none"
@@ -115,7 +119,7 @@ export default function BudgetTimeline({
           />
         )}
       </svg>
-    </div>
+    </Panel>
   );
 }
 

@@ -148,7 +148,11 @@ export default function ControlRoom() {
         </div>
       )}
 
-      <section className="mt-10 grid items-start gap-x-12 gap-y-10 lg:grid-cols-[320px_1fr]">
+      <div className="rise mt-10" style={{ ["--block" as string]: 1 }}>
+        <DriftAlert declaredAt={sim?.drift_declared_at ?? null} active={!!driftPassed} />
+      </div>
+
+      <section className="mt-8 grid items-start gap-x-12 gap-y-10 lg:grid-cols-[320px_1fr]">
         <div className="rise flex flex-col gap-8" style={{ ["--block" as string]: 1 }}>
           <AttentionGauge fraction={fraction} degraded={!!driftPassed} />
           <dl className="grid grid-cols-2 gap-x-3 gap-y-4 border-t border-ink-100/8 pt-4 sm:grid-cols-4 sm:gap-y-0">
@@ -187,18 +191,17 @@ export default function ControlRoom() {
               </div>
             ))}
           </dl>
-          <DriftAlert declaredAt={sim?.drift_declared_at ?? null} active={!!driftPassed} />
           <SentinelAlerts events={visible} live={phase === "playing"} />
         </div>
 
         <div className="rise flex flex-col gap-10" style={{ ["--block" as string]: 2 }}>
           {phase === "idle" || phase === "loading" || sim === null ? (
-            <div>
-              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-ink-500">
+            <div className="rounded-sm border border-ink-100/8 bg-ink-900/60">
+              <div className="flex items-center gap-2 border-b border-ink-100/8 px-4 py-2.5 text-[11px] uppercase tracking-[0.18em] text-ink-500">
                 <span className="inline-block h-[15px] w-[15px]" aria-hidden />
                 Attention budget across the run
               </div>
-              <div className="mt-2 flex aspect-[640/150] w-full items-center justify-center rounded-sm border border-ink-100/8 bg-ink-900">
+              <div className="flex aspect-[640/150] w-full items-center justify-center">
                 <span className={`text-sm text-ink-500 ${phase === "loading" ? "animate-pulse" : ""}`}>
                   {phase === "loading"
                     ? "Preparing the run…"
