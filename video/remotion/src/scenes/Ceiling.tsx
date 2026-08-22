@@ -75,6 +75,12 @@ export const Ceiling: React.FC = () => {
       <Sfx src="confirm.mp3" at={434} vol={0.26} />
     </AbsoluteFill>
       </Alive>
+            <Sfx src="sweep.mp3" at={2} vol={0.10} />
+      <Sfx src="tick.mp3" at={40} vol={0.05} />
+      <Sfx src="tick.mp3" at={92} vol={0.05} />
+      <Sfx src="tick.mp3" at={150} vol={0.05} />
+      <Sfx src="vanish.mp3" at={330} vol={0.14} />
+      <Sfx src="appear.mp3" at={434} vol={0.16} />
       </AbsoluteFill>
   );
 };

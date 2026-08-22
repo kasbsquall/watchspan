@@ -68,6 +68,13 @@ export const Budget: React.FC = () => {
       <Sfx src="click.mp3" at={24} vol={0.06} />
     </AbsoluteFill>
       </Alive>
+            <Sfx src="sweep.mp3" at={2} vol={0.10} />
+      <Sfx src="tick.mp3" at={24} vol={0.045} />
+      <Sfx src="tick.mp3" at={57} vol={0.045} />
+      <Sfx src="tick.mp3" at={90} vol={0.045} />
+      <Sfx src="tick.mp3" at={123} vol={0.045} />
+      <Sfx src="tick.mp3" at={156} vol={0.045} />
+      <Sfx src="tick.mp3" at={189} vol={0.045} />
       </AbsoluteFill>
   );
 };

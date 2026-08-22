@@ -59,6 +59,10 @@ export const Evidence: React.FC = () => {
       <Sfx src="click.mp3" at={152} vol={0.07} />
     </AbsoluteFill>
       </Alive>
+            <Sfx src="sweep.mp3" at={2} vol={0.10} />
+      <Sfx src="pluck.mp3" at={42} vol={0.14} />
+      <Sfx src="tick.mp3" at={152} vol={0.05} />
+      <Sfx src="appear.mp3" at={282} vol={0.12} />
       </AbsoluteFill>
   );
 };

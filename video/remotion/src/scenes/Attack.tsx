@@ -86,6 +86,11 @@ export const Attack: React.FC = () => {
       <Sfx src="reject.mp3" at={322} vol={0.26} />
     </AbsoluteFill>
       </Alive>
+            <Sfx src="sweep.mp3" at={2} vol={0.10} />
+      <Sfx src="enter.mp3" at={30} vol={0.13} />
+      <Sfx src="enter.mp3" at={300} vol={0.13} />
+      <Sfx src="vanish.mp3" at={322} vol={0.15} />
+      <Sfx src="glassy.mp3" at={432} vol={0.10} />
       </AbsoluteFill>
   );
 };

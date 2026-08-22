@@ -12,27 +12,63 @@ export const Alive: React.FC<{
   children: React.ReactNode;
   /** total scene length in frames, so the move is derived from the whole shot */
   dur: number;
-  /** how far the slow push travels; 0.05 is a breath, 0.12 is a push-in */
+  /** kept for call-site compatibility; see the note below on why it is fixed */
   zoom?: number;
-  /** anchor of the push, as a percentage of the frame */
   origin?: string;
-  /** tiny lateral travel, in px across the whole scene */
+  /** lateral travel across the whole scene, in px */
   drift?: number;
-}> = ({children, dur, zoom = 0.055, origin = '50% 46%', drift = 0}) => {
+}> = ({children, dur, zoom = 0.06, origin = '50% 46%', drift}) => {
   const f = useCurrentFrame();
-  // Ease-in-out, not the UI ease-out: a camera has mass, and the heavy
-  // ease-out front-loads 61% of the travel into the first ten frames.
+
+  /* WHY THIS DOES NOT ANIMATE SCALE.
+     A slow scale creep is the classic shimmer: at 0.01-0.04% per frame every
+     glyph is re-rasterised at a nearly identical size and the subpixel grid
+     jitters, which reads as the whole frame vibrating. Measured on this film's
+     own scenes before the fix.
+     So the camera is a TRANSLATION over a container held at a FIXED scale. The
+     content is rasterised once at that size and then simply moved, which is
+     smooth by construction. A deliberate push-in is a different tool: large and
+     fast (see Push below), where each frame lands at a clearly different size
+     and no shimmer is possible. */
   const p = interpolate(f, [0, dur], [0, 1], {
     extrapolateRight: 'clamp',
     easing: Easing.bezier(0.5, 0, 0.25, 1),
   });
+
+  /* A fixed overscan gives the translation room to move without exposing an
+     edge. The travel has to be big enough to SEE: 34px over 18 seconds measured
+     at 0.05% of pixels changing per frame, which is a still image with extra
+     steps. Around 120px reads as a slow camera and still cannot shimmer,
+     because translation does not resample glyphs. */
+  const fixedScale = 1 + Math.max(0.09, zoom);
+  const travel = drift ?? -120;
+  const rise = -64;
+
   return (
     <AbsoluteFill
       style={{
-        transform: `scale(${1 + zoom * p}) translateX(${drift * p}px)`,
+        transform: `scale(${fixedScale}) translate3d(${travel * p}px, ${rise * p}px, 0)`,
         transformOrigin: origin,
+        willChange: 'transform',
       }}
     >
+      {children}
+    </AbsoluteFill>
+  );
+};
+
+/* A deliberate push: large and fast, so every frame renders at a clearly
+   different size. This is the one place scale may animate. */
+export const Push: React.FC<{
+  children: React.ReactNode; at: number; from?: number; to?: number; frames?: number; origin?: string;
+}> = ({children, at, from = 1.22, to = 1.0, frames = 18, origin = '50% 50%'}) => {
+  const f = useCurrentFrame();
+  const s = interpolate(f - at, [0, frames], [from, to], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.16, 1, 0.3, 1),
+  });
+  return (
+    <AbsoluteFill style={{transform: `scale(${s})`, transformOrigin: origin, willChange: 'transform'}}>
       {children}
     </AbsoluteFill>
   );

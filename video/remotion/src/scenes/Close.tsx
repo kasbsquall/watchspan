@@ -58,6 +58,9 @@ export const Close: React.FC = () => {
       <Sfx src="confirm.mp3" at={28} vol={0.22} />
     </AbsoluteFill>
       </Alive>
+            <Sfx src="appear.mp3" at={2} vol={0.14} />
+      <Sfx src="glassy.mp3" at={28} vol={0.16} />
+      <Sfx src="pluck.mp3" at={66} vol={0.12} />
       </AbsoluteFill>
   );
 };

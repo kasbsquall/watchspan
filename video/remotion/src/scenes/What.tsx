@@ -41,11 +41,32 @@ export const What: React.FC = () => {
             <span style={{display: 'inline-block', opacity: l2,
               transform: `translateY(${(1 - l2) * 14}px)`}}>and the people who approve what it does.</span>
           </p>
-          <div style={{display: 'flex', gap: 120, marginTop: 86, alignItems: 'flex-end'}}>
+          <div style={{display: 'flex', gap: 110, marginTop: 78, alignItems: 'flex-end'}}>
             <Stat at={34} v={294} label="ran on its own" sub="with an audit log" hero />
             <Stat at={92} v={7} label="held back" sub="looked like an attack" />
             <Stat at={140} v={69} label="sent to a human" sub="of 370 actions" />
           </div>
+
+          {/* The routing itself, drawn: 370 in, three ways out. Depth behind
+              the figures rather than an empty right half. */}
+          <svg width={500} height={430} style={{position: 'absolute', right: 150, top: 210, opacity: 0.85}}>
+            {[[294, C.ember, 0], [7, C.ink500, 1], [69, C.ink300, 2]].map(([v, col, i]) => {
+              const at = 30 + (i as number) * 54;
+              const p = interpolate(f - at, [0, 26], [0, 1], {extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
+              const y = 90 + (i as number) * 118;
+              const w = 22 + ((v as number) / 294) * 214;
+              return (
+                <g key={i as number}>
+                  <path d={`M 20 210 C 130 210, 150 ${y}, 250 ${y}`} fill="none"
+                    stroke={col as string} strokeWidth={2} strokeOpacity={0.5}
+                    strokeDasharray={420} strokeDashoffset={420 * (1 - p)} />
+                  <rect x={252} y={y - 9} width={w * p} height={18} rx={2} fill={col as string} opacity={0.28} />
+                </g>
+              );
+            })}
+            <circle cx={20} cy={210} r={5} fill={C.ink300} />
+          </svg>
         </AbsoluteFill>
       </Alive>
       <Sfx src="whoosh.mp3" at={1} vol={0.10} />

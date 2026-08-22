@@ -16,10 +16,10 @@ export const Ground: React.FC<{tint?: 'ember' | 'alarm' | 'ok'}> = ({tint = 'emb
 
   // Slow parallax on the washes: full-bleed layers may translate, because the
   // eye has no fixed reference against them.
-  const x1 = interpolate(f, [0, 900], [0, -70]);
-  const y1 = interpolate(f, [0, 900], [0, 40]);
-  const x2 = interpolate(f, [0, 900], [0, 90]);
-  const s1 = interpolate(f, [0, 900], [1, 1.14]);
+  const x1 = interpolate(f, [0, 900], [0, -150]);
+  const y1 = interpolate(f, [0, 900], [0, 95]);
+  const x2 = interpolate(f, [0, 900], [0, 190]);
+  const s1 = interpolate(f, [0, 900], [1, 1.28]);
 
   return (
     <AbsoluteFill style={{background: '#0d0b08'}}>

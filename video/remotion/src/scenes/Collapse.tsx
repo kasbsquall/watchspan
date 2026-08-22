@@ -60,6 +60,10 @@ export const Collapse: React.FC = () => {
       <Sfx src="click.mp3" at={196} vol={0.07} />
     </AbsoluteFill>
       </Alive>
+            <Sfx src="sweep.mp3" at={2} vol={0.10} />
+      <Sfx src="appear.mp3" at={26} vol={0.12} />
+      <Sfx src="appear.mp3" at={112} vol={0.11} />
+      <Sfx src="appear.mp3" at={196} vol={0.10} />
       </AbsoluteFill>
   );
 };

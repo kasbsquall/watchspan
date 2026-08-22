@@ -54,6 +54,13 @@ export const Cloud: React.FC = () => {
       {[24, 64, 104, 144, 184, 224].map((a) => <Sfx key={a} src="pop.mp3" at={a} vol={0.06} />)}
     </AbsoluteFill>
       </Alive>
+            <Sfx src="sweep.mp3" at={2} vol={0.10} />
+      <Sfx src="enter.mp3" at={24} vol={0.085} />
+      <Sfx src="enter.mp3" at={64} vol={0.085} />
+      <Sfx src="enter.mp3" at={104} vol={0.085} />
+      <Sfx src="enter.mp3" at={144} vol={0.085} />
+      <Sfx src="enter.mp3" at={184} vol={0.085} />
+      <Sfx src="enter.mp3" at={224} vol={0.085} />
       </AbsoluteFill>
   );
 };
