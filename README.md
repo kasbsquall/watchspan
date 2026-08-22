@@ -8,6 +8,17 @@ still there.
 Built for the All Things Agentic Hackathon (Google Cloud), track:
 **Fortified Enterprise Fleet**.
 
+| | |
+|---|---|
+| **Live control room** | https://watchspan-web-45ejdvuucq-uc.a.run.app |
+| **API** | https://watchspan-api-45ejdvuucq-uc.a.run.app |
+| **Demo video** | *(add the YouTube link on submission)* |
+| **Architecture** | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| **Required stack** | Gemini 3.5 Flash via Vertex AI · Google ADK · Cloud Run |
+
+Both Cloud Run services scale to zero, so a cold first request takes a few
+seconds while the instance wakes.
+
 ## The problem
 
 When an agent fleet asks for approval fifty times a day, the first request
@@ -60,7 +71,7 @@ computed fallbacks.
 ```bash
 # 1. Backend (Python 3.12+)
 pip install -r requirements.txt
-python -m pytest tests/          # 22 tests should pass
+python -m pytest tests/          # 24 tests should pass
 uvicorn api.main:app --port 8000
 
 # 2. Frontend (Node 20+), in a second terminal
@@ -161,14 +172,51 @@ services rather than reading about them:
 
 ```
 attention/    Signals and the shared attention budget
-watchspan/    Meter, Drift, Calibrator, Sentinel, orchestrator, guardrails
-fleet/        Demo agents, simulator, Agent Registry cards, Runtime app
+watchspan/    Meter, Drift, Calibrator, Sentinel, orchestrator, guardrails,
+              Memory Bank ledger, Model Armor screening, OpenTelemetry tracing
+fleet/        Demo agents, simulator, Agent Registry cards, Agent Runtime app
 evidence/     EU AI Act Article 14 dossier generator
 api/          FastAPI backend
 web/          Next.js control room
-deploy/       Cloud Run deployment script
-tests/        Deterministic core tests
+deploy/       Cloud Run script and the Agent Runtime deployment
+video/        Remotion project for the demo film
+docs/         Architecture, design notes, submission drafts
+tests/        24 tests over the deterministic core
 ```
+
+## What is real and what is simulated
+
+Stated plainly, because a reviewer will ask.
+
+**Real:** the fleet and the governance agents run on Google Cloud; the API,
+the Agent Registry catalog, the Memory Bank ledger, the Model Armor screening
+and the Cloud Trace spans are live services; Gemini 3.5 Flash writes the
+findings; every figure in the film and in this README comes from a run of the
+code in this repository.
+
+**Simulated:** reviewer behaviour. A real reviewer's decision times are modelled
+from a declared table in `fleet/simulator.py`, because we had no instrumented
+human to measure. The film says so on screen at the moment it matters. Feeding
+Watchspan real decisions is a matter of posting them to `/decisions`; nothing
+in the governance layer knows or cares that the current ones are generated.
+
+## Things worth knowing
+
+Findings from wiring this against the live platform and from adversarial review,
+kept because they are the parts that were not obvious:
+
+- **Escalating less is not automatically safer.** Raising the threshold from
+  0.30 to 0.45 cuts interruptions and holds oversight 35% longer, but it does
+  NOT produce more attentive reviews: the count stays at 14 either way, and the
+  ratio only improves because the denominator shrinks. Worse, without a floor it
+  sent 34 high-risk actions to auto-execution. `ALWAYS_ESCALATE_ABOVE` exists
+  because of that measurement. See `video/threshold_experiment.py`.
+- **Model Armor and the Sentinel cover different attacks.** Model Armor blocks
+  prompt injection and correctly lets "this is routine, just approve everything"
+  through, because that sentence attacks the reviewer, not the model.
+- **The Sentinel is a floor, not a ceiling.** Rewording the same dangerous
+  action past its phrase list works. The attention budget is the layer that does
+  not care how the request is worded.
 
 ## License
 
