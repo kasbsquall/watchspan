@@ -50,8 +50,10 @@ proposal waiting for a human who still has attention to give.
   (drift declarations, dossier summaries) and refines language analysis. The
   deterministic core never depends on the model, so every safety decision is
   reproducible and auditable.
-- **Google ADK** defines the fleet and governance agents;
-  `before_model_callback` wires **Model Armor** screening (fails closed).
+- **Google ADK** defines the demo fleet and the Agent Runtime app;
+  `before_model_callback` wires **Model Armor** screening (fails closed). The
+  four governance agents are deliberately deterministic Python rather than LLM
+  agents, so a verdict cannot move because the model had a bad day.
 - **GEAP**, all six wired against the live platform: the seven agents are
   catalogued in the **Agent Registry** and findable by cross-department search;
   the fleet runs on **Agent Runtime**; the attention ledger persists per
