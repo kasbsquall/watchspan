@@ -67,16 +67,39 @@ export default function LiveFleet() {
           ) : (
             <ul className="mt-3 divide-y divide-ink-100/8">
               {result.routed.map((r, i) => (
-                <li key={i} className="grid grid-cols-[1fr_auto] items-baseline gap-4 py-3">
-                  <div>
+                <li key={i} className="py-3">
+                  <div className="grid grid-cols-[1fr_auto] items-baseline gap-4">
                     <div className="font-data text-sm text-ink-100">{r.action}</div>
-                    <div className="mt-1 text-xs text-ink-500">{r.description}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-data text-sm tabular-nums text-ember-500">
-                      {Math.round(r.risk_score * 100)}
+                    <div className="font-data text-sm tabular-nums text-ink-300">
+                      {r.route.replace("_", " ")}
                     </div>
-                    <div className="mt-1 text-xs text-ink-400">{r.route.replace("_", " ")}</div>
+                  </div>
+                  <div className="mt-1 text-xs text-ink-500">{r.description}</div>
+                  {/* The discrepancy is the point: on this path the caller is the
+                      agent being governed, so its score is a claim and Watchspan
+                      routes on its own assessment when that is higher. */}
+                  <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-xs">
+                    <span className="text-ink-500">
+                      agent declared{" "}
+                      <span className="font-data tabular-nums text-ink-300">
+                        {r.risk_declared_by_agent.toFixed(2)}
+                      </span>
+                    </span>
+                    {r.risk_assessed_by_watchspan !== null && (
+                      <span className="text-ink-500">
+                        Watchspan assessed{" "}
+                        <span
+                          className={`font-data tabular-nums ${
+                            r.agent_understated ? "text-alarm-500" : "text-ink-300"
+                          }`}
+                        >
+                          {r.risk_assessed_by_watchspan.toFixed(2)}
+                        </span>
+                      </span>
+                    )}
+                    {r.agent_understated && (
+                      <span className="text-alarm-500">routed on the assessment</span>
+                    )}
                   </div>
                 </li>
               ))}

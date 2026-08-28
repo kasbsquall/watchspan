@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from attention.signals import ApprovalRequest, Decision
+from watchspan import risk
 from watchspan import drift as drift_mod
 from watchspan import llm
 from watchspan.calibrator import Calibrator
@@ -32,6 +33,8 @@ class RoutingResult:
     effective_threshold: float
     team_fraction: float
     alerts: list[SentinelAlert] = field(default_factory=list)
+    # What the caller claimed, what Watchspan assessed, and which one it routed on.
+    assessment: "risk.Assessment | None" = None
 
 
 @dataclass
@@ -59,10 +62,16 @@ class Orchestrator:
         team_fraction = self.meter.state.team_budget.team_fraction(request.created_at)
         threshold = self.calibrator.policy.effective_threshold(team_fraction)
 
+        # The caller's risk score is a CLAIM. Watchspan assesses the action
+        # itself and routes on whichever is higher, because on the live path the
+        # caller is the agent being governed and it has every reason to
+        # understate. See watchspan/risk.py for what this cost before it existed.
+        assessment = risk.assess(request.action, request.description, request.risk_score)
+
         alerts = self.sentinel.inspect(request)
         if alerts:
             route = "paused_sentinel"
-        elif self.calibrator.policy.should_escalate(request.risk_score, team_fraction):
+        elif self.calibrator.policy.should_escalate(assessment.effective, team_fraction):
             route = "escalate"
         else:
             route = "auto_execute"
@@ -73,6 +82,7 @@ class Orchestrator:
             effective_threshold=round(threshold, 4),
             team_fraction=round(team_fraction, 4),
             alerts=alerts,
+            assessment=assessment,
         )
         self.routed.append(result)
         self.audit_log.append(

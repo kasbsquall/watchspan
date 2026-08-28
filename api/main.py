@@ -137,13 +137,24 @@ def submit_request(body: RequestBody, x_watchspan_session: str | None = Header(d
         created_at=time.time(),
     )
     result = orchestrator.route_request(request)
+    a = result.assessment
     return {
         "request_id": request.request_id,
         "route": result.route,
         "effective_threshold": result.effective_threshold,
         "team_fraction": result.team_fraction,
+        # The caller's number is a claim. Watchspan routes on its own assessment
+        # when that is higher, and says so, because on the live path the caller
+        # is the agent being governed.
+        "risk": None if a is None else {
+            "declared_by_caller": a.declared,
+            "assessed_by_watchspan": a.assessed,
+            "routed_on": a.effective,
+            "basis": a.basis,
+            "caller_understated": a.understated,
+        },
         "alerts": [
-            {"pattern": a.pattern, "detail": a.detail} for a in result.alerts
+            {"pattern": a2.pattern, "detail": a2.detail} for a2 in result.alerts
         ],
     }
 

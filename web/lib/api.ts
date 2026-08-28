@@ -111,7 +111,10 @@ export async function fetchDossier(): Promise<Record<string, unknown>> {
 export interface LiveRouted {
   action: string;
   agent_id: string;
-  risk_score: number;
+  risk_declared_by_agent: number;
+  risk_assessed_by_watchspan: number | null;
+  routed_on: number | null;
+  agent_understated: boolean;
   route: "escalate" | "auto_execute" | "paused_sentinel";
   effective_threshold: number;
   team_fraction: number;

@@ -84,7 +84,18 @@ def screen_prompt(text: str) -> bool:
 
 
 def model_armor_before_model(callback_context, llm_request):
-    """ADK before_model_callback: block flagged prompts before Gemini."""
+    """ADK before_model_callback: block flagged prompts before Gemini.
+
+    RETURNS LlmResponse, NOT Content. ADK types this callback as
+    Optional[LlmResponse] and reads `.content` off whatever comes back, so a
+    bare types.Content raises "'Content' object has no attribute 'content'" the
+    first time the guardrail actually fires. It never fired under test, because
+    the tests covered screen_prompt (the decision) and never this adapter. It
+    fired the moment a real agent was handed a task about suspicious vendor bank
+    details, and took the endpoint down with a 503. A guardrail that crashes the
+    thing it guards is worse than no guardrail.
+    """
+    from google.adk.models import LlmResponse
     from google.genai import types
 
     parts = []
@@ -93,5 +104,7 @@ def model_armor_before_model(callback_context, llm_request):
             if getattr(part, "text", None):
                 parts.append(part.text)
     if parts and screen_prompt("\n".join(parts)):
-        return types.Content(role="model", parts=[types.Part(text=BLOCK_MESSAGE)])
+        return LlmResponse(
+            content=types.Content(role="model", parts=[types.Part(text=BLOCK_MESSAGE)])
+        )
     return None

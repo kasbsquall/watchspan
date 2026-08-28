@@ -32,7 +32,10 @@ class LocalAttentionMemory:
         self.facts.setdefault(reviewer_id, []).append(fact)
 
     def recall(self, reviewer_id: str) -> list[str]:
-        return list(self.facts.get(reviewer_id, []))
+        # Distinct, like the Memory Bank adapter: the two backends must not
+        # disagree about what a ledger is.
+        seen: set[str] = set()
+        return [f for f in self.facts.get(reviewer_id, []) if not (f in seen or seen.add(f))]
 
 
 class MemoryBankAttentionMemory:
@@ -88,12 +91,26 @@ class MemoryBankAttentionMemory:
         self._post("memories", {"fact": fact, "scope": {"reviewer": reviewer_id}})
 
     def recall(self, reviewer_id: str) -> list[str]:
+        """Distinct facts, newest first.
+
+        Memory Bank appends and the write-side guard is best effort: it reads
+        before writing, and a retrieve that returns a similarity-ranked subset
+        will not always contain the exact string about to be written. The store
+        accumulated a hundred rows carrying two distinct sentences, and a panel
+        headed "what this reviewer carries in from previous sessions" showed one
+        sentence ninety times. Deduplicate on the way out, where it is
+        guaranteed: the ledger's job is to report what is known, not how many
+        times it was written down.
+        """
         data = self._post("memories:retrieve", {"scope": {"reviewer": reviewer_id}})
-        return [
-            entry["memory"]["fact"]
-            for entry in data.get("retrievedMemories", [])
-            if entry.get("memory", {}).get("fact")
-        ]
+        seen: set[str] = set()
+        facts: list[str] = []
+        for entry in data.get("retrievedMemories", []):
+            fact = entry.get("memory", {}).get("fact")
+            if fact and fact not in seen:
+                seen.add(fact)
+                facts.append(fact)
+        return facts
 
     @property
     def service(self):

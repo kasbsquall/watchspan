@@ -83,7 +83,7 @@ computed fallbacks.
 ```bash
 # 1. Backend (Python 3.12+)
 pip install -r requirements.txt
-python -m pytest tests/          # 24 tests should pass
+python -m pytest tests/          # 30 tests should pass
 uvicorn api.main:app --port 8000
 
 # 2. Frontend (Node 20+), in a second terminal
@@ -113,7 +113,7 @@ pip install -r requirements.txt
 python -m pytest tests/ -q
 ```
 
-Expected: `24 passed`. The suite covers the attention budget, the drift
+Expected: `30 passed`. The suite covers the attention budget, the drift
 detector, the calibrated policy and its safety floor, the Sentinel, and the
 Article 14 dossier.
 
@@ -237,7 +237,7 @@ web/          Next.js control room
 deploy/       Cloud Run script and the Agent Runtime deployment
 video/        Remotion project for the demo film
 docs/         Architecture, design notes, submission drafts
-tests/        24 tests over the deterministic core
+tests/        30 tests over the deterministic core
 ```
 
 ## What is real and what is simulated
@@ -296,7 +296,7 @@ kept because they are the parts that were not obvious:
   0.30 to 0.45 cuts interruptions and holds oversight 35% longer, but it does
   NOT produce more attentive reviews: the count stays at 14 either way, and the
   ratio only improves because the denominator shrinks. Worse, without a floor it
-  sent 34 high-risk actions to auto-execution. `ALWAYS_ESCALATE_ABOVE` exists
+  sent 33 high-risk actions to auto-execution. `ALWAYS_ESCALATE_ABOVE` exists
   because of that measurement. See `video/threshold_experiment.py`.
 - **Model Armor and the Sentinel cover different attacks.** Model Armor blocks
   prompt injection and correctly lets "this is routine, just approve everything"

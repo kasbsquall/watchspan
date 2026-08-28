@@ -81,7 +81,12 @@ def run_live(orchestrator, count: int = 3, timeout_s: float = 90.0) -> dict:
             {
                 "action": r.request.action,
                 "agent_id": r.request.agent_id,
-                "risk_score": round(r.request.risk_score, 3),
+                "risk_declared_by_agent": round(r.request.risk_score, 3),
+                "risk_assessed_by_watchspan": (
+                    None if r.assessment is None else r.assessment.assessed
+                ),
+                "routed_on": None if r.assessment is None else r.assessment.effective,
+                "agent_understated": bool(r.assessment and r.assessment.understated),
                 "route": r.route,
                 "effective_threshold": round(r.effective_threshold, 4),
                 "team_fraction": round(r.team_fraction, 4),
