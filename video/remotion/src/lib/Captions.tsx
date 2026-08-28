@@ -18,6 +18,7 @@ import {SCENES} from '../timing';
    these windows covering the wrong words. */
 const HANDOVER: {scene: string; from: string; to: string}[] = [
   {scene: 'hook', from: 'everyone sells', to: 'measures'},
+  {scene: 'attack', from: 'it is an attack', to: 'the gap'},
   {scene: 'close', from: 'everyone sells', to: 'there'},
 ];
 

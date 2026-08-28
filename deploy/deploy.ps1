@@ -7,13 +7,28 @@
 
 param(
   [Parameter(Mandatory = $true)][string]$ProjectId,
-  [string]$Region = "us-central1"
+  [string]$Region = "us-central1",
+  # The GEAP wiring. Each degrades gracefully when empty, and leaving them empty
+  # is how the running service ended up ahead of this script: production had the
+  # Memory Bank engine and the Model Armor template set by hand, while a fresh
+  # deploy from here came up on the local fallbacks. Read the running values with
+  #   gcloud run services describe watchspan-api --region <r> `
+  #     --format="value(spec.template.spec.containers[0].env)"
+  [string]$AgentEngineId = $env:WATCHSPAN_AGENT_ENGINE_ID,
+  [string]$ModelArmorTemplate = $env:WATCHSPAN_MODEL_ARMOR_TEMPLATE,
+  [string]$FleetServiceAccount = $env:WATCHSPAN_FLEET_SERVICE_ACCOUNT
 )
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "Enabling required services..."
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com aiplatform.googleapis.com --project $ProjectId
+
+$apiEnv = "GOOGLE_CLOUD_PROJECT=$ProjectId,GOOGLE_CLOUD_LOCATION=$Region,GOOGLE_GENAI_USE_VERTEXAI=true"
+if ($AgentEngineId)       { $apiEnv += ",WATCHSPAN_AGENT_ENGINE_ID=$AgentEngineId" }
+if ($ModelArmorTemplate)  { $apiEnv += ",WATCHSPAN_MODEL_ARMOR_TEMPLATE=$ModelArmorTemplate" }
+if ($FleetServiceAccount) { $apiEnv += ",WATCHSPAN_FLEET_SERVICE_ACCOUNT=$FleetServiceAccount" }
+Write-Host "API env: $apiEnv"
 
 Write-Host "Deploying the Watchspan API..."
 gcloud run deploy watchspan-api `
@@ -25,7 +40,7 @@ gcloud run deploy watchspan-api `
   --max-instances 2 `
   --memory 512Mi `
   --cpu 1 `
-  --set-env-vars "GOOGLE_CLOUD_PROJECT=$ProjectId,GOOGLE_CLOUD_LOCATION=$Region,GOOGLE_GENAI_USE_VERTEXAI=true"
+  --set-env-vars $apiEnv
 
 $apiUrl = gcloud run services describe watchspan-api --project $ProjectId --region $Region --format "value(status.url)"
 Write-Host "API deployed at $apiUrl"

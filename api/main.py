@@ -7,6 +7,7 @@ dossier. Deployed on Cloud Run (scale to zero) in step 8.
 
 from __future__ import annotations
 
+import os
 import time
 
 from fastapi import FastAPI, HTTPException
@@ -19,11 +20,22 @@ from fleet import simulator
 from watchspan.orchestrator import Orchestrator
 
 app = FastAPI(title="Watchspan", version="0.1.0")
+# The control room is a separate Cloud Run service, so the API needs CORS. The
+# wildcard shipped with a comment promising it would be tightened, and it was
+# not; in a submission about governance that is the wrong kind of irony. Set
+# WATCHSPAN_ALLOWED_ORIGINS to a comma-separated list to lock it down further.
+DEFAULT_ORIGINS = [
+    "https://watchspan-web-45ejdvuucq-uc.a.run.app",
+    "http://localhost:3000",
+]
+_origins = os.environ.get("WATCHSPAN_ALLOWED_ORIGINS")
+ALLOWED_ORIGINS = [o.strip() for o in _origins.split(",") if o.strip()] if _origins else DEFAULT_ORIGINS
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tightened before deployment
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST"],
+    allow_headers=["content-type"],
 )
 
 orchestrator = Orchestrator()

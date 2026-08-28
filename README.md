@@ -57,11 +57,17 @@ be effective, not decorative, with no accepted way to prove the difference.
 
 ## Architecture
 
-Four governance agents (Meter, Drift, Calibrator, Sentinel) built with Google
-ADK and Gemini 3.5 Flash via Vertex AI, governing a demo fleet of three
-institutional agents, deployed on Cloud Run with GEAP services (Agent
-Registry, Agent Runtime, Memory Bank, Agent Identity, Model Armor, Agent
-Observability). The diagram above is the whole system; design notes and the editable source
+Four governance agents (Meter, Drift, Calibrator, Sentinel) governing a demo
+fleet of three institutional agents built with Google ADK, deployed on Cloud
+Run with GEAP services (Agent Registry, Agent Runtime, Memory Bank, Agent
+Identity, Model Armor, Agent Observability).
+
+The four governance agents are deliberately **deterministic Python, not LLM
+agents**. Every routing and drift decision is computed and reproducible from a
+seed, and Gemini 3.5 Flash on Vertex AI writes the findings on top of numbers
+it did not produce. That is the point: a governance layer whose verdicts move
+when the model has a bad day is not a governance layer. ADK builds the fleet
+being governed, the Agent Runtime app and the Model Armor callback. The diagram above is the whole system; design notes and the editable source
 are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 Required stack, as mandated by the hackathon: Gemini 3.5 Flash via Vertex AI,

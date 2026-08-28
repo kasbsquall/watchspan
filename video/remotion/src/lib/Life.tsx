@@ -2,6 +2,7 @@ import React from 'react';
 import {useCurrentFrame, useVideoConfig, interpolate, spring, Easing} from 'remotion';
 import {noise2D} from '@remotion/noise';
 import {C, MONO} from '../theme';
+import {Sfx} from './Sfx';
 
 /* Continuous life, as opposed to entrance animation.
 
@@ -26,44 +27,80 @@ import {C, MONO} from '../theme';
 
    Nothing here scales a glyph over time. */
 
-/* The camera push, and why it is allowed here after being banned in Alive.tsx.
+/* THE CAMERA. Read this before changing it; it has been got wrong three times.
 
-   The ban was correct about the symptom and wrong about the cause. A slow scale
-   shimmered because the browser RE-RASTERISED every glyph each frame at a
-   nearly identical size, so the hinting flipped back and forth. Promoting the
-   moving element to its own compositor layer changes what the scale acts on:
-   the layer is rasterised once and the GPU resamples that texture, so the
-   glyphs are stable no matter how slowly the scale changes.
+   Attempt 1: a slow continuous scale creep. Shimmered.
+   Attempt 2: a slow continuous translation. Fixed the shimmer and pushed centred
+              content off the edge, because the travel exceeded the overscan.
+   Attempt 3: a slow continuous scale on a compositor-promoted layer. The
+              promotion did stop the browser re-rasterising the glyphs, and it
+              still boiled, which is why the rule below exists.
 
-   `willChange: transform` plus a 3D transform is what forces the promotion.
-   Both are required; `willChange` alone is a hint Chrome may decline.
+   THE RULE. A camera move on text must displace at least ONE DEVICE PIXEL per
+   frame, or it must not move at all.
 
-   The push only ever scales UP, which crops toward the edges and can never
-   reveal empty frame. Scenes carry 100px of padding, so a 5.5% push at 1080p
-   eats about 53px a side and no content is lost. */
+   Below that, the glyphs do not travel; only their antialiasing is resampled,
+   differently every frame, and on thin strokes that reads as boiling. Layer
+   promotion cannot help, because the resample happens either way. At 1920 wide
+   with a centred origin, one pixel at the frame edge is a scale change of
+   1/960 = 0.00104 per frame. A 5% push spread over a 600-frame scene changes
+   0.00008 per frame: thirteen times under the floor. That is the whole bug, and
+   no easing curve or willChange hint fixes it.
+
+   So the camera moves in BEATS. Each push covers 0.02 to 0.03 of scale in 14
+   frames, which is 0.0015 to 0.002 per frame, comfortably over the floor, and
+   then it HOLDS perfectly still until the next beat. Between beats the frame is
+   alive because the ELEMENTS are moving, which is what Alive.tsx said all along.
+
+   Scale only ever increases, so the frame crops inward and can never reveal
+   empty edge. Keep the total under about 1.09 or the crop eats the padding. */
+const PUSH_FRAMES = 14;
+const MIN_STEP = 0.02; // keeps every frame of a push over the one-pixel floor
+
 export const Camera: React.FC<{
   children: React.ReactNode;
-  dur: number;
-  to?: number;
-  from?: number;
+  beats: number[];
+  step?: number;
   origin?: string;
-}> = ({children, dur, to = 1.055, from = 1, origin = '50% 50%'}) => {
+}> = ({children, beats, step = 0.024, origin = '50% 50%'}) => {
   const f = useCurrentFrame();
-  const s = interpolate(f, [0, dur], [from, to], {extrapolateRight: 'clamp'});
+  const size = Math.max(step, MIN_STEP);
+  let s = 1;
+  for (const b of beats) {
+    s += interpolate(f - b, [0, PUSH_FRAMES], [0, size], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
+    });
+  }
   return (
     <div
       style={{
         position: 'absolute',
         inset: 0,
-        transform: `translateZ(0) scale(${s})`,
+        transform: `scale(${s})`,
         transformOrigin: origin,
-        willChange: 'transform',
-        backfaceVisibility: 'hidden',
       }}
     >
       {children}
     </div>
   );
+};
+
+/* The dark breath at a scene boundary. Scenes are cut to the voiceover and their
+   durations may not move, so this cannot be a cross-dissolve that overlaps two
+   scenes: it is a dip at each edge, inside the scene's own length. */
+export const SceneEdge: React.FC<{dur: number; inF?: number; outF?: number}> = ({
+  dur,
+  inF = 9,
+  outF = 8,
+}) => {
+  const f = useCurrentFrame();
+  const enter = interpolate(f, [0, inF], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const leave = interpolate(f, [dur - outF, dur], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  const o = Math.max(enter, leave);
+  if (o <= 0.002) return null;
+  return <div style={{position: 'absolute', inset: 0, background: '#0d0b08', opacity: o, pointerEvents: 'none'}} />;
 };
 
 /** A decorative layer that never stops breathing. Text must not go inside it. */
@@ -290,11 +327,18 @@ export const Spoken: React.FC<{
   style?: React.CSSProperties;
   color?: string;
   dim?: string;
-}> = ({n, from, to, style, color, dim}) => {
+  tick?: boolean;
+}> = ({n, from, to, style, color, dim, tick = true}) => {
   const f = useCurrentFrame();
   const words = n.words.filter((w) => w.f >= from - 1 && w.f <= to + 1);
   return (
     <span style={style}>
+      {/* Every other word gets a keystroke, quiet enough to be texture. A tick on
+          every word turns a sentence into a typewriter; one on every other reads
+          as the line being set as it is spoken. */}
+      {tick && words.filter((_, i) => i % 2 === 0).map((w, i) => (
+        <Sfx key={`k${i}`} src="type.mp3" at={w.f} vol={0.028} />
+      ))}
       {words.map((w, i) => {
         const p = interpolate(f - w.f, [0, 7], [0, 1], {
           extrapolateLeft: 'clamp', extrapolateRight: 'clamp',

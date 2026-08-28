@@ -105,7 +105,12 @@ export const Hook: React.FC = () => {
 
   const DRAIN_END = n.after('reading');
   const DECLARE = n.at('nothing alerted');
-  const STREAM_IN = n.at('the approvals');
+  const APPROVALS = n.at('the approvals');
+  // n.at('the approvals') left this on screen for 52 frames: it appeared and
+  // vanished before the eye could read a single row, which is the opposite of
+  // the point. It now enters with the declaration it is contradicting, and gets
+  // more than three seconds.
+  const STREAM_IN = DECLARE + 8;
   const THESIS = n.at('everyone sells');
   const SECOND = n.at('this is the part');
 
@@ -136,9 +141,16 @@ export const Hook: React.FC = () => {
     extrapolateRight: 'clamp',
     easing: Easing.bezier(0.16, 1, 0.3, 1),
   });
-  const blur = interpolate(f, [THESIS - 14, THESIS + 10], [0, 7], {
+  const blur = interpolate(f, [THESIS - 14, THESIS + 10], [0, 9], {
     extrapolateLeft: 'clamp',
     extrapolateRight: 'clamp',
+  });
+  // 0.16 of scale across 24 frames is 6 px a frame at the edge: real motion, well
+  // clear of the one-pixel floor that makes a slow push boil.
+  const away = interpolate(f, [THESIS - 14, THESIS + 10], [1, 1.16], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: Easing.bezier(0.4, 0, 0.2, 1),
   });
 
   const stage = -shift * 430;
@@ -147,7 +159,8 @@ export const Hook: React.FC = () => {
     <AbsoluteFill>
       <Ground tint={alarm ? 'alarm' : 'ember'} />
 
-      <AbsoluteFill style={{opacity: recede, filter: `blur(${blur}px)`}}>
+      <AbsoluteFill style={{opacity: recede, filter: `blur(${blur}px)`,
+        transform: `scale(${away})`, transformOrigin: '50% 46%'}}>
         <Rails gap={92} speed={0.28} opacity={0.03} />
 
         <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center'}}>
@@ -258,7 +271,16 @@ export const Hook: React.FC = () => {
 
       <Sfx src="appear.mp3" at={3} vol={0.15} />
       <Sfx src="stamp.mp3" at={DECLARE} vol={0.5} />
+      <Sfx src="slide.mp3" at={STREAM_IN} vol={0.14} />
+      {/* One tick per arriving row, quiet enough to be texture rather than an
+          event, so the queue is audibly still moving under the narration. */}
+      {Array.from({length: 14}, (_, i) => (
+        <Sfx key={i} src="type.mp3" at={STREAM_IN + 6 + i * 7} vol={0.035} />
+      ))}
+      <Sfx src="key.mp3" at={APPROVALS} vol={0.07} />
+      <Sfx src="whoosh.mp3" at={THESIS - 12} vol={0.20} />
       <Sfx src="sweep.mp3" at={THESIS - 6} vol={0.12} />
+      <Sfx src="glassy.mp3" at={SECOND} vol={0.13} />
     </AbsoluteFill>
   );
 };

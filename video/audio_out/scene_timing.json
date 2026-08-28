@@ -1,5 +1,5 @@
 {
-  "vo": 152.56,
+  "vo": 161.84,
   "scenes": [
     {
       "id": "hook",
@@ -32,35 +32,35 @@
     {
       "id": "attack",
       "start": 67.76,
-      "end": 94.08,
-      "dur": 26.32,
-      "words": 76
+      "end": 103.36,
+      "dur": 35.6,
+      "words": 97
     },
     {
       "id": "ceiling",
-      "start": 94.36,
-      "end": 116.68,
+      "start": 103.64,
+      "end": 125.96,
       "dur": 22.32,
       "words": 58
     },
     {
       "id": "evidence",
-      "start": 116.96,
-      "end": 132.48,
+      "start": 126.24,
+      "end": 141.76,
       "dur": 15.52,
       "words": 47
     },
     {
       "id": "cloud",
-      "start": 132.76,
-      "end": 147.32,
+      "start": 142.04,
+      "end": 156.6,
       "dur": 14.56,
       "words": 39
     },
     {
       "id": "close",
-      "start": 147.6,
-      "end": 152.56,
+      "start": 156.88,
+      "end": 161.84,
       "dur": 4.96,
       "words": 14
     }

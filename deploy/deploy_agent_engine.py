@@ -86,7 +86,6 @@ def main() -> int:
     print("Enable the Memory Bank ledger with:")
     print(f'  export WATCHSPAN_AGENT_ENGINE_ID="{engine_id}"')
     print(f"\nTear down after the demo:\n  client.agent_engines.delete(name='{resource_name}', force=True)")
-    _ = client
     return 0
 
 

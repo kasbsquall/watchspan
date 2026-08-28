@@ -25,8 +25,10 @@ import sys
 from pathlib import Path
 
 LEAD = 1.6      # silence before the voice enters, matching audio_gen.py
-BASE = 0.34     # music level with no voice over it
-DUCK = 0.068    # music level under speech
+# Raised 20% from 0.34/0.068 on a listening note: the score was sitting too far
+# under the voice to register as a score at all.
+BASE = 0.41     # music level with no voice over it
+DUCK = 0.082    # music level under speech
 RAMP = 0.16     # seconds to move between the two
 TARGET_I = -18  # LUFS
 TARGET_TP = -3  # dBTP

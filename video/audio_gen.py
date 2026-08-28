@@ -55,10 +55,17 @@ SCENES = [
      "and the actions never got any simpler. "
      "That gap is the signature of a rubber stamp, and it is the one thing a timestamp can prove."),
 
+    # "It walks straight past" was not true, and a judge checked: POSTing that exact
+    # request to the deployed API returns route "escalate", because risk 0.90 trips
+    # ALWAYS_ESCALATE_ABOVE. What the rewording defeats is the Sentinel, not the
+    # whole policy. The corrected line is also the stronger one: it shows two
+    # independent defences and admits which of them failed.
     ("attack",
      "A production backup deletion, hidden in a batch labelled routine quarterly cleanup. "
-     "Watchspan holds it. Now the same action, reworded. It walks straight past. "
-     "Phrase matching is a floor, not a ceiling, and any honest version of this product says so. "
+     "Watchspan holds it. Now the same action, reworded. The Sentinel sees nothing. "
+     "It still reaches a human, on its risk score alone, "
+     "but the pattern that was supposed to catch it is gone. "
+     "Pattern matching is a floor, not a ceiling, and any honest version of this product says so. "
      "Model Armor screens the model's input and never sees this traffic at all, "
      "because nothing here is a prompt injection. "
      "It is an attack on the person, not on the model. That is the gap."),

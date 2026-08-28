@@ -83,7 +83,10 @@ export const What: React.FC = () => {
   const l1 = interpolate(f, [HEAD, HEAD + 16], [0, 1], {
     extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1),
   });
-  const src = interpolate(f, [SRC - 12, SRC + 4], [0, 1], {
+  // Was SRC - 12, which left the lower two thirds of the frame empty for four
+  // seconds while the headline was read. The scaffolding is not the payload, so
+  // it arrives with the sentence and the figures still wait their turn.
+  const src = interpolate(f, [20, 40], [0, 1], {
     extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1),
   });
   // The total counts up while the voice reads it out, rather than being printed.
@@ -124,9 +127,18 @@ export const What: React.FC = () => {
           <span style={{fontFamily: FONT.text, fontSize: 15, letterSpacing: '0.16em',
             textTransform: 'uppercase', color: C.ink500}}>routed three ways</span>
         </div>
-        <div style={{marginTop: 12}}><DrawLine at={SRC + 4} w="100%" /></div>
+        <div style={{marginTop: 12}}><DrawLine at={34} w="100%" /></div>
 
-        <div style={{marginTop: 4}}>
+        <div style={{marginTop: 4, position: 'relative'}}>
+          {/* The three rails the figures will land on, drawn early at low
+              contrast: the shot has a shape from the first second instead of a
+              sentence floating over nothing. */}
+          {[0, 1, 2].map((i) => (
+            <div key={i} style={{position: 'absolute', left: 296, right: 0, top: 62 + i * 126,
+              height: 1, background: 'rgba(231,228,224,0.05)',
+              opacity: interpolate(f, [30 + i * 6, 48 + i * 6], [0, 1],
+                {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}} />
+          ))}
           <Row {...ROUTES[0]} at={RAN} until={HELD - 8} />
           <Row {...ROUTES[1]} at={HELD} until={SENT - 8} />
           <Row {...ROUTES[2]} at={SENT} until={n.end} />
@@ -149,7 +161,8 @@ export const What: React.FC = () => {
       </AbsoluteFill>
 
       <Sfx src="sweep.mp3" at={2} vol={0.10} />
-      <Sfx src="enter.mp3" at={SRC - 10} vol={0.10} />
+      <Sfx src="enter.mp3" at={22} vol={0.10} />
+      <Sfx src="slide.mp3" at={34} vol={0.09} />
       {[RAN, HELD, SENT].map((a) => <Sfx key={`t${a}`} src="tick.mp3" at={a} vol={0.06} />)}
       {[RAN, HELD, SENT].map((a) => <Sfx key={`p${a}`} src="pop.mp3" at={a + 6} vol={0.08} />)}
       <Sfx src="pluck.mp3" at={MEASURE - 4} vol={0.14} />

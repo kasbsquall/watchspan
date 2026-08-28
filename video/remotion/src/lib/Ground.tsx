@@ -22,19 +22,27 @@ export const Ground: React.FC<{tint?: 'ember' | 'alarm' | 'ok'}> = ({tint = 'emb
   // viewer: the "moving" background contributed nothing and the scenes measured
   // as fully frozen. A scene is 300-800 frames, so the travel is scaled to that,
   // and the two washes run at different rates so they separate in depth.
-  const x1 = interpolate(f, [0, 420], [0, -430]);
-  const y1 = interpolate(f, [0, 420], [0, 250]);
-  const x2 = interpolate(f, [0, 420], [0, 330]);
-  const s1 = interpolate(f, [0, 420], [1, 1.5]);
+  // The ground carries NO TEXT, so the one-pixel-per-frame floor that governs the
+  // camera does not apply to it: it can travel as fast as taste allows and it can
+  // never boil. It is therefore where the film's continuous motion belongs, and
+  // these rates are three times what they were, because at 1px a frame on a
+  // low-contrast blurred wash the change was still under the noise.
+  const x1 = interpolate(f, [0, 420], [0, -900]);
+  const y1 = interpolate(f, [0, 420], [0, 470]);
+  const x2 = interpolate(f, [0, 420], [0, 700]);
+  const s1 = interpolate(f, [0, 420], [1, 1.9]);
+  // A slow bloom on the warm wash, so the luminance of the frame is never the
+  // same two seconds running even where nothing is entering or leaving.
+  const breath = 1 + Math.sin(f / 74) * 0.30;
 
   return (
     <AbsoluteFill style={{background: '#0d0b08'}}>
       <AbsoluteFill style={{
-        background: `radial-gradient(ellipse 1500px 1000px at 22% 32%, rgba(${hue},0.13) 0%, rgba(${hue},0.05) 38%, transparent 70%)`,
+        background: `radial-gradient(ellipse 1500px 1000px at 22% 32%, rgba(${hue},${(0.17 * breath).toFixed(3)}) 0%, rgba(${hue},${(0.06 * breath).toFixed(3)}) 38%, transparent 70%)`,
         transform: `translate(${x1}px, ${y1}px) scale(${s1})`,
       }} />
       <AbsoluteFill style={{
-        background: 'radial-gradient(ellipse 1300px 900px at 84% 74%, rgba(70,110,150,0.10) 0%, transparent 66%)',
+        background: `radial-gradient(ellipse 1300px 900px at 84% 74%, rgba(70,110,150,${(0.14 / breath).toFixed(3)}) 0%, transparent 66%)`,
         transform: `translate(${x2}px, ${-y1}px)`,
       }} />
       <AbsoluteFill style={{
