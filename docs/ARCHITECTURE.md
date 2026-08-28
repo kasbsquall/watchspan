@@ -5,7 +5,7 @@ attention as what it really is: a finite, measurable, consumable resource.
 
 ## System diagram
 
-![Watchspan governance loop](architecture.svg)
+![Watchspan governance loop](architecture.png)
 
 Requests enter from the left. Everything along the bottom is the return path:
 what a review actually cost the reviewer, measured, and fed back into the

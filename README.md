@@ -19,6 +19,12 @@ Built for the All Things Agentic Hackathon (Google Cloud), track:
 Both Cloud Run services scale to zero, so a cold first request takes a few
 seconds while the instance wakes.
 
+![The Watchspan governance loop](docs/architecture.png)
+
+Requests enter from the left. Everything along the bottom is the return path:
+what a review actually cost the reviewer, measured, and fed back into the
+threshold that decides what escalates next.
+
 ## The problem
 
 When an agent fleet asks for approval fifty times a day, the first request
@@ -55,8 +61,8 @@ Four governance agents (Meter, Drift, Calibrator, Sentinel) built with Google
 ADK and Gemini 3.5 Flash via Vertex AI, governing a demo fleet of three
 institutional agents, deployed on Cloud Run with GEAP services (Agent
 Registry, Agent Runtime, Memory Bank, Agent Identity, Model Armor, Agent
-Observability). Full diagram and design notes:
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Observability). The diagram above is the whole system; design notes and the editable source
+are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 Required stack, as mandated by the hackathon: Gemini 3.5 Flash via Vertex AI,
 Google ADK as the agent framework, Cloud Run as the infrastructure service.
