@@ -11,8 +11,9 @@ skimmed, and the fiftieth gets stamped before the sentence is finished. The
 control still exists on paper; it stopped meaning anything. The pattern is
 already cataloged as an attack technique (ATR-2026-00118, Human Approval
 Fatigue Exploitation), and EU AI Act Article 14, in force since August 2,
-2026, demands oversight that is effective rather than decorative, with fines
-up to 40 million euros. Nobody can prove the difference. Watchspan exists to
+2026, demands oversight that is effective rather than decorative. Article 99
+puts non-compliance with that obligation in the 15 million euro or 3% of global
+turnover tier. Nobody can prove the difference. Watchspan exists to
 prove it with numbers.
 
 ## What it does

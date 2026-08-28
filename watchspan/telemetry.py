@@ -87,6 +87,13 @@ class _AttributedSpan:
         return self._context.__exit__(*args)
 
 
+def enabled() -> bool:
+    """Whether spans are actually going to Cloud Trace, as opposed to being
+    silently dropped. Exposed so /geap/status can report it rather than assert it."""
+    _setup()
+    return _tracer is not None
+
+
 def flush(timeout_ms: int = 10_000) -> bool:
     """Force pending spans out. Batch export would otherwise lose the tail of
     a short-lived request or a process that exits right after a run."""

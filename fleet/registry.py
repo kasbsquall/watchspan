@@ -187,12 +187,18 @@ def register_all(api_url: str) -> None:
             print(json.dumps(response.json(), indent=2)[:600])
 
 
-def list_catalog() -> None:
+def catalog() -> list[dict]:
+    """The catalogued agents, as data. Split out of list_catalog so the API can
+    report a verified count instead of asking a judge to trust a CLI they cannot
+    run without our credentials."""
     session = _session()
-    parent = _parent()
-    response = session.get(f"{API_ROOT}/{parent}/agents", timeout=60)
-    data = response.json()
-    agents = data.get("agents", [])
+    response = session.get(f"{API_ROOT}/{_parent()}/agents", timeout=30)
+    response.raise_for_status()
+    return response.json().get("agents", [])
+
+
+def list_catalog() -> None:
+    agents = catalog()
     print(f"{len(agents)} agents catalogued in the Agent Registry:")
     for agent in agents:
         skills = ", ".join(s.get("id", "") for s in agent.get("skills", []))

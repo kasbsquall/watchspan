@@ -72,15 +72,22 @@ const Climb: React.FC<{at: number; until: number}> = ({at, until}) => {
   });
   const inn = interpolate(f, [at - 10, at + 6], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   const out = interpolate(f, [until + 4, until + 22], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  // Map a threshold value to a y, so the line starts BELOW the risk band and
+  // climbs into it. The first version placed y by fraction of the panel and drew
+  // the 0.30 threshold inside the 0.70-0.85 band, asserting the opposite of the
+  // sentence it was illustrating.
   const H = 210;
-  const bandTop = 78;
-  const y = H - 26 - p * (H - 26 - bandTop);
+  const LO = 0.20;
+  const HI = 0.95;
+  const yOf = (v: number) => H - ((v - LO) / (HI - LO)) * H;
+  const value = 0.3 + p * 0.55;
+  const y = yOf(value);
   return (
     <div style={{position: 'absolute', right: 104, top: 196, width: 360, height: H,
       opacity: inn * out}}>
-      <div style={{position: 'absolute', left: 0, right: 0, top: bandTop, bottom: 0,
-        background: 'rgba(230,67,67,0.10)', border: `1px solid rgba(230,67,67,0.26)`, borderRadius: 2}} />
-      <div style={{position: 'absolute', left: 0, top: bandTop - 26, fontFamily: FONT.text, fontSize: 13,
+      <div style={{position: 'absolute', left: 0, right: 0, top: yOf(0.85), height: yOf(0.70) - yOf(0.85),
+        background: 'rgba(230,67,67,0.12)', border: `1px solid rgba(230,67,67,0.30)`, borderRadius: 2}} />
+      <div style={{position: 'absolute', left: 0, top: yOf(0.85) - 24, fontFamily: FONT.text, fontSize: 13,
         letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(230,67,67,0.75)'}}>
         risk 0.70 to 0.85
       </div>
@@ -88,7 +95,7 @@ const Climb: React.FC<{at: number; until: number}> = ({at, until}) => {
         boxShadow: '0 0 14px rgba(237,153,14,0.5)'}} />
       <div style={{position: 'absolute', left: 10, top: y - 26, fontFamily: MONO, fontSize: 17,
         color: C.ember, fontVariantNumeric: 'tabular-nums'}}>
-        threshold {(0.3 + p * 0.55).toFixed(2)}
+        threshold {value.toFixed(2)}
       </div>
     </div>
   );
@@ -136,7 +143,18 @@ export const Ceiling: React.FC = () => {
           <Row at={FEWER}  until={HELD - 8}   label="interruptions to the human"       a="69"    b="61" />
           <Row at={FEWER + 22} until={HELD - 8} label="reviews with attention left"    a="14"    b="14" />
           <Row at={HELD}   until={UNSEEN - 8} label="oversight held for"               a="05:06" b="06:54" good />
-          <Row at={UNSEEN} until={n.end}      label="high-risk actions running unseen" a="0"     b="34" bad
+          {/* Included because leaving it out looked like curation. It is the least
+              flattering figure the run produces and it belongs next to the ones
+              that flatter. */}
+          <Row at={HELD + 26} until={UNSEEN - 8}
+            label="high-risk actions the tired reviewer stamped anyway" a="51" b="47" />
+          {/* The condition has to be in the label. Under the 0.45 column WITH the
+              floor in place this row is 0, not 34: the 34 is what the same run
+              does once ALWAYS_ESCALATE_ABOVE is removed. Sitting unqualified under
+              a column headed "0.45" it read as a consequence of the threshold
+              move, which is a different and false claim. */}
+          <Row at={UNSEEN} until={n.end}
+            label="high-risk actions running unseen, with no safety floor" a="0" b="34" bad
             flipAt={ZERO} flipTo="0" />
         </div>
 

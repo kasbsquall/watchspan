@@ -13,7 +13,18 @@ export default function SentinelAlerts({
   events: TimelineEvent[];
   live?: boolean;
 }) {
-  const paused = events.filter((e) => e.route === "paused_sentinel").slice(-4).reverse();
+  /* Ordered by risk, not by arrival.
+     `.slice(-4)` took the four most recent, and in the seeded run the held
+     requests arrive with the production backup deletion third of seven, so the
+     panel showed risks 25, 36, 74 and 12 and never the 90. The single catch the
+     product exists to demonstrate, and the one the film spends thirty-five
+     seconds on, was invisible to anyone who opened the live URL. A panel headed
+     "held for review" should lead with the most dangerous thing it is holding. */
+  const paused = events
+    .filter((e) => e.route === "paused_sentinel")
+    .slice()
+    .sort((a, b) => b.risk_score - a.risk_score)
+    .slice(0, 4);
 
   return (
     <div>

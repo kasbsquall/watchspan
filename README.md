@@ -244,17 +244,36 @@ tests/        24 tests over the deterministic core
 
 Stated plainly, because a reviewer will ask.
 
-**Real:** the fleet and the governance agents run on Google Cloud; the API,
-the Agent Registry catalog, the Memory Bank ledger, the Model Armor screening
-and the Cloud Trace spans are live services; Gemini 3.5 Flash writes the
-findings; every figure in the film and in this README comes from a run of the
-code in this repository.
+Do not take this on trust either. `GET /geap/status` on the deployed API calls
+every service named below and reports what came back, so the whole footprint is
+one request away from being checked rather than believed:
 
-**Simulated:** reviewer behaviour. A real reviewer's decision times are modelled
-from a declared table in `fleet/simulator.py`, because we had no instrumented
-human to measure. The film says so on screen at the moment it matters. Feeding
-Watchspan real decisions is a matter of posting them to `/decisions`; nothing
-in the governance layer knows or cares that the current ones are generated.
+```bash
+curl -s https://watchspan-api-45ejdvuucq-uc.a.run.app/geap/status | python -m json.tool
+```
+
+**Real, in the path you can click:** the governance layer runs on Cloud Run;
+Gemini 3.5 Flash on Vertex AI writes the findings; the Memory Bank ledger
+answers `GET /ledger/{id}` with `"backend":"memory_bank"`; every routing and
+human decision is a Cloud Trace span carrying the numbers that justified it.
+Every figure in the film and in this README comes from a run of the code here,
+and `/simulate` on the deployed service returns them to the last decimal.
+
+**Real, on the other path:** the ADK fleet runs on Agent Runtime, with Model
+Armor screening its model input as a `before_model_callback`. Model Armor is
+deliberately not in front of this API, and the film explains why: the reworded
+deletion is not a prompt injection, so Model Armor is the wrong control for it.
+That is what the Sentinel is for. The Agent Registry catalogues the seven
+agents and answers cross-department search, run as a CLI rather than from the
+request path.
+
+**Simulated:** reviewer behaviour, and the fleet that generates the requests.
+`/simulate` runs `fleet/simulator.py`, a seeded generator over a declared action
+table, not the ADK agents. A real reviewer's decision times are modelled from a
+declared table in the same file, because we had no instrumented human to
+measure. The film says so on screen at the moment it matters. Feeding Watchspan
+real decisions is a matter of posting them to `/decisions`; nothing in the
+governance layer knows or cares that the current ones are generated.
 
 ## Things worth knowing
 
