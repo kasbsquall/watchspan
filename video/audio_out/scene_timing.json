@@ -1,68 +1,68 @@
 {
- "vo": 155.048,
- "scenes": [
-  {
-   "id": "hook",
-   "start": 1.6,
-   "end": 8.938,
-   "dur": 7.338,
-   "words": 17
-  },
-  {
-   "id": "what",
-   "start": 9.218,
-   "end": 29.465,
-   "dur": 20.248,
-   "words": 59
-  },
-  {
-   "id": "budget",
-   "start": 29.745,
-   "end": 47.578,
-   "dur": 17.833,
-   "words": 48
-  },
-  {
-   "id": "collapse",
-   "start": 47.858,
-   "end": 64.391,
-   "dur": 16.533,
-   "words": 51
-  },
-  {
-   "id": "attack",
-   "start": 64.671,
-   "end": 92.767,
-   "dur": 28.096,
-   "words": 76
-  },
-  {
-   "id": "ceiling",
-   "start": 93.047,
-   "end": 117.381,
-   "dur": 24.335,
-   "words": 58
-  },
-  {
-   "id": "evidence",
-   "start": 117.661,
-   "end": 134.148,
-   "dur": 16.486,
-   "words": 47
-  },
-  {
-   "id": "cloud",
-   "start": 134.428,
-   "end": 150.078,
-   "dur": 15.65,
-   "words": 39
-  },
-  {
-   "id": "close",
-   "start": 150.358,
-   "end": 155.048,
-   "dur": 4.69,
-   "words": 14
-  }
- ]
+  "vo": 152.56,
+  "scenes": [
+    {
+      "id": "hook",
+      "start": 1.6,
+      "end": 13.68,
+      "dur": 12.08,
+      "words": 29
+    },
+    {
+      "id": "what",
+      "start": 13.96,
+      "end": 33.4,
+      "dur": 19.44,
+      "words": 59
+    },
+    {
+      "id": "budget",
+      "start": 33.68,
+      "end": 51.28,
+      "dur": 17.6,
+      "words": 48
+    },
+    {
+      "id": "collapse",
+      "start": 51.56,
+      "end": 67.48,
+      "dur": 15.92,
+      "words": 51
+    },
+    {
+      "id": "attack",
+      "start": 67.76,
+      "end": 94.08,
+      "dur": 26.32,
+      "words": 76
+    },
+    {
+      "id": "ceiling",
+      "start": 94.36,
+      "end": 116.68,
+      "dur": 22.32,
+      "words": 58
+    },
+    {
+      "id": "evidence",
+      "start": 116.96,
+      "end": 132.48,
+      "dur": 15.52,
+      "words": 47
+    },
+    {
+      "id": "cloud",
+      "start": 132.76,
+      "end": 147.32,
+      "dur": 14.56,
+      "words": 39
+    },
+    {
+      "id": "close",
+      "start": 147.6,
+      "end": 152.56,
+      "dur": 4.96,
+      "words": 14
+    }
+  ]
 }

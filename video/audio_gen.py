@@ -29,9 +29,13 @@ import httpx
 
 # EDIT THIS: one entry per scene, in order. ids must match the keys in Video.tsx.
 SCENES = [
+    # The close carries the line the whole film is built on. A jury that stops at
+    # forty seconds never hears it, and this track is full of governed-fleet
+    # projects that look identical from the outside, so it opens here too.
     ("hook",
      "Five minutes into the shift, this reviewer stopped reading. "
-     "Nothing alerted. Nothing failed. The approvals kept coming."),
+     "Nothing alerted. Nothing failed. The approvals kept coming. "
+     "Everyone sells human in the loop. This is the part nobody measures."),
 
     ("what",
      "Watchspan sits between an agent fleet and the people who approve what it does. "
@@ -91,13 +95,17 @@ GAP = 0.28          # silence inserted between scenes, so beats do not run toget
 # ---------------------------------------------------------------- providers
 def tts_elevenlabs(text: str) -> bytes:
     key = os.environ["ELEVENLABS_API_KEY"]
-    voice = os.getenv("VOICE_ID", "bIHbv24MWmeRgasZH58o")  # Will — relaxed optimist
+    voice = os.getenv("VOICE_ID", "iP95p4xoKVk53GoZ742B")  # Chris — charming, down-to-earth
+    # eleven_v3, not multilingual_v2. The older model is audibly a synthesiser at
+    # sentence ends and on pauses, and a judge on this hackathon said in the
+    # briefing that AI voices cost points. v3 breathes.
+    model = os.getenv("ELEVEN_MODEL", "eleven_v3")
     r = httpx.post(
-        f"https://api.elevenlabs.io/v1/text-to-speech/{voice}?output_format=mp3_44100_128",
+        f"https://api.elevenlabs.io/v1/text-to-speech/{voice}",
         headers={"xi-api-key": key, "Content-Type": "application/json"},
-        json={"text": text, "model_id": "eleven_multilingual_v2",
-              "voice_settings": {"stability": 0.45, "similarity_boost": 0.8,
-                                 "style": 0.32, "use_speaker_boost": True}},
+        json={"text": text, "model_id": model,
+              "voice_settings": {"stability": 0.45, "similarity_boost": 0.75,
+                                 "style": 0.15, "speed": 0.95}},
         timeout=300)
     if r.status_code != 200:
         raise SystemExit(f"ElevenLabs {r.status_code}: {r.text[:300]}")
@@ -197,7 +205,20 @@ def main():
     for sid, text in SCENES:
         f = parts / f"{sid}.wav"
         if not f.exists():
-            f.write_bytes(synth(text))
+            # Every vendor here returns a compressed stream whatever the file is
+            # called, so decode to real PCM before anything else touches it.
+            #
+            # THE FAILURE THIS PREVENTS, twice now: the scenes were MP3 with a
+            # .wav extension while the inter-scene silences were PCM, and the
+            # concat demuxer needs uniform inputs. It did not error. It dropped
+            # all eight silences, and the voiceover came out 2.24s shorter than
+            # scene_timing.json said it was, so every visual after the first
+            # scene drifted further out of sync than the last.
+            raw = parts / f"{sid}.raw"
+            raw.write_bytes(synth(text))
+            run_ff(["ffmpeg", "-y", "-i", str(raw), "-ar", "44100", "-ac", "1",
+                    "-c:a", "pcm_s16le", str(f)], f"decode {sid}")
+            raw.unlink(missing_ok=True)
         d = duration(f)
         start, end = cursor, cursor + d
         timing.append({"id": sid, "start": round(start, 3), "end": round(end, 3),
@@ -234,6 +255,14 @@ def main():
     listing.write_text("\n".join(lines))
     run_ff(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(listing),
             "-c:a", "pcm_s16le", str(out / "vo.wav")], "concat")
+    # Trust nothing about concat: check the result against what the timing file
+    # promises, because the failure mode is silent and costs a whole render.
+    got = duration(out / "vo.wav")
+    want = vo_end - LEAD
+    if abs(got - want) > 0.15:
+        raise SystemExit(
+            f"vo.wav is {got:.2f}s but scene_timing.json describes {want:.2f}s. "
+            f"The concat dropped something; every visual would be out of sync.")
 
     # --- music: an mp3 you generated (Suno), or ElevenLabs as a fallback
     music_file = os.getenv("MUSIC_FILE")

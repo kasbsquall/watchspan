@@ -2,6 +2,31 @@ import {useCurrentFrame, useVideoConfig} from 'remotion';
 import React from 'react';
 import capsRaw from '../data/captions.json';
 import {INTER, C} from '../theme';
+import {narration} from './narration';
+import {SCENES} from '../timing';
+
+/* Where the burned caption stands down.
+
+   When a scene sets the same sentence in display type, the caption repeats it
+   word for word at the bottom of the frame, and two copies of one sentence at
+   two sizes reads as a bug rather than as accessibility. So a scene can hand
+   the line over: name the phrase span, and the caption goes quiet for exactly
+   as long as the screen is carrying it.
+
+   Declared as phrases, not as seconds, for the reason cue.ts and narration.ts
+   both exist: a re-recorded voiceover moves every timestamp and would leave
+   these windows covering the wrong words. */
+const HANDOVER: {scene: string; from: string; to: string}[] = [
+  {scene: 'hook', from: 'everyone sells', to: 'measures'},
+  {scene: 'close', from: 'everyone sells', to: 'there'},
+];
+
+const MUTED: [number, number][] = HANDOVER.map(({scene, from, to}) => {
+  const s = SCENES.find((x) => x.id === scene);
+  if (!s) throw new Error(`caption handover names an unknown scene: ${scene}`);
+  const n = narration(scene);
+  return [s.startF + n.at(from) - 6, s.startF + n.after(to) + 10];
+});
 
 type Word = {t: number; e: number; w: string};
 const caps = capsRaw as Word[];
@@ -29,6 +54,7 @@ export const Captions: React.FC = () => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const t = frame / fps;
+  if (MUTED.some(([a, b]) => frame >= a && frame <= b)) return null;
   const line = LINES.find((l) => t >= l.start - 0.12 && t <= l.end + 0.35);
   if (!line) return null;
   return (

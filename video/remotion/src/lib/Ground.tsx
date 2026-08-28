@@ -14,12 +14,18 @@ export const Ground: React.FC<{tint?: 'ember' | 'alarm' | 'ok'}> = ({tint = 'emb
   const f = useCurrentFrame();
   const hue = tint === 'alarm' ? '230,67,67' : tint === 'ok' ? '104,185,134' : '237,153,14';
 
-  // Slow parallax on the washes: full-bleed layers may translate, because the
-  // eye has no fixed reference against them.
-  const x1 = interpolate(f, [0, 900], [0, -46]);
-  const y1 = interpolate(f, [0, 900], [0, 30]);
-  const x2 = interpolate(f, [0, 900], [0, 58]);
-  const s1 = interpolate(f, [0, 900], [1, 1.10]);
+  // Parallax on the washes: full-bleed layers may translate, because the eye has
+  // no fixed reference against them.
+  //
+  // These rates used to be 46px over 900 frames, which is 0.05px per frame. That
+  // is below what a frame-difference measurement can even see, let alone a
+  // viewer: the "moving" background contributed nothing and the scenes measured
+  // as fully frozen. A scene is 300-800 frames, so the travel is scaled to that,
+  // and the two washes run at different rates so they separate in depth.
+  const x1 = interpolate(f, [0, 420], [0, -430]);
+  const y1 = interpolate(f, [0, 420], [0, 250]);
+  const x2 = interpolate(f, [0, 420], [0, 330]);
+  const s1 = interpolate(f, [0, 420], [1, 1.5]);
 
   return (
     <AbsoluteFill style={{background: '#0d0b08'}}>
