@@ -125,7 +125,11 @@ export const Hook: React.FC = () => {
   const filled = arc * (pct / 100);
   const alarm = pct <= 12;
 
-  const enter = spring({frame: f - 2, fps, config: {damping: 17, mass: 0.7, stiffness: 100}});
+  // No entrance. The overture has already had the instrument on screen for a
+  // second and a half at this exact size and position, so springing it in again
+  // makes it vanish and re-arrive across the cut: measured as a frame-difference
+  // spike of 14.8 where nothing else in the film exceeds 0.8.
+  const enter = 1;
   const drain = interpolate(f, [8, DRAIN_END], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   const ring = interpolate(drain, [0, 1], [1.0, 0.72]);
 

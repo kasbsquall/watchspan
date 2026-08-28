@@ -10,8 +10,17 @@ import {C} from '../theme';
    to travel through shows every contour. The washes are strong enough to have
    real range, and the dither is plain alpha at roughly one level, which breaks
    a contour into noise the eye integrates back into a ramp. */
-export const Ground: React.FC<{tint?: 'ember' | 'alarm' | 'ok'}> = ({tint = 'ember'}) => {
-  const f = useCurrentFrame();
+export const Ground: React.FC<{tint?: 'ember' | 'alarm' | 'ok'; offset?: number}> = ({
+  tint = 'ember',
+  offset = 0,
+}) => {
+  // `offset` exists for one case: a sequence that has to hand over to another
+  // without a visible seam. Every Sequence counts its own frames from zero, so
+  // the overture's ground had travelled 103px by the cut and the hook's started
+  // again at 0. The snap measured as a frame-difference spike of 3.4 where the
+  // shot around it averages 0.27. Render the earlier sequence at a negative
+  // offset and the two are continuous.
+  const f = useCurrentFrame() + offset;
   const hue = tint === 'alarm' ? '230,67,67' : tint === 'ok' ? '104,185,134' : '237,153,14';
 
   // Parallax on the washes: full-bleed layers may translate, because the eye has

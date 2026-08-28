@@ -98,6 +98,26 @@ SCENES = [
 LEAD = 1.6          # seconds of music before the voice enters
 GAP = 0.28          # silence inserted between scenes, so beats do not run together
 
+# Per-scene delivery speed, because a synthetic voice does not slow down for an
+# ending the way a person does. Measured on this film: the middle ran at 12.6 to
+# 14.0 characters a second and the last three scenes ran at 14.1 to 14.9, so the
+# closing third was 10% faster than the argument it was closing. It was audible
+# before it was measured.
+#
+# THIS IS DONE WITH atempo, NOT with the vendor's speed setting. eleven_v3
+# ignores `voice_settings.speed`: asking for 0.86 changed a scene from 14.9 to
+# 14.8 characters a second, and re-rolling the same scene came back FASTER at
+# 16.5, because each generation is a fresh take. Time-stretching the take you
+# already have is the only deterministic control, and atempo preserves pitch.
+#
+# Measure in characters per second, not words per minute: word length varies
+# enough between scenes to hide a real drift.
+SCENE_TEMPO = {
+    "evidence": 0.90,
+    "close": 0.81,
+}
+DEFAULT_SPEED = 0.95
+
 
 # ---------------------------------------------------------------- providers
 def tts_elevenlabs(text: str) -> bytes:
@@ -112,7 +132,7 @@ def tts_elevenlabs(text: str) -> bytes:
         headers={"xi-api-key": key, "Content-Type": "application/json"},
         json={"text": text, "model_id": model,
               "voice_settings": {"stability": 0.45, "similarity_boost": 0.75,
-                                 "style": 0.15, "speed": 0.95}},
+                                 "style": 0.15, "speed": DEFAULT_SPEED}},
         timeout=300)
     if r.status_code != 200:
         raise SystemExit(f"ElevenLabs {r.status_code}: {r.text[:300]}")
@@ -223,7 +243,9 @@ def main():
             # scene drifted further out of sync than the last.
             raw = parts / f"{sid}.raw"
             raw.write_bytes(synth(text))
-            run_ff(["ffmpeg", "-y", "-i", str(raw), "-ar", "44100", "-ac", "1",
+            tempo = SCENE_TEMPO.get(sid)
+            af = ["-af", f"atempo={tempo}"] if tempo else []
+            run_ff(["ffmpeg", "-y", "-i", str(raw), *af, "-ar", "44100", "-ac", "1",
                     "-c:a", "pcm_s16le", str(f)], f"decode {sid}")
             raw.unlink(missing_ok=True)
         d = duration(f)

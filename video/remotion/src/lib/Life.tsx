@@ -96,7 +96,11 @@ export const SceneEdge: React.FC<{dur: number; inF?: number; outF?: number}> = (
   outF = 8,
 }) => {
   const f = useCurrentFrame();
-  const enter = interpolate(f, [0, inF], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  // inF of 0 means "no dip on the way in", which interpolate cannot express:
+  // a zero-width input range throws rather than degrading to a constant.
+  const enter = inF > 0
+    ? interpolate(f, [0, inF], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})
+    : 0;
   const leave = interpolate(f, [dur - outF, dur], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
   const o = Math.max(enter, leave);
   if (o <= 0.002) return null;

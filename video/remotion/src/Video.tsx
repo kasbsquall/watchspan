@@ -66,7 +66,7 @@ const Overture: React.FC<{dur: number}> = ({dur}) => {
   const filled = arc * 0.41;
   return (
     <AbsoluteFill>
-      <Ground tint="ember" />
+      <Ground tint="ember" offset={-dur} />
       <AbsoluteFill style={{alignItems: 'center', justifyContent: 'center', opacity: up}}>
         <div style={{position: 'relative', marginTop: -110}}>
           <svg width={700} height={392} viewBox="0 0 300 168">
@@ -119,7 +119,10 @@ export const Video: React.FC = () => {
               <Camera beats={shot.beats} step={shot.step} origin={shot.origin}>
                 {Comp ? <Comp /> : <Placeholder id={s.id} />}
               </Camera>
-              <SceneEdge dur={s.durF} />
+              {/* No dip into the first scene: the overture hands the instrument
+                  over directly, and a black flash between them is a cut where
+                  the film is meant to be continuous. */}
+              <SceneEdge dur={s.durF} inF={s.id === SCENES[0].id ? 0 : 9} />
             </Series.Sequence>
           );
         })}
