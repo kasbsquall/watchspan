@@ -202,6 +202,14 @@ export const Attack: React.FC = () => {
       <RiskFloor at={RISK_ONLY} x={1010} />
       <Verdict at={PASS + 14} x={1010} text="no alerts" note="the Sentinel saw nothing" tone={C.alarm} />
 
+      {/* What actually stopped it, said where there is room to say it. The left
+          column is finished with its own story by now, and this window was the
+          film's last seven-second hold. */}
+      <div style={{position: 'absolute', left: 100, top: 622, width: 830, minHeight: 70}}>
+        <Spoken n={n} from={RISK_ONLY} to={n.after('is gone')} color={C.ink300}
+          style={{fontFamily: FONT.text, fontSize: 23, lineHeight: 1.45}} />
+      </div>
+
       {/* The limit, and the argument, arriving with the words that carry them.
 
           These were three static blocks and they covered the last fifteen seconds

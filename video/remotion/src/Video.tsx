@@ -52,7 +52,7 @@ const SHOT: Record<string, {beats: number[]; step: number; origin: string}> = {
   // The attack scene runs 1068 frames after the narration was corrected, so it
   // needs four pushes rather than three, at a smaller step: four times 0.018 is
   // 0.072 of total scale, and the crop stays inside the 100px scene padding.
-  attack:   {beats: [145, 300, 560, 800], step: 0.018, origin: '50% 42%'},
+  attack:   {beats: [145, 300, 430, 620, 830], step: 0.015, origin: '50% 42%'},
   ceiling:  {beats: [90, 220, 425], step: 0.022, origin: '38% 46%'},
   evidence: {beats: [40, 195], step: 0.026, origin: '32% 40%'},
   cloud:    {beats: [45, 240], step: 0.026, origin: '40% 48%'},
