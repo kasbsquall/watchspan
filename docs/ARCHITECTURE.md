@@ -5,52 +5,15 @@ attention as what it really is: a finite, measurable, consumable resource.
 
 ## System diagram
 
-```mermaid
-flowchart TB
-    subgraph FLEET["Demo fleet · GEAP Agent Runtime"]
-        direction LR
-        P[Procurement] ~~~ D[Data ops] ~~~ C[Comms]
-    end
+![Watchspan governance loop](architecture.svg)
 
-    SENT["<b>Sentinel</b><br/>fatigue-exploitation patterns"]
-    POL{"<b>Calibrated policy</b><br/>risk ≥ threshold(budget)?"}
-    HUMAN(["Human reviewer"])
-    AUTO["Auto-run, logged for audit"]
-    METER["<b>Meter</b><br/>shared attention budget"]
-    DRIFT["<b>Drift</b><br/>rubber-stamp detection"]
-    CAL["<b>Calibrator</b><br/>policy proposal"]
-    DOSSIER[["Article 14 dossier"]]
+Requests enter from the left. Everything along the bottom is the return path:
+what a review actually cost the reviewer, measured, and fed back into the
+threshold that decides what escalates next. The source of the drawing is
+[architecture.svg](architecture.svg); [diagram.html](diagram.html) renders it
+standalone for export.
 
-    FLEET -->|approval requests| SENT
-    SENT -->|clean| POL
-    SENT -.->|held out of band| HUMAN
-    POL -->|yes| HUMAN
-    POL -->|no| AUTO
-    HUMAN -->|decisions| METER
-    METER -->|budget fraction| POL
-    METER --> DRIFT
-    DRIFT -->|degradation declared| CAL
-    CAL -->|waits for approval| HUMAN
-    METER & DRIFT & CAL --> DOSSIER
 
-    subgraph GEAP["GEAP services"]
-        direction LR
-        REG["Agent Registry<br/>fleet cataloging"] ~~~ MB["Memory Bank<br/>cross-session ledger"] ~~~ MA["Model Armor<br/>input guardrails"] ~~~ OBS["Observability<br/>OpenTelemetry"]
-    end
-
-    subgraph CLOUD["Cloud Run · scale to zero"]
-        direction LR
-        FRONT["Control room<br/>Next.js"] --> API["Watchspan API<br/>FastAPI"]
-    end
-
-    METER -.- GEAP
-    API -.- POL
-
-    classDef gov fill:#221f1c,stroke:#c98a3a,stroke-width:1px,color:#eae6e0
-    classDef plain fill:#1a1815,stroke:#3a352f,color:#cfc9c1
-    class SENT,METER,DRIFT,CAL gov
-    class AUTO,DOSSIER,REG,MB,MA,OBS,FRONT,API,P,D,C plain
-```
 
 Export note: the submission's architecture image is rendered from this Mermaid
 source (GitHub renders it inline; for the Devpost image, export via
