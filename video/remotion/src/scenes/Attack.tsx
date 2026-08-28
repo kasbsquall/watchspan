@@ -234,7 +234,10 @@ export const Attack: React.FC = () => {
           <span style={{fontFamily: MONO, fontSize: 21, color: C.ember}}>Model Armor</span>
           <div>
             <div style={{minHeight: 60}}>
-              <Spoken n={n} from={ARMOR} to={n.after('prompt injection')} color={C.ink300} tick={false}
+              {/* Starts at "screens": the words "Model Armor" are already set in
+                  mono in the column to the left, and printing them twice side by
+                  side reads as a duplication bug. */}
+              <Spoken n={n} from={n.at('screens')} to={n.after('prompt injection')} color={C.ink300} tick={false}
                 style={{fontFamily: FONT.text, fontSize: 20, lineHeight: 1.5}} />
             </div>
             <div style={{minHeight: 42, marginTop: 10}}>

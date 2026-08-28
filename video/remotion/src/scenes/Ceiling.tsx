@@ -121,9 +121,12 @@ export const Ceiling: React.FC = () => {
         <div style={{opacity: head}}>
           <div style={{fontFamily: FONT.text, fontSize: 15, letterSpacing: '0.18em',
             textTransform: 'uppercase', color: C.ink500}}>Raising the bar, measured</div>
+          {/* The columns were two bare decimals. A viewer who has not read the
+              code has no way to know they are escalation thresholds. */}
           <div style={{display: 'grid', gridTemplateColumns: '620px 200px 200px', marginTop: 24,
             fontFamily: MONO, fontSize: 22, color: C.ink500}}>
-            <span />
+            <span style={{fontFamily: FONT.text, fontSize: 15, letterSpacing: '0.14em',
+              textTransform: 'uppercase'}}>escalation threshold</span>
             <span>0.30</span>
             <span style={{color: C.ember, opacity: col}}>0.45</span>
           </div>

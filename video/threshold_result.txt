@@ -1,14 +1,26 @@
+Output of `python video/threshold_experiment.py`, regenerated against the
+current code. Regenerate it whenever the policy changes; a stale copy of this
+file shipped for weeks carrying the numbers from BEFORE ALWAYS_ESCALATE_ABOVE
+existed (69 -> 27 interruptions, a 51.8% meaningful-review ratio), which
+contradicted both the README and the film. In a project whose whole claim is
+that it measures rather than asserts, that was the worst possible file to leave
+out of date.
+
                                    0.30       0.45
-escalated                            69         27
-auto_run                            294        336
+escalated                            69         61
+auto_run                            294        302
 held                                  7          7
 meaningful                           14         14
-ratio                            0.2029     0.5185
-drift_at                          306.9      526.7
-dangerous_stamped                    51         13
+ratio                            0.2029     0.2295
+drift_at                          306.9      414.2
+dangerous_stamped                    51         47
 backup_deletion_route        paused_sentinel paused_sentinel
 
-Interruptions to the human:  69 -> 27  (-42)
-Reviews with real attention: 20.3% -> 51.8%
+Interruptions to the human:  69 -> 61  (-8)
+Reviews with real attention: 20.3% -> 22.9%
 Backup deletion still stopped at the higher bar: paused_sentinel
-High-risk actions rubber-stamped: 51 -> 13  (-38)
+High-risk actions rubber-stamped: 51 -> 47  (-4)
+
+At 0.45, actions above risk 0.70 that auto-execute unseen:
+  with ALWAYS_ESCALATE_ABOVE=0.7: 0
+  with the floor removed:      34

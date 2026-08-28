@@ -54,13 +54,23 @@ proposal waiting for a human who still has attention to give.
   `before_model_callback` wires **Model Armor** screening (fails closed). The
   four governance agents are deliberately deterministic Python rather than LLM
   agents, so a verdict cannot move because the model had a bad day.
-- **GEAP**, all six wired against the live platform: the seven agents are
-  catalogued in the **Agent Registry** and findable by cross-department search;
-  the fleet runs on **Agent Runtime**; the attention ledger persists per
-  reviewer in **Memory Bank**; **Model Armor** screens every prompt;
-  **Agent Identity** gives the fleet its own least-privilege service account;
-  and governance decisions are traced to **Cloud Trace**, each span carrying
-  the numbers that justified the decision.
+- **GEAP**, six services, and it is worth being precise about which run where,
+  because the demo you can click and the Agent Runtime deployment are two
+  different paths:
+  - Live in the deployed API: **Memory Bank** holds the per-reviewer attention
+    ledger (`GET /ledger/{id}` answers `"backend":"memory_bank"`), and
+    **Cloud Trace** carries a span per governance decision with the risk score,
+    effective threshold and review depth that justified it.
+  - **Agent Registry** catalogues the seven agents with A2A cards and answers
+    cross-department search, run as a CLI (`python -m fleet.registry`) rather
+    than from the request path.
+  - **Agent Runtime** hosts the ADK fleet, and **Model Armor** screens its model
+    input there as a `before_model_callback`. It does not sit in front of the
+    Cloud Run API, which is deliberate and is the point the film makes: the
+    reworded deletion is not a prompt injection, so Model Armor is the wrong
+    control for it. That is why the Sentinel exists.
+  - **Agent Identity**: a dedicated least-privilege service account. SPIFFE
+    `AGENT_IDENTITY` is not exposed in `google-cloud-aiplatform` 1.165.1.
 - **Cloud Run** hosts both the FastAPI backend and the Next.js control room,
   scale to zero, max 2 instances.
 - The demo fleet (procurement, data ops, comms) generates approval requests

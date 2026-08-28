@@ -119,8 +119,15 @@ export const What: React.FC = () => {
             opacity: src, transform: `translateY(${(1 - src) * 10}px)`,
           }}
         >
-          <span style={{fontFamily: MONO, fontSize: 34, color: C.ink300, fontVariantNumeric: 'tabular-nums'}}>
-            {total}
+          {/* The figure appears when it starts counting, not before. Bringing the
+              scaffolding forward to fill the frame left a literal "0 actions in
+              one run" on screen for three and a half seconds, which is a false
+              statement about the data, not a loading state. */}
+          <span style={{fontFamily: MONO, fontSize: 34, color: C.ink300,
+            fontVariantNumeric: 'tabular-nums', minWidth: 74, display: 'inline-block',
+            opacity: interpolate(f, [SRC - 4, SRC + 4], [0, 1],
+              {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}}>
+            {f >= SRC - 4 ? total : ''}
           </span>
           <span style={{fontFamily: FONT.text, fontSize: 20, color: C.ink500}}>actions in one run</span>
           <ArrowRight size={22} weight="light" color={C.ink700} />
