@@ -76,6 +76,15 @@ class MemoryBankAttentionMemory:
         return response.json()
 
     def remember(self, reviewer_id: str, fact: str) -> None:
+        # Memory Bank appends, and every demo run writes the same degradation
+        # sentence, so the ledger grew to twenty-seven identical lines: a panel
+        # that is meant to show what a reviewer carries in from past sessions
+        # instead showed one sentence, repeated. Skip what is already there.
+        try:
+            if fact in self.recall(reviewer_id):
+                return
+        except Exception:
+            pass  # a failed read must not stop a write
         self._post("memories", {"fact": fact, "scope": {"reviewer": reviewer_id}})
 
     def recall(self, reviewer_id: str) -> list[str]:

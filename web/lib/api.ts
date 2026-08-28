@@ -107,3 +107,36 @@ export async function fetchDossier(): Promise<Record<string, unknown>> {
   if (!res.ok) throw new Error(`dossier failed: ${res.status}`);
   return res.json();
 }
+
+export interface LiveRouted {
+  action: string;
+  agent_id: string;
+  risk_score: number;
+  route: "escalate" | "auto_execute" | "paused_sentinel";
+  effective_threshold: number;
+  team_fraction: number;
+  alerts: string[];
+  description: string;
+}
+
+export interface LiveFleetResponse {
+  tasks_given: number;
+  requests_the_fleet_chose_to_make: number;
+  routed: LiveRouted[];
+}
+
+/* The real ADK fleet, not the seeded generator. Each task is a Gemini turn, so
+   this takes tens of seconds and the caller must show that it is working. */
+export async function runLiveFleet(
+  tasks = 3,
+  signal?: AbortSignal,
+): Promise<LiveFleetResponse> {
+  const res = await fetch(`${API}/fleet/live`, {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify({ tasks }),
+    signal,
+  });
+  if (!res.ok) throw new Error(`live fleet failed: ${res.status}`);
+  return res.json();
+}

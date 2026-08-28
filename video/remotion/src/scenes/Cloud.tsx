@@ -2,7 +2,7 @@ import {AbsoluteFill, useCurrentFrame, interpolate, Easing} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
 import {Ground} from '../lib/Ground';
-import {Spot, Rails, Sweep, Spoken} from '../lib/Life';
+import {Spot, Rails, Sweep} from '../lib/Life';
 import {narration} from '../lib/narration';
 
 /* Google Cloud, named against what each service actually holds.
@@ -70,15 +70,8 @@ export const Cloud: React.FC = () => {
           <Item at={IDENTITY} until={LEDGER - 8}   k="Agent Runtime"  v="the fleet, under its own least-privilege identity" />
           <Item at={LEDGER}   until={GEMINI - 8}   k="Memory Bank"    v="the attention ledger, surviving the session" />
           <Item at={GEMINI}   until={TRACED - 8}   k="Vertex AI"      v="Gemini 3.5 Flash writes the findings" />
-          <Item at={GEMINI + 14} until={TRACED - 8} k="Model Armor"   v="every prompt screened before it reaches the model" />
-          <Item at={TRACED}   until={n.end}        k="Cloud Trace"    v="" />
-        </div>
-
-        {/* The last sentence of the scene, arriving as it is said, so the shot does
-            not end on eight seconds of finished list. */}
-        <div style={{marginTop: 26, paddingLeft: 440, minHeight: 40}}>
-          <Spoken n={n} from={TRACED} to={n.after('justified it')} color={C.ink300}
-            style={{fontFamily: FONT.text, fontSize: 25}} />
+          <Item at={GEMINI + 14} until={TRACED - 8} k="Model Armor"   v="the fleet's model input, screened on Agent Runtime" />
+          <Item at={TRACED}   until={n.end}        k="Cloud Trace"    v="each decision carrying the numbers that justified it" />
         </div>
       </AbsoluteFill>
 

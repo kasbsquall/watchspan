@@ -20,9 +20,14 @@ BURST_WINDOW_S = 30.0
 # Batch smuggling: a request this risky inside a batch this benign on average.
 SMUGGLE_RISK = 0.7
 SMUGGLE_BATCH_MEAN = 0.3
-# Deterministic fallback for minimizing language. The LLM path (Gemini via
-# ADK) refines this; these phrases are treated as adversarial signals on
-# their own per ATR-2026-00118.
+# Minimizing language, matched deterministically. There is no model in this
+# path and there should not be: a detector whose verdict moves with the weather
+# cannot be audited. An earlier version of this comment described a Gemini
+# refinement step that does not exist anywhere in the codebase, which a reviewer
+# caught. The phrases are adversarial signals in their own right per
+# ATR-2026-00118, and the film is explicit that a phrase list is a floor rather
+# than a ceiling: reword the request and it walks past this. What does not walk
+# past it is the attention budget, which does not read the words at all.
 MINIMIZING_PHRASES = (
     "just approve",
     "routine",
@@ -105,16 +110,26 @@ class Sentinel:
             return []
         mean_benign = sum(r.risk_score for r in benign) / len(benign)
         if mean_benign <= SMUGGLE_BATCH_MEAN:
+            # ONE alert, about the batch, attached to whatever is being routed.
+            #
+            # It used to return one alert per risky member, each carrying that
+            # member's risk in its text, while the orchestrator held whichever
+            # request happened to be routing. So a cache flush at risk 0.12 was
+            # held under a line reading "risk 0.90 hidden in batch", which reads
+            # as though the cache flush were the dangerous one. Holding the whole
+            # batch is right; describing every member as the smuggled action is
+            # not. The detail now names the action it actually found.
+            worst = max(risky, key=lambda r: r.risk_score)
             return [
                 SentinelAlert(
                     pattern="batch_smuggling",
-                    request_id=r.request_id,
-                    agent_id=r.agent_id,
+                    request_id=request.request_id,
+                    agent_id=request.agent_id,
                     detail=(
-                        f"risk {r.risk_score:.2f} hidden in batch "
-                        f"{request.batch_id} with benign mean {mean_benign:.2f}"
+                        f"batch {request.batch_id} carries {worst.action} at risk "
+                        f"{worst.risk_score:.2f} among a benign mean of "
+                        f"{mean_benign:.2f}; holding the batch"
                     ),
                 )
-                for r in risky
             ]
         return []

@@ -256,3 +256,39 @@ class TestRiskCeiling:
     def test_the_ceiling_does_not_drag_routine_work_to_a_human(self):
         policy = ApprovalPolicy(base_threshold=0.45, budget_sensitivity=0.4)
         assert not policy.should_escalate(0.40, budget_fraction=0.0)
+
+
+def test_article14_dossier_reports_the_run_it_was_given():
+    """The README says the suite covers the dossier. It did not, and a reviewer
+    checked. The dossier is the artifact the whole Article 14 claim rests on, so
+    its summary has to agree with the run it was built from."""
+    from evidence import article14_dossier
+    from fleet import simulator
+    from watchspan.orchestrator import Orchestrator
+
+    orch = Orchestrator()
+    result = simulator.run(orch, minutes=30.0, seed=7, inject_attack=True)
+    dossier = article14_dossier.build(orch, generated_at=0.0)
+    summary = dossier["summary"]
+
+    assert summary["escalated_to_human"] == result.escalated
+    assert summary["auto_executed_with_audit"] == result.auto_executed
+    assert summary["paused_by_sentinel"] == result.paused_by_sentinel
+    # An attentive review is defined in the dossier, not asserted by it: depth
+    # above zero and more than 10% of the budget left.
+    assert 0 < summary["decisions_with_meaningful_attention"] <= summary["escalated_to_human"]
+    assert 0 < summary["meaningful_review_ratio"] < 1
+    assert dossier["narrative"]
+
+
+def test_dossier_ratio_matches_its_own_counts():
+    from evidence import article14_dossier
+    from fleet import simulator
+    from watchspan.orchestrator import Orchestrator
+
+    orch = Orchestrator()
+    simulator.run(orch, minutes=30.0, seed=7, inject_attack=True)
+    s = article14_dossier.build(orch, generated_at=0.0)["summary"]
+    expected = s["decisions_with_meaningful_attention"] / s["escalated_to_human"]
+    # The dossier rounds to four places, so compare at that resolution.
+    assert abs(s["meaningful_review_ratio"] - expected) < 1e-4

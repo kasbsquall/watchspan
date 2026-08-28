@@ -2,7 +2,7 @@ import {AbsoluteFill, useCurrentFrame, interpolate, Easing} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
 import {Ground} from '../lib/Ground';
-import {Spot, Caret, Rails, Ping, Spoken} from '../lib/Life';
+import {Spot, Caret, Rails, Ping, Kinetic} from '../lib/Life';
 import {narration} from '../lib/narration';
 
 /* The mechanism, drawn rather than narrated over.
@@ -103,9 +103,11 @@ export const Budget: React.FC = () => {
           <span style={{marginLeft: 18, fontFamily: FONT.text, fontSize: 19, color: C.ink500}}>
             attention/budget.py
           </span>
-          <div style={{marginTop: 14, minHeight: 36}}>
-            <Spoken n={n} from={DECISION} to={n.after('config file')} color={C.ink300}
-              style={{fontFamily: FONT.text, fontSize: 22}} />
+          {/* Edited, not the narration verbatim: the previous version set the
+              caption's own words on the slide and left them hanging on a comma. */}
+          <div style={{marginTop: 16, minHeight: 34}}>
+            <Kinetic at={DECISION} text="Our decision, and it is on the screen." size={22}
+              color={C.ink300} weight={400} style={{fontFamily: FONT.text}} />
           </div>
         </div>
       </AbsoluteFill>

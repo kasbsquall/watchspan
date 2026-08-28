@@ -2,7 +2,7 @@ import {AbsoluteFill, useCurrentFrame, interpolate, Easing} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
 import {Ground} from '../lib/Ground';
-import {Breathe, Ping, Spot, Sweep, Rails, Spoken} from '../lib/Life';
+import {Breathe, Ping, Spot, Sweep, Rails, Kinetic} from '../lib/Life';
 import {narration} from '../lib/narration';
 
 /* Two live calls against the deployed API, side by side. The first is held. The
@@ -135,6 +135,16 @@ const RiskFloor: React.FC<{at: number; x: number}> = ({at, x}) => {
   );
 };
 
+/* One block visible at a time: the next state cannot arrive on top of the last. */
+const Fade: React.FC<{from: number; to: number; children: React.ReactNode}> = ({from, to, children}) => {
+  const f = useCurrentFrame();
+  const o = interpolate(f, [from - 8, from + 6, to - 14, to], [0, 1, 1, 0], {
+    extrapolateLeft: 'clamp', extrapolateRight: 'clamp',
+  });
+  if (o <= 0.01) return null;
+  return <div style={{position: 'absolute', left: 0, right: 0, top: 22, opacity: o}}>{children}</div>;
+};
+
 const Verdict: React.FC<{at: number; x: number; text: string; note: string; tone: string}> = ({
   at, x, text, note, tone,
 }) => {
@@ -202,50 +212,39 @@ export const Attack: React.FC = () => {
       <RiskFloor at={RISK_ONLY} x={1010} />
       <Verdict at={PASS + 14} x={1010} text="no alerts" note="the Sentinel saw nothing" tone={C.alarm} />
 
-      {/* What actually stopped it, said where there is room to say it. The left
-          column is finished with its own story by now, and this window was the
-          film's last seven-second hold. */}
-      <div style={{position: 'absolute', left: 100, top: 622, width: 830, minHeight: 70}}>
-        <Spoken n={n} from={RISK_ONLY} to={n.after('is gone')} color={C.ink300}
-          style={{fontFamily: FONT.text, fontSize: 23, lineHeight: 1.45}} />
-      </div>
+      {/* Three states, one at a time, each replacing the last.
 
-      {/* The limit, and the argument, arriving with the words that carry them.
+          The previous cut ran four narration-verbatim blocks whose reveal windows
+          overlapped, so the frame carried the tail of one sentence, the middle of
+          another and the head of a third, with orphan words hanging off each. It
+          also repeated the burned caption word for word. On-screen text is edited
+          and short now, and only one line of it is ever on screen. */}
+      <div style={{position: 'absolute', top: 700, left: 100, right: 100,
+        paddingTop: 22, borderTop: `1px solid ${C.line}`}}>
+        <Fade from={FLOOR} to={ARMOR}>
+          <Kinetic at={FLOOR} text="Pattern matching is a floor, not a ceiling." size={34} />
+          <div style={{fontFamily: FONT.text, fontSize: 21, color: C.ink500, marginTop: 14}}>
+            Any honest version of this product says so.
+          </div>
+        </Fade>
 
-          These were three static blocks and they covered the last fifteen seconds
-          of the longest shot in the film, which is where the 5.2s dead run lived.
-          Set as Spoken, they are still arriving for exactly as long as the voice
-          is still saying them. */}
-      <div
-        style={{
-          position: 'absolute', top: 686, left: 100, right: 100,
-          opacity: floor, paddingTop: 20, borderTop: `1px solid ${C.line}`,
-        }}
-      >
-        {/* Two lines of room, because this sentence needs two: at one line the
-            overflow ran straight into the Model Armor row below it. */}
-        <div style={{minHeight: 86}}>
-          <Spoken n={n} from={FLOOR} to={n.after('says so')} color={C.ink100}
-            style={{fontFamily: FONT.display, fontSize: 29, letterSpacing: '-0.015em', lineHeight: 1.3}} />
-        </div>
-
-        <div style={{marginTop: 10, opacity: armor, transform: `translateY(${(1 - armor) * 10}px)`,
-          display: 'grid', gridTemplateColumns: '250px 1fr', gap: 26, alignItems: 'start'}}>
-          <span style={{fontFamily: MONO, fontSize: 21, color: C.ember}}>Model Armor</span>
-          <div>
-            <div style={{minHeight: 60}}>
-              {/* Starts at "screens": the words "Model Armor" are already set in
-                  mono in the column to the left, and printing them twice side by
-                  side reads as a duplication bug. */}
-              <Spoken n={n} from={n.at('screens')} to={n.after('prompt injection')} color={C.ink300} tick={false}
-                style={{fontFamily: FONT.text, fontSize: 20, lineHeight: 1.5}} />
-            </div>
-            <div style={{minHeight: 42, marginTop: 10}}>
-              <Spoken n={n} from={PERSON} to={n.after('the gap')} color={C.ember}
-                style={{fontFamily: FONT.display, fontSize: 28, letterSpacing: '-0.015em'}} />
+        <Fade from={ARMOR} to={PERSON}>
+          <div style={{display: 'grid', gridTemplateColumns: '250px 1fr', gap: 26, alignItems: 'baseline'}}>
+            <span style={{fontFamily: MONO, fontSize: 22, color: C.ember}}>Model Armor</span>
+            <div>
+              <Kinetic at={ARMOR} text="guards the model's input, not the reviewer's attention."
+                size={30} color={C.ink100} />
+              <div style={{fontFamily: FONT.text, fontSize: 20, color: C.ink500, marginTop: 12}}>
+                Nothing here is a prompt injection, so it never sees this traffic.
+              </div>
             </div>
           </div>
-        </div>
+        </Fade>
+
+        <Fade from={PERSON} to={n.end + 30}>
+          <Kinetic at={PERSON} text="It is an attack on the person, not on the model."
+            size={38} color={C.ember} />
+        </Fade>
       </div>
 
       <Sfx src="sweep.mp3" at={2} vol={0.10} />

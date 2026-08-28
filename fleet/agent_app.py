@@ -12,7 +12,7 @@ from __future__ import annotations
 from google.adk.agents import LlmAgent
 
 from fleet.demo_agents import comms_agent, data_ops_agent, procurement_agent
-from fleet.demo_agents.base import build_adk_agent
+from fleet.demo_agents.base import build_adk_agent, gemini_model
 from watchspan.guardrails import model_armor_before_model
 
 fleet_agents = [
@@ -26,7 +26,7 @@ fleet_agents = [
 
 root_agent = LlmAgent(
     name="watchspan_fleet_coordinator",
-    model="gemini-3.5-flash",
+    model=gemini_model(),
     description=(
         "Coordinates the Watchspan demo fleet. Routes work to the "
         "institutional agents and emits approval requests to the Watchspan "

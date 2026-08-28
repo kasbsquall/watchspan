@@ -2,7 +2,7 @@ import {AbsoluteFill, useCurrentFrame, interpolate, Easing, spring, useVideoConf
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
 import {Ground} from '../lib/Ground';
-import {Spot, Rails, Ping, Spoken} from '../lib/Life';
+import {Spot, Rails, Ping, Kinetic} from '../lib/Life';
 import {narration} from '../lib/narration';
 
 /* The Article 14 record.
@@ -98,7 +98,13 @@ export const Evidence: React.FC = () => {
           </div>
         </div>
 
-        <div style={{marginTop: 44, opacity: rule, transform: `translateY(${(1 - rule) * 8}px)`,
+        <div style={{marginTop: 20, fontFamily: FONT.text, fontSize: 15, color: C.ink500,
+          opacity: rule}}>
+          Reviewer behaviour is simulated from a declared model. The fleet, the API
+          and the traces are real.
+        </div>
+
+        <div style={{marginTop: 24, opacity: rule, transform: `translateY(${(1 - rule) * 8}px)`,
           paddingTop: 20, borderTop: `1px solid ${C.line}`, maxWidth: 1240}}>
           <div style={{fontFamily: FONT.text, fontSize: 18, color: C.ink500}}>
             The rule, on screen and not only in the code: review depth above zero, and more than{' '}
@@ -111,12 +117,12 @@ export const Evidence: React.FC = () => {
           <Spot from={ARTICLE} to={EFFECTIVE - 10} before={0.4}>
             <div style={{fontFamily: FONT.display, fontSize: 32, color: C.ink100,
               letterSpacing: '-0.015em', lineHeight: 1.35}}>
-              Article 14 has required effective oversight since August.
+              EU AI Act, Article 14: effective human oversight, in force since 2 August 2026.
             </div>
           </Spot>
-          <div style={{marginTop: 6, minHeight: 46}}>
-            <Spoken n={n} from={EFFECTIVE} to={n.after('asserting it')} color={C.ember}
-              style={{fontFamily: FONT.display, fontSize: 32, letterSpacing: '-0.015em', lineHeight: 1.35}} />
+          <div style={{marginTop: 8, minHeight: 46}}>
+            <Kinetic at={EFFECTIVE} text="Measured, not asserted." size={36} color={C.ember}
+              style={{fontFamily: FONT.display}} />
           </div>
         </div>
       </AbsoluteFill>

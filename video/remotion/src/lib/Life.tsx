@@ -314,6 +314,48 @@ export const LiveBar: React.FC<{
   );
 };
 
+/* An AUTHORED line, arriving word by word.
+
+   Use this, not Spoken, for anything the viewer reads. Spoken sets the
+   narration verbatim, and four Spoken blocks in one scene produced a frame with
+   an orphan "Pattern" hanging off one line, "Model" off another, and a third
+   starting mid-sentence: a transcript dump that reads as a broken layout. It
+   also duplicated the burned caption word for word, so the same sentence
+   competed with itself in two places.
+
+   The rule that came out of it: on-screen text is EDITED and SHORT, never the
+   narration verbatim, and one block of it at a time. */
+export const Kinetic: React.FC<{
+  at: number;
+  text: string;
+  size?: number;
+  color?: string;
+  weight?: number;
+  style?: React.CSSProperties;
+}> = ({at, text, size = 30, color = C.ink100, weight = 600, style}) => {
+  const f = useCurrentFrame();
+  const {fps} = useVideoConfig();
+  return (
+    <div style={{display: 'flex', flexWrap: 'wrap', gap: `0 ${size * 0.26}px`, ...style}}>
+      {text.split(' ').map((w, i) => {
+        const p = spring({frame: f - at - i * 2, fps, config: {damping: 18, mass: 0.55, stiffness: 130}});
+        return (
+          <span
+            key={i}
+            style={{
+              fontSize: size, lineHeight: 1.28, color, fontWeight: weight,
+              letterSpacing: '-0.015em', opacity: p,
+              transform: `translateY(${(1 - p) * 14}px)`,
+            }}
+          >
+            {w}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
 /* A sentence that appears at the speed it is spoken.
 
    Every scene in the released cut died in its tail: the last reveal landed well

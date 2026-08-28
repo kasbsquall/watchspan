@@ -267,7 +267,19 @@ That is what the Sentinel is for. The Agent Registry catalogues the seven
 agents and answers cross-department search, run as a CLI rather than from the
 request path.
 
-**Simulated:** reviewer behaviour, and the fleet that generates the requests.
+**Real, and the answer to the obvious objection:** press **Ask the real fleet**
+in the control room, or `POST /fleet/live`. That hands three tasks to the actual
+ADK agents on Gemini 3.5 Flash. They decide for themselves whether a task needs
+approval and how risky to call it, Model Armor screens their model input on the
+way in, and whatever they ask for goes through the same Sentinel, the same
+budget and the same calibrated policy as the seeded 370. It is slow, because
+each task is a model call, which is exactly why the volume run is seeded.
+
+```bash
+curl -s -X POST https://watchspan-api-45ejdvuucq-uc.a.run.app/fleet/live   -H 'content-type: application/json' -d '{"tasks":3}' | python -m json.tool
+```
+
+**Simulated:** reviewer behaviour, and the 370-request volume run.
 `/simulate` runs `fleet/simulator.py`, a seeded generator over a declared action
 table, not the ADK agents. A real reviewer's decision times are modelled from a
 declared table in the same file, because we had no instrumented human to

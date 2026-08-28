@@ -36,7 +36,12 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_methods=["GET", "POST"],
-    allow_headers=["content-type"],
+    # x-watchspan-session is REQUIRED here. Tightening the wildcard and adding
+    # the session header were two separate commits, and the preflight for
+    # OPTIONS /simulate returned 400 for every first-time visitor while curl
+    # kept working, so the API looked healthy and the product did not. Verify a
+    # CORS change by clicking the button in a browser, never with curl.
+    allow_headers=["content-type", "x-watchspan-session"],
 )
 
 class SimulateBody(BaseModel):
@@ -203,10 +208,25 @@ def ledger(reviewer_id: str, x_watchspan_session: str | None = Header(default=No
     _, orchestrator = session.resolve(x_watchspan_session)
     from watchspan.memory import memory_bank_available
 
+    # "backend" used to be read off two environment variables while the recall
+    # underneath swallowed every exception, so a Memory Bank that was down
+    # returned {"backend":"memory_bank","history":[]}, indistinguishable from a
+    # reviewer with no history. Say which one it is.
+    configured = memory_bank_available()
+    history = orchestrator.prior_history(reviewer_id)
+    reached = False
+    if configured:
+        try:
+            from watchspan.memory import MemoryBankAttentionMemory
+
+            MemoryBankAttentionMemory().recall(reviewer_id)
+            reached = True
+        except Exception:
+            reached = False
     return {
         "reviewer_id": reviewer_id,
-        "backend": "memory_bank" if memory_bank_available() else "local",
-        "history": orchestrator.prior_history(reviewer_id),
+        "backend": "memory_bank" if reached else ("memory_bank_unreachable" if configured else "local"),
+        "history": history,
     }
 
 
@@ -220,6 +240,39 @@ def audit(limit: int = 200, x_watchspan_session: str | None = Header(default=Non
 def article14(x_watchspan_session: str | None = Header(default=None)) -> dict:
     _, orchestrator = session.resolve(x_watchspan_session)
     return article14_dossier.build(orchestrator, generated_at=time.time())
+
+
+class LiveFleetBody(BaseModel):
+    # Each task is a Gemini turn, so this is capped low: the point is that the
+    # loop is real, and the 370-request run is what makes the drift visible.
+    tasks: int = Field(3, ge=1, le=5)
+
+
+@app.post("/fleet/live")
+def fleet_live(
+    body: LiveFleetBody, x_watchspan_session: str | None = Header(default=None)
+) -> dict:
+    """Let the real ADK fleet decide what to ask for, and govern what it asks.
+
+    Everything else in the demo routes requests from a seeded generator. This
+    routes requests that a Gemini-backed ADK agent chose to make, through the
+    same Sentinel, the same budget and the same calibrated policy, with Model
+    Armor screening the agent's model input on the way in.
+    """
+    from fleet.live import run_live
+
+    _, orchestrator = session.resolve(x_watchspan_session)
+    from watchspan.telemetry import flush
+
+    try:
+        out = run_live(orchestrator, count=body.tasks)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=503,
+            detail=f"the fleet could not be run: {type(exc).__name__}: {exc}"[:300],
+        ) from exc
+    flush(timeout_ms=3000)
+    return out
 
 
 @app.get("/geap/status")
@@ -330,11 +383,26 @@ def geap_status() -> dict:
     out["agent_runtime"] = {
         "checked": True,
         "ok": bool(os.environ.get("WATCHSPAN_AGENT_ENGINE_ID")),
+        "how": "config",
         "engine_id": os.environ.get("WATCHSPAN_AGENT_ENGINE_ID", ""),
         "detail": "hosts the ADK fleet; this API is the Cloud Run path",
     }
+    # Say how each answer was obtained. Counting a config check the same as a
+    # live round-trip is exactly the self-graded exam this endpoint exists to
+    # avoid being, and a reader deserves to know which is which.
+    for name in ("cloud_run", "cloud_trace"):
+        out.setdefault(name, {})["how"] = "config"
+    for name in ("vertex_ai_gemini", "memory_bank", "model_armor", "agent_registry"):
+        out.setdefault(name, {})["how"] = "round_trip"
+    live = [k for k, v in out.items() if not k.startswith("_") and v.get("how") == "round_trip"]
     out["_summary"] = {
-        "verified": sum(1 for k, v in out.items() if not k.startswith("_") and v.get("ok")),
-        "of": sum(1 for k in out if not k.startswith("_")),
+        "verified_by_live_call": sum(1 for k in live if out[k].get("ok")),
+        "of_live_calls": len(live),
+        "config_checks_ok": sum(
+            1 for k, v in out.items()
+            if not k.startswith("_") and v.get("how") == "config" and v.get("ok")
+        ),
+        "note": "round_trip means this request called the service; config means an "
+                "environment check only.",
     }
     return out

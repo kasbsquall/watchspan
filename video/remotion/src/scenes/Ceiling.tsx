@@ -2,7 +2,7 @@ import {AbsoluteFill, useCurrentFrame, interpolate, Easing} from 'remotion';
 import {C, FONT, MONO} from '../theme';
 import {Sfx} from '../lib/Sfx';
 import {Ground} from '../lib/Ground';
-import {Spot, Flip, Ping, Caret, Sweep, Rails, Spoken} from '../lib/Life';
+import {Spot, Flip, Ping, Caret, Sweep, Rails, Kinetic} from '../lib/Life';
 import {narration} from '../lib/narration';
 
 /* The defect a judge found, and its fix, in numbers.
@@ -186,9 +186,9 @@ export const Ceiling: React.FC = () => {
             ALWAYS_ESCALATE_ABOVE = <span style={{color: C.ok}}>0.7</span>
             <Caret color={C.ok} h={26} w={9} />
           </div>
-          <div style={{marginTop: 14, minHeight: 34}}>
-            <Spoken n={n} from={RISK} to={n.after('they are')} color={C.ink300}
-              style={{fontFamily: FONT.text, fontSize: 21}} />
+          <div style={{marginTop: 16, minHeight: 32}}>
+            <Kinetic at={RISK} text="However tired the reviewer is." size={21} color={C.ink300}
+              weight={400} style={{fontFamily: FONT.text}} />
           </div>
         </div>
       </AbsoluteFill>

@@ -40,6 +40,7 @@ gcloud run deploy watchspan-api `
   --max-instances 2 `
   --memory 512Mi `
   --cpu 1 `
+  --session-affinity `
   --set-env-vars $apiEnv
 
 $apiUrl = gcloud run services describe watchspan-api --project $ProjectId --region $Region --format "value(status.url)"

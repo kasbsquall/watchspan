@@ -11,6 +11,7 @@ reviewer who still has attention; without it, it gets stamped.
 from __future__ import annotations
 
 import random
+import time
 from dataclasses import dataclass, field
 
 from attention.signals import ApprovalRequest, Decision
@@ -57,8 +58,18 @@ def run(
 ) -> SimulationResult:
     rng = random.Random(seed)
     result = SimulationResult()
-    now = 0.0
-    attack_at = minutes * 60.0 * 0.55
+    # ONE CLOCK. The run used to stamp everything in relative seconds, 0 to 1800,
+    # while every live request stamps `time.time()`. The two met inside the same
+    # meter, so after a run that drained the budget to 0.02% the very next real
+    # call saw a gap of roughly 28 million minutes of rest, replenished to full
+    # and reported a wide-awake reviewer. `GET /attention`, which the README
+    # calls the live attention picture, answered 1.0 immediately after measuring
+    # 0.0002. Anchoring the run so that it ENDS now keeps a single timebase, and
+    # a request posted after a run correctly meets the exhausted budget the film
+    # says it should.
+    origin = time.time() - minutes * 60.0
+    now = origin
+    attack_at = minutes * 60.0 * 0.55  # relative to origin
     attack_done = False
 
     events: list[ApprovalRequest] = []
@@ -66,7 +77,7 @@ def run(
         interval = 60.0 / profile.requests_per_minute
         t = rng.uniform(0, interval)
         while t < minutes * 60.0:
-            events.append(make_request(profile, rng, t))
+            events.append(make_request(profile, rng, origin + t))
             t += interval * rng.uniform(0.7, 1.3)
 
     if inject_attack:
@@ -88,7 +99,7 @@ def run(
                     complexity=complexity,
                     batch_id=batch_id,
                     description="routine quarterly cleanup, nothing unusual",
-                    created_at=attack_at + offset * 2.0,
+                    created_at=origin + attack_at + offset * 2.0,
                 )
             )
 
@@ -122,7 +133,7 @@ def run(
             )
             outcome = orchestrator.record_decision(decision)
             if outcome["drift_degraded"] and result.drift_declared_at is None:
-                result.drift_declared_at = decision.decided_at
+                result.drift_declared_at = decision.decided_at - origin
             if request.risk_score >= 0.7 and approved and depth == 0:
                 result.dangerous_stamped.append(request.request_id)
 
@@ -131,7 +142,9 @@ def run(
 
         result.timeline.append(
             {
-                "at": now,
+                # Absolute inside the meter, relative on the way out: the chart
+                # and every published figure are "seconds into the run".
+                "at": now - origin,
                 "request_id": request.request_id,
                 "agent_id": request.agent_id,
                 "action": request.action,

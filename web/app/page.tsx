@@ -1,5 +1,6 @@
 "use client";
 
+import LiveFleet from "@/components/LiveFleet";
 import { useCallback, useEffect, useRef, useState } from "react";
 import NumberFlow from "@number-flow/react";
 import { Play, ArrowCounterClockwise } from "@phosphor-icons/react";
@@ -192,6 +193,10 @@ export default function ControlRoom() {
             ))}
           </dl>
           <SentinelAlerts events={visible} live={phase === "playing"} />
+          {/* Available before a run too: it does not depend on the seeded state,
+              and a judge who wants to see a real agent act should not have to
+              sit through thirty simulated minutes first. */}
+          <LiveFleet />
         </div>
 
         <div className="rise flex flex-col gap-10" style={{ ["--block" as string]: 2 }}>
