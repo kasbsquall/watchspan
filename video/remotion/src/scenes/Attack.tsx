@@ -172,7 +172,6 @@ export const Attack: React.FC = () => {
   const RISK_ONLY = n.at('it still reaches');
   const FLOOR = n.at('on risk alone');
   const ARMOR = n.at('with both patterns');
-  const PERSON = n.at('with both patterns');
 
   const head = interpolate(f, [0, 12], [0, 1], {extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
   const floor = interpolate(f, [FLOOR - 8, FLOOR + 10], [0, 1], {
@@ -221,29 +220,19 @@ export const Attack: React.FC = () => {
           and short now, and only one line of it is ever on screen. */}
       <div style={{position: 'absolute', top: 700, left: 100, right: 100,
         paddingTop: 22, borderTop: `1px solid ${C.line}`}}>
-        <Fade from={FLOOR} to={ARMOR}>
-          <Kinetic at={FLOOR} text="Pattern matching is a floor, not a ceiling." size={34} />
+        {/* The Model Armor beat left this scene with the rewrite. It now sits in
+            `peers`, showing the guardrail doing something rather than appearing
+            here once as a negation, which is what the sponsor asked for and
+            what a lay reader could not follow. Two of the three lines that used
+            to close this scene were also "not X" constructions, a tic a reader
+            counted five times across the script and called the most
+            recognisable signature of generated copy. */}
+        <Fade from={FLOOR} to={n.end + 30}>
+          <Kinetic at={FLOOR} text="Pattern matching is a floor." size={38} color={C.ember} />
           <div style={{fontFamily: FONT.text, fontSize: 21, color: C.ink500, marginTop: 14}}>
-            Any honest version of this product says so.
+            Any honest version of this product says so, and the risk score is what
+            caught it.
           </div>
-        </Fade>
-
-        <Fade from={ARMOR} to={PERSON}>
-          <div style={{display: 'grid', gridTemplateColumns: '250px 1fr', gap: 26, alignItems: 'baseline'}}>
-            <span style={{fontFamily: MONO, fontSize: 22, color: C.ember}}>Model Armor</span>
-            <div>
-              <Kinetic at={ARMOR} text="guards the model's input, not the reviewer's attention."
-                size={30} color={C.ink100} />
-              <div style={{fontFamily: FONT.text, fontSize: 20, color: C.ink500, marginTop: 12}}>
-                Nothing here is a prompt injection, so it never sees this traffic.
-              </div>
-            </div>
-          </div>
-        </Fade>
-
-        <Fade from={PERSON} to={n.end + 30}>
-          <Kinetic at={PERSON} text="It is an attack on the person, not on the model."
-            size={38} color={C.ember} />
         </Fade>
       </div>
 
