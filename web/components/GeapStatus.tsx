@@ -67,7 +67,7 @@ function detail(key: string, row: GeapProbe): string {
     case "vertex_ai_gemini":
       return s("model");
     case "cloud_trace":
-      return `${row.traces_in_the_last_hour ?? 0} traces in the last hour`;
+      return `${row.traces_in_the_last_day ?? 0} traces in the last day`;
     case "cloud_run":
       return s("revision");
     default:

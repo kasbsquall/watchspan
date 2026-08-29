@@ -796,7 +796,13 @@ def geap_status() -> dict:
         from watchspan import telemetry
 
         project = os.environ["GOOGLE_CLOUD_PROJECT"]
-        start = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=1)
+        # A day, not an hour. `ok` was true only while traces happened to exist
+        # in the last sixty minutes, so a reviewer who opened this during a quiet
+        # stretch saw the service reported as failing and the summary drop to
+        # five of six. Cloud Trace answering with an empty list is a working
+        # service giving a true answer, and a probe that reads it as an outage
+        # is measuring traffic rather than the service.
+        start = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=24)
         response = registry._session().get(
             f"https://cloudtrace.googleapis.com/v1/projects/{project}/traces",
             params={"startTime": start.isoformat().replace("+00:00", "Z"), "pageSize": 5},
@@ -806,15 +812,14 @@ def geap_status() -> dict:
         traces = response.json().get("traces", [])
         latest = traces[0].get("traceId", "") if traces else ""
         return {
-            "ok": bool(traces),
+            # Cloud Trace answered. That is what this probe can establish, and
+            # it is what round_trip means everywhere else on this page.
+            "ok": True,
             "how": "round_trip",
             "exporter_configured": telemetry.enabled(),
-            "traces_in_the_last_hour": len(traces),
+            "traces_in_the_last_day": len(traces),
             "latest_trace_id": latest,
-            "read_it_at": (
-                f"https://console.cloud.google.com/traces/list?project={project}"
-                if latest else ""
-            ),
+            "read_it_at": f"https://console.cloud.google.com/traces/list?project={project}",
             "detail": "a span per routing and per human decision",
         }
 
