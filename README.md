@@ -31,7 +31,7 @@ When an agent fleet asks for approval fifty times a day, the first request
 gets read, the tenth gets skimmed, and the fiftieth gets stamped. The control
 still exists on paper. It just stopped meaning anything. Human oversight has a
 capacity, and that capacity runs out. Attackers already exploit it (the
-pattern is cataloged as ATR-2026-00118, Human Approval Fatigue Exploitation),
+pattern is cataloged as [ATR-2026-00118, Human Approval Fatigue Exploitation](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/agent-manipulation/ATR-2026-00118-approval-fatigue.yaml)),
 and EU AI Act Article 14, in force since August 2, 2026, requires oversight to
 be effective, not decorative, with no accepted way to prove the difference.
 
