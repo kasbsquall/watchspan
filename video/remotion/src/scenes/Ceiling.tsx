@@ -107,11 +107,11 @@ export const Ceiling: React.FC = () => {
 
   const FEWER = n.at('fewer interruptions');
   const HELD = n.at('oversight held');
-  const UNSEEN = n.at('but thirty-four');
+  const UNSEEN = n.at('without a floor');
   const FLOOR = n.at('so the calibration');
-  const RISK = n.at('risk above seventy');
-  const ZERO = n.at('zero, now');
-  const CLIMBED = n.at('because the calibrated');
+  const RISK = n.at('the calibration has');
+  const ZERO = n.at('cannot raise');
+  const CLIMBED = n.at('would have run');
 
   const head = interpolate(f, [0, 12], [0, 1], {extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
   const fix = interpolate(f, [FLOOR - 8, FLOOR + 12], [0, 1], {

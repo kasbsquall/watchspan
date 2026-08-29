@@ -4,9 +4,7 @@ import {C, FONT, MONO} from './theme';
 import {Ground} from './lib/Ground';
 import {Captions} from './lib/Captions';
 import {Camera, SceneEdge} from './lib/Life';
-import {Hook} from './scenes/Hook';
 import {What} from './scenes/What';
-import {Budget} from './scenes/Budget';
 import {Collapse} from './scenes/Collapse';
 import {Attack} from './scenes/Attack';
 import {Ceiling} from './scenes/Ceiling';
@@ -14,6 +12,9 @@ import {Evidence} from './scenes/Evidence';
 import {Cloud} from './scenes/Cloud';
 import {Close} from './scenes/Close';
 import {Claim} from './scenes/Claim';
+import {Open} from './scenes/Open';
+import {Peers} from './scenes/Peers';
+import {Desk} from './scenes/Desk';
 
 // 1. Create one component per scene under src/scenes/ (use the lib primitives).
 // 2. Map each scene id (from scripts/audio_gen.py SCENES) to its component here.
@@ -22,14 +23,18 @@ import {Claim} from './scenes/Claim';
 // import {Hook} from './scenes/Hook';
 // import {Problem} from './scenes/Problem';
 // ...
+// Eleven scenes. `hook` and `budget` went with the restructure: the opening is
+// one scene that runs the product and promises to measure the viewer, and the
+// budget mechanic moved next to the collapse it explains.
 const MAP: Record<string, React.FC> = {
-  claim: Claim,
-  hook: Hook,
+  open: Open,
   what: What,
-  budget: Budget,
   collapse: Collapse,
+  claim: Claim,
+  peers: Peers,
   attack: Attack,
   ceiling: Ceiling,
+  desk: Desk,
   evidence: Evidence,
   cloud: Cloud,
   close: Close,

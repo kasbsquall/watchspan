@@ -166,13 +166,13 @@ export const Attack: React.FC = () => {
   const CARD1 = 0;
   const DESC1 = n.at('hidden in a batch');
   const HOLD = n.at('watchspan holds');
-  const CARD2 = n.at('now the same');
-  const DESC2 = n.at('reworded');
-  const PASS = n.at('the sentinel sees');
+  const CARD2 = n.at('reword it');
+  const DESC2 = n.at('the first detector');
+  const PASS = n.at('pull it out');
   const RISK_ONLY = n.at('it still reaches');
-  const FLOOR = n.at('pattern matching');
-  const ARMOR = n.at('model armor');
-  const PERSON = n.at('it is an attack');
+  const FLOOR = n.at('on risk alone');
+  const ARMOR = n.at('with both patterns');
+  const PERSON = n.at('with both patterns');
 
   const head = interpolate(f, [0, 12], [0, 1], {extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
   const floor = interpolate(f, [FLOOR - 8, FLOOR + 10], [0, 1], {

@@ -42,11 +42,11 @@ export const Cloud: React.FC = () => {
   const n = narration('cloud');
 
   const RUN = n.at('all of it');
-  const REGISTRY = n.at('the fleet catalogued');
-  const IDENTITY = n.at('and running under');
-  const LEDGER = n.at('the ledger');
-  const GEMINI = n.at('gemini writing');
-  const TRACED = n.at('and every decision');
+  const REGISTRY = n.at('one request calls');
+  const IDENTITY = n.at('agent runtime');
+  const LEDGER = n.at('memory bank');
+  const GEMINI = n.at('gemini and cloud');
+  const TRACED = n.at('the build fails');
 
   const head = interpolate(f, [0, 12], [0, 1], {extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
 

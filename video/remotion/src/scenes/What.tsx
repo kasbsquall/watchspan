@@ -75,10 +75,10 @@ export const What: React.FC = () => {
 
   const HEAD = 0;
   const SRC = n.at('of three hundred');
-  const RAN = n.at('it ran');
-  const HELD = n.at('held seven');
-  const SENT = n.at('and sent');
-  const MEASURE = n.at('then it measures');
+  const RAN = n.at('most ran');
+  const HELD = n.at('a few were held');
+  const SENT = n.at('and the rest');
+  const MEASURE = n.at('went to a human');
 
   const l1 = interpolate(f, [HEAD, HEAD + 16], [0, 1], {
     extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1),

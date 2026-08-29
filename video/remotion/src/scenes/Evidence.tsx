@@ -46,10 +46,10 @@ export const Evidence: React.FC = () => {
   const n = narration('evidence');
 
   const RECORD = n.at('the record');
-  const SIXTY = n.at('of sixty-nine');
-  const FOURTEEN = n.at('fourteen were');
+  const SIXTY = n.at('who reviewed what');
+  const FOURTEEN = n.at('with how much');
   const ARTICLE = n.at('article fourteen');
-  const EFFECTIVE = n.at('this is what');
+  const EFFECTIVE = n.at('from december');
 
   const head = interpolate(f, [0, 12], [0, 1], {extrapolateRight: 'clamp', easing: Easing.bezier(0.16, 1, 0.3, 1)});
   const num = Math.round(

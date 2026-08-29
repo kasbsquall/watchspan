@@ -137,7 +137,7 @@ export const Claim: React.FC = () => {
 
   const GAVE = n.at('gave itself');
   const UNDERSTATED = n.at('understated a table');
-  const CALLED = n.at('called it seventy');
+  const CALLED = n.at('called it');
   // The line changed after a fact-check; the anchor follows the words, which
   // is the whole reason beats are anchored to phrases and not to frames.
   const DISGUISE = n.at('put an');
