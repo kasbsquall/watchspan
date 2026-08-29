@@ -25,75 +25,36 @@ two JSON files -> remotion/src/data/.
 """
 import base64, json, os, subprocess, sys
 from pathlib import Path
+import pathlib
+import re
+
 import httpx
 
-# EDIT THIS: one entry per scene, in order. ids must match the keys in Video.tsx.
-SCENES = [
-    # The close carries the line the whole film is built on. A jury that stops at
-    # forty seconds never hears it, and this track is full of governed-fleet
-    # projects that look identical from the outside, so it opens here too.
-    ("hook",
-     "Five minutes into the shift, this reviewer stopped reading. "
-     "Nothing alerted. Nothing failed. The approvals kept coming. "
-     "Everyone sells human in the loop. This is the part nobody measures."),
+# The scenes come from script.md, which build_script.py generates from the
+# storyboard. Keeping a second copy here is how a film ends up recording a line
+# the script no longer contains: this one was edited eleven times by three
+# readers, and any hand-maintained duplicate would have rotted on the first pass.
+def _scenes_from_script() -> list[tuple[str, str]]:
+    doc = (pathlib.Path(__file__).parent / "script.md").read_text(encoding="utf-8")
+    out: list[tuple[str, str]] = []
+    name = None
+    quote: list[str] = []
+    for line in doc.splitlines():
+        head = re.match(r"## \d+\. (\w+) ·", line)
+        if head:
+            if name and quote:
+                out.append((name, " ".join(quote).strip()))
+            name, quote = head.group(1), []
+        elif line.startswith("> ") and name:
+            quote.append(line[2:])
+    if name and quote:
+        out.append((name, " ".join(quote).strip()))
+    if not out:
+        raise SystemExit("script.md carries no narration; run build_script.py")
+    return out
 
-    ("what",
-     "Watchspan sits between an agent fleet and the people who approve what it does. "
-     "Of three hundred and seventy actions, it ran two hundred and ninety-four on its own "
-     "with an audit log, held seven that looked like an attack, and sent sixty-nine to a human. "
-     "Then it measures whether that human was still paying attention when they arrived."),
 
-    ("budget",
-     "Attention is not free. Every approval that reaches a person spends from a budget, "
-     "and a dense action costs three times a routine one. "
-     "Below thirty-five percent, Watchspan stops trusting the review. "
-     "That floor is our decision, and it is on screen, not buried in a config file."),
-
-    ("collapse",
-     "Here it is running. Twenty-six seconds on the first decision, at full review depth. "
-     "Nine on the tenth. Two and a half by the fiftieth, "
-     "and the actions never got any simpler. "
-     "That gap is the signature of a rubber stamp, and it is the one thing a timestamp can prove."),
-
-    # "It walks straight past" was not true, and a judge checked: POSTing that exact
-    # request to the deployed API returns route "escalate", because risk 0.90 trips
-    # ALWAYS_ESCALATE_ABOVE. What the rewording defeats is the Sentinel, not the
-    # whole policy. The corrected line is also the stronger one: it shows two
-    # independent defences and admits which of them failed.
-    ("attack",
-     "A production backup deletion, hidden in a batch labelled routine quarterly cleanup. "
-     "Watchspan holds it. Now the same action, reworded. The Sentinel sees nothing. "
-     "It still reaches a human, on its risk score alone, "
-     "but the pattern that was supposed to catch it is gone. "
-     "Pattern matching is a floor, not a ceiling, and any honest version of this product says so. "
-     "Model Armor screens the model's input and never sees this traffic at all, "
-     "because nothing here is a prompt injection. "
-     "It is an attack on the person, not on the model. That is the gap."),
-
-    ("ceiling",
-     "So we raised the bar and measured what it cost. Fewer interruptions, "
-     "and oversight held for thirty-five percent longer. "
-     "But thirty-four high-risk actions started running unseen, "
-     "because the calibrated threshold had climbed above them. "
-     "So the calibration now has a floor it cannot raise. "
-     "Risk above seventy reaches a person however tired they are. Zero, now, run unseen."),
-
-    ("evidence",
-     "And this is the record. Of sixty-nine decisions that reached a human, "
-     "fourteen were made with attention left to give. "
-     "Article fourteen of the EU AI Act has required effective oversight since August. "
-     "This is what effective looks like when you measure it instead of asserting it."),
-
-    ("cloud",
-     "All of it on Google Cloud. The fleet catalogued in the Agent Registry "
-     "and running under its own least-privilege identity. The ledger in Memory Bank. "
-     "Gemini writing the findings. "
-     "And every decision traced, carrying the numbers that justified it."),
-
-    ("close",
-     "Everyone sells human in the loop. "
-     "Watchspan measures whether that human is still there."),
-]
+SCENES = _scenes_from_script()
 
 LEAD = 1.6          # seconds of music before the voice enters
 GAP = 0.28          # silence inserted between scenes, so beats do not run together

@@ -17,8 +17,10 @@ import {SCENES} from '../timing';
    both exist: a re-recorded voiceover moves every timestamp and would leave
    these windows covering the wrong words. */
 const HANDOVER: {scene: string; from: string; to: string}[] = [
-  {scene: 'hook', from: 'everyone sells', to: 'measures'},
-  {scene: 'attack', from: 'it is an attack', to: 'the gap'},
+  // The spine line, set in display type at the top of the film and again on the
+  // end card. `hook` and its handover went with the restructure: the opening is
+  // now one scene called `open` that carries the line inside a promise.
+  {scene: 'open', from: 'everyone sells', to: 'to you'},
   {scene: 'close', from: 'everyone sells', to: 'there'},
 ];
 

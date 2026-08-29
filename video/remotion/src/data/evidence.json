@@ -1,0 +1,132 @@
+{
+ "api": "https://watchspan-api-45ejdvuucq-uc.a.run.app",
+ "understated": {
+  "action": "drop_deprecated_staging_table",
+  "request_id": "live-1787995394379",
+  "route": "escalate",
+  "effective_threshold": 0.3,
+  "team_fraction": 1.0,
+  "risk": {
+   "declared_by_caller": 0.4,
+   "assessed_by_watchspan": 0.75,
+   "routed_on": 0.75,
+   "basis": "resembles catalogued drop_deprecated_table (75% match), declared risk 0.75",
+   "caller_understated": true
+  },
+  "alerts": []
+ },
+ "disguise": {
+  "catalogued": {
+   "action": "update_vendor_contact_details",
+   "request_id": "live-1787995394863",
+   "route": "auto_execute",
+   "effective_threshold": 0.3,
+   "team_fraction": 1.0,
+   "risk": {
+    "declared_by_caller": 0.05,
+    "assessed_by_watchspan": 0.1,
+    "routed_on": 0.1,
+    "basis": "resembles catalogued update_vendor_contact_details (100% match), declared risk 0.10",
+    "caller_understated": false
+   },
+   "alerts": []
+  },
+  "renamed": {
+   "action": "update_vendor_contact_details_new_iban",
+   "request_id": "live-1787995395396",
+   "route": "escalate",
+   "effective_threshold": 0.3,
+   "team_fraction": 1.0,
+   "risk": {
+    "declared_by_caller": 0.05,
+    "assessed_by_watchspan": 0.65,
+    "routed_on": 0.65,
+    "basis": "destructive language: iban; resembles catalogued update_vendor_contact_details at 67%",
+    "caller_understated": true
+   },
+   "alerts": []
+  }
+ },
+ "geap": {
+  "cloud_run": {
+   "checked": true,
+   "ok": true,
+   "how": "config",
+   "service": "watchspan-api",
+   "revision": "watchspan-api-00019-jhw",
+   "detail": "you are talking to it"
+  },
+  "reviewer_identity": {
+   "checked": true,
+   "ok": true,
+   "how": "config",
+   "signing_key": "deployment key",
+   "detail": "Reviewer ids are an HMAC of the browser session. That proves an id was issued here and that two decisions came from the same session. Binding one to a named person needs a user directory this demo does not have."
+  },
+  "vertex_ai_gemini": {
+   "checked": true,
+   "ok": true,
+   "how": "round_trip",
+   "model": "gemini-3.5-flash",
+   "detail": "ok"
+  },
+  "memory_bank": {
+   "checked": true,
+   "ok": true,
+   "how": "round_trip",
+   "backend": "memory_bank",
+   "facts_recalled": 3
+  },
+  "model_armor": {
+   "checked": true,
+   "ok": true,
+   "how": "round_trip",
+   "configured": true,
+   "service_answered": true,
+   "blocks_prompt_injection": true,
+   "passes_reviewer_directed_text": true,
+   "detail": "answered. Model Armor guards the model's input. The second string is an attack on the reviewer, not on the model, which is why the Sentinel exists."
+  },
+  "agent_registry": {
+   "checked": true,
+   "ok": true,
+   "how": "round_trip",
+   "watchspan_agents_catalogued": 7,
+   "total_in_registry": 8,
+   "names": [
+    "Comms Agent",
+    "Data Ops Agent",
+    "Procurement Agent",
+    "Watchspan Calibrator",
+    "Watchspan Drift",
+    "Watchspan Meter",
+    "Watchspan Sentinel"
+   ]
+  },
+  "cloud_trace": {
+   "checked": true,
+   "ok": true,
+   "how": "round_trip",
+   "exporter_configured": true,
+   "traces_in_the_last_day": 5,
+   "latest_trace_id": "0000348b364ed483c45b40ed5af7b6e6",
+   "read_it_at": "https://console.cloud.google.com/traces/list?project=gen-lang-client-0094400410",
+   "detail": "a span per routing and per human decision"
+  },
+  "agent_runtime": {
+   "checked": true,
+   "ok": true,
+   "how": "round_trip",
+   "engine_id": "7316583029047033856",
+   "display_name": "Watchspan governed fleet",
+   "created": "2026-08-21T09:48:19.265568Z",
+   "detail": "hosts the ADK fleet; this API is the Cloud Run path"
+  },
+  "_summary": {
+   "verified_by_live_call": 6,
+   "of_live_calls": 6,
+   "config_checks_ok": 2,
+   "note": "round_trip means this request called the service; config means an environment check only."
+  }
+ }
+}

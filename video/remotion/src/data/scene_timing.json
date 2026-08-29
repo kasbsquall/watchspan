@@ -1,67 +1,81 @@
 {
-  "vo": 164.182,
+  "vo": 181.99,
   "scenes": [
     {
-      "id": "hook",
+      "id": "open",
       "start": 1.6,
-      "end": 13.68,
-      "dur": 12.08,
-      "words": 29
-    },
-    {
-      "id": "what",
-      "start": 13.96,
-      "end": 33.4,
-      "dur": 19.44,
-      "words": 59
-    },
-    {
-      "id": "budget",
-      "start": 33.68,
-      "end": 51.28,
+      "end": 19.2,
       "dur": 17.6,
-      "words": 48
-    },
-    {
-      "id": "collapse",
-      "start": 51.56,
-      "end": 67.48,
-      "dur": 15.92,
       "words": 51
     },
     {
-      "id": "attack",
-      "start": 67.76,
-      "end": 103.36,
-      "dur": 35.6,
-      "words": 97
+      "id": "what",
+      "start": 19.48,
+      "end": 34.04,
+      "dur": 14.56,
+      "words": 51
     },
     {
-      "id": "ceiling",
-      "start": 103.64,
-      "end": 125.96,
-      "dur": 22.32,
+      "id": "collapse",
+      "start": 34.32,
+      "end": 52.0,
+      "dur": 17.68,
       "words": 58
     },
     {
+      "id": "claim",
+      "start": 52.28,
+      "end": 69.8,
+      "dur": 17.52,
+      "words": 52
+    },
+    {
+      "id": "peers",
+      "start": 70.08,
+      "end": 88.24,
+      "dur": 18.16,
+      "words": 55
+    },
+    {
+      "id": "attack",
+      "start": 88.52,
+      "end": 107.88,
+      "dur": 19.36,
+      "words": 57
+    },
+    {
+      "id": "ceiling",
+      "start": 108.16,
+      "end": 121.36,
+      "dur": 13.2,
+      "words": 37
+    },
+    {
+      "id": "desk",
+      "start": 121.64,
+      "end": 141.96,
+      "dur": 20.32,
+      "words": 65
+    },
+    {
       "id": "evidence",
-      "start": 126.24,
-      "end": 143.552,
-      "dur": 17.312,
-      "words": 47
+      "start": 142.24,
+      "end": 158.396,
+      "dur": 16.156,
+      "words": 45
     },
     {
       "id": "cloud",
-      "start": 143.832,
-      "end": 158.392,
-      "dur": 14.56,
-      "words": 39
+      "start": 158.676,
+      "end": 175.796,
+      "dur": 17.12,
+      "words": 49
     },
     {
       "id": "close",
-      "start": 158.672,
-      "end": 164.182,
-      "dur": 5.51,
+      "start": 176.076,
+      "end": 181.99,
+      "dur": 5.914,
       "words": 14
     }
   ]

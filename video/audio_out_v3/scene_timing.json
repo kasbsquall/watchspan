@@ -1,0 +1,82 @@
+{
+  "vo": 181.99,
+  "scenes": [
+    {
+      "id": "open",
+      "start": 1.6,
+      "end": 19.2,
+      "dur": 17.6,
+      "words": 51
+    },
+    {
+      "id": "what",
+      "start": 19.48,
+      "end": 34.04,
+      "dur": 14.56,
+      "words": 51
+    },
+    {
+      "id": "collapse",
+      "start": 34.32,
+      "end": 52.0,
+      "dur": 17.68,
+      "words": 58
+    },
+    {
+      "id": "claim",
+      "start": 52.28,
+      "end": 69.8,
+      "dur": 17.52,
+      "words": 52
+    },
+    {
+      "id": "peers",
+      "start": 70.08,
+      "end": 88.24,
+      "dur": 18.16,
+      "words": 55
+    },
+    {
+      "id": "attack",
+      "start": 88.52,
+      "end": 107.88,
+      "dur": 19.36,
+      "words": 57
+    },
+    {
+      "id": "ceiling",
+      "start": 108.16,
+      "end": 121.36,
+      "dur": 13.2,
+      "words": 37
+    },
+    {
+      "id": "desk",
+      "start": 121.64,
+      "end": 141.96,
+      "dur": 20.32,
+      "words": 65
+    },
+    {
+      "id": "evidence",
+      "start": 142.24,
+      "end": 158.396,
+      "dur": 16.156,
+      "words": 45
+    },
+    {
+      "id": "cloud",
+      "start": 158.676,
+      "end": 175.796,
+      "dur": 17.12,
+      "words": 49
+    },
+    {
+      "id": "close",
+      "start": 176.076,
+      "end": 181.99,
+      "dur": 5.914,
+      "words": 14
+    }
+  ]
+}

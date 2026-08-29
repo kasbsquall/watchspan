@@ -13,6 +13,7 @@ import {Ceiling} from './scenes/Ceiling';
 import {Evidence} from './scenes/Evidence';
 import {Cloud} from './scenes/Cloud';
 import {Close} from './scenes/Close';
+import {Claim} from './scenes/Claim';
 
 // 1. Create one component per scene under src/scenes/ (use the lib primitives).
 // 2. Map each scene id (from scripts/audio_gen.py SCENES) to its component here.
@@ -22,6 +23,7 @@ import {Close} from './scenes/Close';
 // import {Problem} from './scenes/Problem';
 // ...
 const MAP: Record<string, React.FC> = {
+  claim: Claim,
   hook: Hook,
   what: What,
   budget: Budget,
