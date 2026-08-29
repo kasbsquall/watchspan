@@ -157,6 +157,7 @@ async def request_peer_review(
     from google.genai import types
 
     from fleet.demo_agents.base import gemini_model
+    from watchspan.guardrails import model_armor_before_model
 
     peer = _pick_peer(str(proposing_agent))
     if peer is None:
@@ -167,6 +168,12 @@ async def request_peer_review(
         model=gemini_model(),
         description=f"{peer.display_name} reviewing a peer's proposed action.",
         instruction=f"You are {peer.display_name}. {REVIEW_INSTRUCTION}",
+        # Screened like every other agent in the fleet. Without this, the one
+        # Gemini call in the system that reads an action description written by
+        # another agent was the only one Model Armor never saw, and a reviewer
+        # found it by grepping for the callback. ADK does not inherit
+        # before_model_callback from a parent, and this agent has no parent.
+        before_model_callback=model_armor_before_model,
     )
     runner = InMemoryRunner(agent=reviewer, app_name="watchspan-peer-review")
     session = await runner.session_service.create_session(

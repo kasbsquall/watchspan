@@ -716,3 +716,80 @@ def test_drift_catches_a_reviewer_who_never_read_anything():
     verdict = drift.assess(window)
     assert verdict.degraded
     assert "no oversight to degrade" in verdict.reason
+
+
+def test_every_adk_agent_is_screened_by_model_armor():
+    """No agent in the fleet talks to a model unscreened.
+
+    ADK does not inherit `before_model_callback` from a parent, so every agent
+    has to attach it. The peer reviewer in `fleet/peer_review.py` was built
+    without one, which made the single Gemini call that reads an action
+    description written by another agent the only call Model Armor never saw.
+    Found by grepping for the callback, so this greps for it too.
+    """
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "fleet"
+    for path in root.rglob("*.py"):
+        source = path.read_text(encoding="utf-8")
+        agents = len(re.findall(r"LlmAgent\(", source))
+        if not agents:
+            continue
+        screened = len(re.findall(r"before_model_callback=model_armor_before_model", source))
+        assert screened >= agents, f"{path.name}: {agents} agents, {screened} screened"
+
+
+def _default_base_threshold() -> float:
+    """The 0.30 the film draws on the gauge, whatever the class is called."""
+    import dataclasses
+
+    from watchspan import policy
+
+    for name in dir(policy):
+        obj = getattr(policy, name)
+        if dataclasses.is_dataclass(obj) and any(
+            f.name == "base_threshold" for f in dataclasses.fields(obj)
+        ):
+            return next(
+                f.default for f in dataclasses.fields(obj) if f.name == "base_threshold"
+            )
+    raise AssertionError("no policy dataclass carries base_threshold")
+
+
+def test_the_figures_the_film_speaks_are_pinned():
+    """The film says the build fails if any figure in it moves.
+
+    A fact-checker read the workflow and found that was false: the routing split
+    and the threshold experiment were gated, and the numbers actually spoken and
+    shown were not. The on-screen 65 could have drifted to 50 and the spoken 75
+    to 80 with CI still green, which on a film about unverified assertions is
+    the wrong place to be loose.
+    """
+    from watchspan import policy, risk
+
+    # Spoken in scene 5, and the one figure in the film that is deterministic.
+    assert risk.assess("drop_deprecated_staging_table").assessed == 0.75
+    # The on-screen disguise pair, scene 5.
+    assert risk.assess("update_vendor_contact_details").assessed == 0.10
+    assert risk.assess("update_vendor_contact_details_new_iban").assessed == 0.65
+    # Drawn on the gauge in scene 3.
+    assert policy.ALWAYS_ESCALATE_ABOVE == 0.7
+    assert _default_base_threshold() == 0.30
+
+
+def test_the_collapse_the_film_narrates_reproduces():
+    """26 seconds, 9 on the tenth, 2.5 by the fiftieth, complexity flat."""
+    from fleet.simulator import run
+    from watchspan.orchestrator import Orchestrator
+
+    orchestrator = Orchestrator()
+    run(orchestrator, minutes=30, inject_attack=True)
+    decisions = orchestrator.meter.state.team_window.decisions
+    assert round(decisions[0].decision_time_s) == 26
+    assert round(decisions[9].decision_time_s) == 9
+    assert 2.0 <= decisions[49].decision_time_s <= 3.0
+    # "The actions never got simpler."
+    first = sum(d.complexity for d in decisions[:10]) / 10
+    last = sum(d.complexity for d in decisions[-10:]) / 10
+    assert last >= first * 0.85
