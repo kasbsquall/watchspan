@@ -1,0 +1,35 @@
+00-cover.png
+Watchspan meters reviewer attention as a finite budget. In one seeded run, 51 high-risk actions were approved with zero seconds of reading.
+(139 chars)
+
+01-control-room.png
+The live control room after a seeded 30-minute run: 370 requests routed, 69 sent to a human, oversight declared degraded at 05:06.
+(130 chars)
+
+02-self-scoring.png
+The calling agent declared 0.40. Watchspan assessed the same action at 0.75 and routed on its own number. The claim is never the input.
+(135 chars)
+
+03-rename-attack.png
+Renaming a dangerous action to resemble a harmless one used to inherit the harmless score. Now the IBAN decides: 0.10 becomes 0.65.
+(131 chars)
+
+04-threshold-floor.png
+Raising the bar cut interruptions from 69 to 62 and held oversight longer. Without the floor at 0.70 it would also have hidden 33 actions.
+(138 chars)
+
+05-measures-you.png
+Then it turns the instrument on you. Twelve real requests, timed by the server, with the sections you open counted. Scan the code to try it.
+(140 chars)
+
+06-reviewer-queue.png
+The reviewer queue, live: a bank account change at risk 85, the agent's own 82 beside it, and every Google Cloud probe answering below.
+(135 chars)
+
+07-google-cloud.png
+One unauthenticated request calls every service and reports what came back. Six live round trips, two config checks, labelled as such.
+(134 chars)
+
+08-architecture.png
+The governance loop. What each review costs flows back through Drift and the Calibrator and changes what escalates next.
+(120 chars)

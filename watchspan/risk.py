@@ -132,7 +132,7 @@ SCOPE_BONUS = 0.2
 # and treating it as critical would make the record dishonest the other way.
 UNRECOGNISED_RISK = 0.5
 
-# Anything matching a catalogued action inherits that action's declared risk.
+# Anything matching a catalogued action inherits that action's catalogued risk.
 CATALOGUE: dict[str, float] = {
     action: risk
     for profile in (procurement_agent.PROFILE, data_ops_agent.PROFILE, comms_agent.PROFILE)
@@ -252,7 +252,7 @@ def assess(action: str, description: str = "", declared: float = 0.0) -> Assessm
         assessed = catalogue_score
         basis = (
             f"resembles catalogued {catalogued} ({overlap:.0%} match), "
-            f"declared risk {catalogue_score:.2f}"
+            f"catalogue risk {catalogue_score:.2f}"
         )
     else:
         assessed, basis = lexical_score, lexical_basis
