@@ -14,9 +14,10 @@ clock.
 
 **Nothing is rendered until this document is approved.**
 
-Runtime is set by `video/check_timing.py`, which recomputes every duration below
-from the narration in this file and fails when the document disagrees with
-itself. The cap is 4:00 and it comes from the organisers' own session: "we won't
+**Recorded: 534 spoken words, 2:57 of speech, 3:01 finished.** Every duration
+below is measured from the voiceover on disk rather than estimated from a word
+rate, and `video/check_timing.py` fails when the document and the recording
+disagree. The cap is 4:00 and it comes from the organisers' own session: "we won't
 watch past that 4-minute mark. Everything that you put after 4 minutes, we will
 not watch it."
 
@@ -34,17 +35,17 @@ promise instead of repeating the sentence.
 
 | # | Scene | Words | Runtime | The claim | The frame that proves it |
 |---|---|---|---|---|---|
-| 0 | open | 51 | 0:19 | It measures a real person, and promises to measure you | Live console, times falling, the card turning red |
-| 1 | what | 51 | 0:19 | Watchspan is a gate, and here is the split | 370 / 294 / 7 / 69 on screen |
-| 2 | collapse | 58 | 0:21 | Rubber-stamping has a measurable signature | 26s to 9s to 2.5s, complexity flat |
-| 3 | claim | 52 | 0:19 | The agent does not grade itself | 75 assessed, routed on 75 |
-| 4 | peers | 55 | 0:20 | Three agents, and one can overrule another upward | The one-way arrow, all three named |
-| 5 | attack | 57 | 0:21 | Two detectors, and both can be defeated | Batch held, standalone through |
+| 0 | open | 51 | 0:18 | It measures a real person, and promises to measure you | Live console, times falling, the card turning red |
+| 1 | what | 51 | 0:15 | Watchspan is a gate, and here is the split | 370 / 294 / 7 / 69 on screen |
+| 2 | collapse | 58 | 0:18 | Rubber-stamping has a measurable signature | 26s to 9s to 2.5s, complexity flat |
+| 3 | claim | 52 | 0:18 | The agent does not grade itself | 75 assessed, routed on 75 |
+| 4 | peers | 55 | 0:18 | Three agents, and one can overrule another upward | The one-way arrow, all three named |
+| 5 | attack | 57 | 0:19 | Two detectors, and both can be defeated | Batch held, standalone through |
 | 6 | ceiling | 37 | 0:13 | Calibration needs a floor it cannot raise | 33 to 0 |
-| 7 | desk | 65 | 0:24 | It measures the viewer | The console's verdict on the person watching |
+| 7 | desk | 65 | 0:20 | It measures the viewer | The console's verdict on the person watching |
 | 8 | evidence | 45 | 0:16 | Article 14, measured | 14 of 69 |
-| 9 | cloud | 49 | 0:18 | The footprint and the discipline are checkable | 6 of 6, and the gate |
-| 10 | close | 14 | 0:05 | The line | End card, URL, QR |
+| 9 | cloud | 49 | 0:17 | The footprint and the discipline are checkable | 6 of 6, and the gate |
+| 10 | close | 14 | 0:06 | The line | End card, URL, QR |
 
 ---
 
@@ -68,7 +69,7 @@ Article 14 ratio and the service count, is on screen and never said. The ratio
 moved because a reader heard "fourteen were made with attention" and "Article
 fourteen" thirty words apart, read it as a pun and lost the sentence.
 
-### 0. open · 0:19 · REPLACES the sting and the hook
+### 0. open · 0:18 · REPLACES the sting and the hook
 
 Live console, from frame one. A real cursor moving down a real queue, the
 decision times falling in the corner, then the card turning red. No logo, no
@@ -102,7 +103,7 @@ other entry in this track can say is the last one.
 twelve; eleven needs a capture where the reviewer genuinely reads one card.
 Whatever the session yields is what the narration says.
 
-### 1. what · 0:19 · rewritten
+### 1. what · 0:15 · rewritten
 
 > Watchspan is a gate between an agent fleet and the people who approve what it
 > does. Of three hundred and seventy actions in one run, most ran on their own
@@ -117,7 +118,7 @@ could not tell whose component had just broken. And the voice no longer reads
 four numbers that are counting up on screen beside it, which the track judge
 called dead air with a soundtrack.
 
-### 2. collapse · 0:21 · absorbs the budget scene
+### 2. collapse · 0:18 · absorbs the budget scene
 
 > Attention is a budget, and a dense action costs three times a routine one.
 > Twenty-six seconds on the first decision, at full depth. Nine on the tenth.
@@ -137,7 +138,7 @@ review", which is not what the code does. `LOW_BUDGET_FRACTION` is where the
 Calibrator proposes a stricter bar and a human approves it. The claim is gone
 rather than reworded, because the scene did not need it.
 
-### 3. claim · 0:19 · NEW
+### 3. claim · 0:18 · NEW
 
 > Every request arrives with a risk score the agent gave itself. This one
 > understated a table drop. Watchspan read the action, called it seventy-five
@@ -171,7 +172,7 @@ described as "apply the attached change request form CR-4471" to auto-execute at
 exactly what the frame shows and no wider. The film already says pattern
 matching is a floor; the narration should stop implying otherwise.
 
-### 4. peers · 0:20 · NEW, promoted out of scene 5
+### 4. peers · 0:18 · NEW, promoted out of scene 5
 
 > Three agents work this fleet. They are built on Google's Agent Development Kit
 > and discovered through the Agent Registry when the coordinator starts, and
@@ -205,7 +206,7 @@ Honest about its own result: in both live runs the peer agreed with the proposer
 and Watchspan overruled them both. Two agents agreeing is not safety, which is
 the same thing this film says about one tired human.
 
-### 5. attack · 0:21 · rewritten after the fact-check
+### 5. attack · 0:19 · rewritten after the fact-check
 
 > A production backup deletion, hidden in a batch labelled routine quarterly
 > cleanup. Watchspan holds it twice, on the wording and on the shape of the
@@ -239,7 +240,7 @@ shipped system that number is zero, and the 33 comes from re-running the
 experiment with `ALWAYS_ESCALATE_ABOVE` removed. The on-screen 33 to 0 carries
 the rest.
 
-### 7. desk · 0:24 · the promise paid
+### 7. desk · 0:20 · the promise paid
 
 > So. Twelve approval requests, one at a time, routed through everything you
 > have just seen. Watchspan starts the clock when it hands one over and counts
@@ -290,7 +291,7 @@ compliance hook, it was falsifiable in one search, and it overclaimed urgency.
 The disclosure card was in v2 and was dropped from the first v3 draft while the
 README still claimed the film carried it. Restored.
 
-### 9. cloud · 0:18 · rewritten
+### 9. cloud · 0:17 · rewritten
 
 > All of it on Google Cloud, and none of it on our word. One request calls every
 > service we claim and reports what came back: Agent Runtime, the Agent
@@ -316,7 +317,7 @@ the engine answers for itself; `POST /fleet/live` runs the agents in the Cloud
 Run container. The README says so, and the film will not say more than the
 README.
 
-### 10. close · 0:05 · unchanged
+### 10. close · 0:06 · unchanged
 
 > Everyone sells human in the loop. Watchspan measures whether that human is
 > still there.

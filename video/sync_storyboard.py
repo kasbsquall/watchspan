@@ -31,6 +31,12 @@ def main() -> int:
     doc = DOC.read_text(encoding="utf-8")
     rate = ct.rate()
     rows = ct.scenes(doc)
+    # Prefer the recorded voiceover over the word-rate estimate. The estimate is
+    # a stand-in for a track that does not exist; once it does, writing the
+    # guess into the document while the audio on disk says otherwise is the
+    # exact failure this file was added to stop.
+    recorded = ct.measured()
+    covers = {name for name, _, _ in rows} <= set(recorded)
 
     # Keep whatever the current table says about each scene's claim and frame.
     prose: dict[str, tuple[str, str]] = dict(NEW_ROWS)
@@ -45,7 +51,7 @@ def main() -> int:
     ]
     for index, (name, stated, lines) in enumerate(rows):
         words = len(" ".join(lines).split())
-        seconds = words / rate
+        seconds = recorded[name] if covers else words / rate
         actual = f"{int(seconds // 60)}:{round(seconds % 60):02d}"
         doc = re.sub(
             rf"(?m)^(### {index}\. {name} · ){re.escape(stated)}",
@@ -65,7 +71,7 @@ def main() -> int:
     DOC.write_text(doc, encoding="utf-8", newline="")
 
     total = sum(len(" ".join(l).split()) for _, _, l in rows)
-    spoken = total / rate
+    spoken = sum(recorded[n] for n, _, _ in rows) if covers else total / rate
     finished = spoken + ct.LEAD_IN_S + ct.GAP_S * (len(rows) - 1)
     print(f"{len(rows)} scenes, {total} words, spoken {spoken:.0f}s, finished {finished:.0f}s")
     missing = [n for n, _, _ in rows if prose.get(n, ("TODO",))[0] == "TODO"]
