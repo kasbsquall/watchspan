@@ -54,6 +54,10 @@ be effective, not decorative, with no accepted way to prove the difference.
 5. **Generates effective-oversight evidence.** The auditable record Article
    14 asks for: who reviewed what, with how much attention available, and why
    the system considered that review meaningful.
+6. **Scores risk independently of the agent that declares it.** The caller's
+   risk score is a claim. Watchspan assesses the action itself and routes on
+   whichever is higher, so understating risk cannot get anything past the gate,
+   only onto the record with the discrepancy attached.
 
 ## Architecture
 
@@ -252,6 +256,12 @@ one request away from being checked rather than believed:
 curl -s https://watchspan-api-45ejdvuucq-uc.a.run.app/geap/status | python -m json.tool
 ```
 
+Six of the seven answers are live round trips: Cloud Trace returns the id of a
+trace you can open, and Agent Runtime returns the deployed reasoning engine's
+name and creation time. Cloud Run is a config check and is labelled as one
+rather than counted as a verification. The same panel is at the bottom of the
+control room, so none of this needs a terminal.
+
 **Real, in the path you can click:** the governance layer runs on Cloud Run;
 Gemini 3.5 Flash on Vertex AI writes the findings; the Memory Bank ledger
 answers `GET /ledger/{id}` with `"backend":"memory_bank"`; every routing and
@@ -263,9 +273,19 @@ and `/simulate` on the deployed service returns them to the last decimal.
 Armor screening its model input as a `before_model_callback`. Model Armor is
 deliberately not in front of this API, and the film explains why: the reworded
 deletion is not a prompt injection, so Model Armor is the wrong control for it.
-That is what the Sentinel is for. The Agent Registry catalogues the seven
-agents and answers cross-department search, run as a CLI rather than from the
-request path.
+That is what the Sentinel is for. The Agent Registry is not a side catalogue:
+the coordinator calls `agents:search` at startup and builds its fleet from what
+comes back, so unregistering an agent removes it without a code change. Each of
+the seven cards resolves, and `GET /agents/{id}` serves the card the Registry
+holds plus where that agent's work is observable.
+
+**Agents that review each other.** Before anything that deletes, moves money,
+changes access or touches production, an agent asks a peer for an independent
+risk score, and the review is binding upwards: a lenient colleague cannot lower
+the number. The first live run is the argument rather than a demo of it. The
+proposer scored a table drop 0.30, the peer read it and also said 0.30, and what
+escalated it was Watchspan's own assessment at 0.75. Two agents agreeing is not
+safety, which is the same claim this project makes about a tired reviewer.
 
 **Real, and the answer to the obvious objection:** press **Ask the real fleet**
 in the control room, or `POST /fleet/live`. That hands three tasks to the actual
