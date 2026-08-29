@@ -298,6 +298,18 @@ proposer scored a table drop 0.30, the peer read it and also said 0.30, and what
 escalated it was Watchspan's own assessment at 0.75. Two agents agreeing is not
 safety, which is the same claim this project makes about a tired reviewer.
 
+**Real, and measured on you:** press **Take the queue** in the control room, or
+`POST /reviewer/start`. Twelve real approval requests, routed through the same
+governance layer, decided by whoever is holding the mouse. Watchspan issues the
+reviewer id and signs it, starts the clock when it hands a card over, and counts
+the detail sections actually opened. `POST /reviewer/decide` carries a verdict
+and nothing else: the seconds, the depth and the identity cannot be supplied by
+the caller, because a control-effectiveness number reported by the party being
+audited is not evidence. Stamp your way through the queue and Watchspan will
+declare your oversight degraded, on the same thresholds it applies to the
+simulated reviewer, and file your decisions in the Article 14 dossier under your
+reviewer id.
+
 **Real, and the answer to the obvious objection:** press **Ask the real fleet**
 in the control room, or `POST /fleet/live`. That hands three tasks to the actual
 ADK agents on Gemini 3.5 Flash. They decide for themselves whether a task needs
