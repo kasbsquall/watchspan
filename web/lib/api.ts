@@ -12,6 +12,32 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
    compare runs. Wrapped because sessionStorage throws in private modes. */
 const SESSION_KEY = "watchspan.session";
 
+/* A busy service is not a broken one.
+
+   Every caller here threw the same generic error, so hitting the rate limit
+   rendered "Could not connect to the Watchspan service. Check that the backend
+   is running." A reviewer pressed Run seven times in a minute and was told the
+   service was down by a service that had answered every request. */
+export class RateLimited extends Error {
+  constructor(readonly detail: string) {
+    super(detail);
+    this.name = "RateLimited";
+  }
+}
+
+async function guard(res: Response, what: string): Promise<Response> {
+  if (res.status === 429) {
+    const body = await res.json().catch(() => ({}));
+    throw new RateLimited(
+      typeof body.detail === "string"
+        ? body.detail
+        : "Too many requests just now. Wait a moment and try again.",
+    );
+  }
+  if (!res.ok) throw new Error(`${what} failed: ${res.status}`);
+  return res;
+}
+
 function sessionId(): string {
   try {
     const existing = sessionStorage.getItem(SESSION_KEY);
@@ -76,7 +102,7 @@ export async function runSimulation(
     body: JSON.stringify({ minutes: 30, inject_attack: injectAttack, reset: true }),
     signal,
   });
-  if (!res.ok) throw new Error(`simulate failed: ${res.status}`);
+  await guard(res, "simulate");
   return res.json();
 }
 
@@ -140,7 +166,7 @@ export async function runLiveFleet(
     body: JSON.stringify({ tasks }),
     signal,
   });
-  if (!res.ok) throw new Error(`live fleet failed: ${res.status}`);
+  await guard(res, "live fleet");
   return res.json();
 }
 
@@ -169,5 +195,85 @@ export type GeapStatus = Record<string, GeapProbe | undefined> & {
 export async function fetchGeapStatus(signal?: AbortSignal): Promise<GeapStatus> {
   const res = await fetch(`${API}/geap/status`, { headers: headers(), signal });
   if (!res.ok) throw new Error(`geap status failed: ${res.status}`);
+  return res.json();
+}
+
+/* The reviewer console.
+
+   Everything the seeded run shows is Watchspan measuring a reviewer this
+   repository wrote. These three calls are Watchspan measuring whoever is
+   holding the mouse: the server issues the identity, starts the clock when it
+   hands over a request, and counts the detail sections actually opened. The
+   browser sends a verdict and nothing else. */
+
+export interface ReviewCard {
+  request_id: string;
+  action: string;
+  agent_id: string;
+  description: string;
+  risk_routed_on: number;
+  risk_declared_by_agent: number;
+  assessment_basis: string;
+  recognised: boolean;
+  complexity: number;
+  review_depth_so_far: number;
+}
+
+export interface ReviewStart {
+  reviewer_id: string;
+  queue_length: number;
+  /* One card at a time. The browser never holds the queue, so it cannot start a
+     card's clock early or read ahead to the dangerous one. */
+  current: ReviewCard | null;
+  measured_here: string;
+}
+
+export interface ReviewOutcome {
+  next: ReviewCard | null;
+  remaining: number;
+  decision_time_s: number;
+  review_depth: number;
+  approved: boolean;
+  risk_routed_on: number;
+  meter: Record<string, unknown> | null;
+  drift_degraded: boolean | null;
+  decisions_recorded: number;
+  approved_without_reading: number;
+  median_decision_time_s: number | null;
+}
+
+export async function startReview(signal?: AbortSignal): Promise<ReviewStart> {
+  const res = await fetch(`${API}/reviewer/start`, {
+    method: "POST",
+    headers: headers(true),
+    signal,
+  });
+  await guard(res, "review start");
+  return res.json();
+}
+
+export async function openSection(
+  requestId: string,
+  section: string,
+): Promise<number> {
+  const res = await fetch(`${API}/reviewer/open`, {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify({ request_id: requestId, section }),
+  });
+  if (!res.ok) throw new Error(`open failed: ${res.status}`);
+  return (await res.json()).review_depth;
+}
+
+export async function decide(
+  requestId: string,
+  approved: boolean,
+): Promise<ReviewOutcome> {
+  const res = await fetch(`${API}/reviewer/decide`, {
+    method: "POST",
+    headers: headers(true),
+    body: JSON.stringify({ request_id: requestId, approved }),
+  });
+  await guard(res, "decide");
   return res.json();
 }

@@ -8,6 +8,7 @@ dossier. Deployed on Cloud Run (scale to zero) in step 8.
 from __future__ import annotations
 
 import os
+import random
 import time
 from collections import OrderedDict
 
@@ -15,10 +16,13 @@ from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from api import reviewer as reviewer_mod
 from api import session
 from attention.signals import ApprovalRequest, Decision
 from evidence import article14_dossier
 from fleet import simulator
+from fleet.demo_agents import comms_agent, data_ops_agent, procurement_agent
+from fleet.demo_agents.base import make_request
 from watchspan.orchestrator import Orchestrator
 
 app = FastAPI(title="Watchspan", version="0.1.0")
@@ -33,27 +37,72 @@ DEFAULT_ORIGINS = [
 _origins = os.environ.get("WATCHSPAN_ALLOWED_ORIGINS")
 ALLOWED_ORIGINS = [o.strip() for o in _origins.split(",") if o.strip()] if _origins else DEFAULT_ORIGINS
 
-# Crude per-session rate limiting. /simulate does 370 routings and /fleet/live
-# spends Vertex quota per call, both unauthenticated, on a service capped at two
-# instances. A judge cannot trip this; a script can, and "Fortified" is the name
-# of the track.
+# Rate limiting. /simulate does 370 routings and /fleet/live spends Vertex quota
+# per call, both unauthenticated, on a service capped at two instances.
+#
+# This used to key on the session id in the request header, which the caller
+# chooses. A reviewer sent eight consecutive calls with no header, got eight
+# 200s, and pointed out that the comment sitting here claimed a script could
+# trip the limit. It could not: `session.resolve` mints a fresh id when the
+# header is absent, so the well-behaved client was the only one being limited.
+#
+# Two buckets now, and being honest about what each is worth. The per-caller
+# bucket keys on the client address, which the caller does not supply. Behind a
+# proxy that address comes from X-Forwarded-For and a determined attacker can
+# still rotate it, so there is also a service-wide ceiling per endpoint, which
+# nothing in the request can influence at all. The first bucket keeps one client
+# from monopolising the service; the second keeps the service alive regardless.
 _RATE: "OrderedDict[str, list[float]]" = OrderedDict()
-LIMITS = {"/simulate": (6, 60.0), "/fleet/live": (3, 300.0)}
+LIMITS = {
+    "/simulate": (6, 60.0),
+    "/fleet/live": (3, 300.0),
+    "/reviewer/start": (8, 300.0),
+}
+# Per endpoint, across every caller.
+CEILINGS = {"/simulate": (60, 60.0), "/fleet/live": (12, 300.0), "/reviewer/start": (30, 300.0)}
 
 
-def rate_limit(path: str, key: str) -> None:
-    allowed, window = LIMITS[path]
+def client_key(request) -> str:
+    """Who is calling, from something they do not get to choose.
+
+    Cloud Run puts the originating address first in X-Forwarded-For. Falls back
+    to the socket peer when there is no proxy in front.
+    """
+    forwarded = (request.headers.get("x-forwarded-for") or "") if request else ""
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    if request is not None and request.client is not None:
+        return request.client.host
+    return "unknown"
+
+
+def _hits(bucket: str, allowed: int, window: float, detail: str) -> None:
     now = time.time()
-    hits = [t for t in _RATE.get(f"{path}:{key}", []) if now - t < window]
+    hits = [t for t in _RATE.get(bucket, []) if now - t < window]
     if len(hits) >= allowed:
-        raise HTTPException(
-            status_code=429,
-            detail=f"{allowed} calls per {int(window)}s on {path}. Wait a moment.",
-        )
+        raise HTTPException(status_code=429, detail=detail)
     hits.append(now)
-    _RATE[f"{path}:{key}"] = hits
-    while len(_RATE) > 256:
+    _RATE[bucket] = hits
+    while len(_RATE) > 512:
         _RATE.popitem(last=False)
+
+
+def rate_limit(path: str, request) -> None:
+    allowed, window = LIMITS[path]
+    ceiling, ceiling_window = CEILINGS[path]
+    _hits(
+        f"all:{path}",
+        ceiling,
+        ceiling_window,
+        f"{path} is at its service-wide ceiling of {ceiling} calls per "
+        f"{int(ceiling_window)}s. Wait a moment.",
+    )
+    _hits(
+        f"{path}:{client_key(request)}",
+        allowed,
+        window,
+        f"{allowed} calls per {int(window)}s on {path} from one address. Wait a moment.",
+    )
 
 
 app.add_middleware(
@@ -114,9 +163,13 @@ def flush_traces() -> None:
 
 
 @app.post("/simulate")
-def simulate(body: SimulateBody, x_watchspan_session: str | None = Header(default=None)) -> dict:
+def simulate(
+    body: SimulateBody,
+    request: Request,
+    x_watchspan_session: str | None = Header(default=None),
+) -> dict:
     sid, orchestrator = session.resolve(x_watchspan_session)
-    rate_limit("/simulate", sid)
+    rate_limit("/simulate", request)
     if body.reset:
         orchestrator = session.replace(sid)
     result = simulator.run(
@@ -197,6 +250,177 @@ def submit_decision(body: DecisionBody, x_watchspan_session: str | None = Header
         complexity=body.complexity,
     )
     return orchestrator.record_decision(decision)
+
+
+class OpenBody(BaseModel):
+    request_id: str
+    section: str
+
+
+class DecideBody(BaseModel):
+    request_id: str
+    approved: bool
+
+
+# The agents whose requests a human reviewer will be shown. Same profiles the
+# simulator draws from, so the queue is the real fleet's work rather than a
+# separate set of props written for this screen.
+REVIEW_PROFILES = (
+    procurement_agent.PROFILE,
+    data_ops_agent.PROFILE,
+    comms_agent.PROFILE,
+)
+
+# How many decisions the desk asks for. The drift detector says nothing below
+# twelve, so a shorter queue could never declare anything about the human.
+WANTED_QUEUE = 12
+
+# One desk per browser session, alongside the orchestrator that session owns.
+_DESKS: dict[str, "reviewer_mod.Desk"] = {}
+
+
+def _desk(session_id: str) -> "reviewer_mod.Desk":
+    desk = _DESKS.get(session_id)
+    if desk is None:
+        desk = reviewer_mod.Desk()
+        _DESKS[session_id] = desk
+        # Bounded for the same reason sessions are: a public demo must not grow
+        # a dict per visitor forever.
+        if len(_DESKS) > 64:
+            _DESKS.pop(next(iter(_DESKS)))
+    desk.sweep(time.time())
+    return desk
+
+
+def _card(served) -> dict:
+    return {
+        "request_id": served.request_id,
+        "action": served.action,
+        "agent_id": served.agent_id,
+        "description": served.description,
+        "risk_routed_on": round(served.risk_routed_on, 3),
+        "risk_declared_by_agent": round(served.risk_declared, 3),
+        "assessment_basis": served.assessment_basis,
+        "recognised": served.recognised,
+        "complexity": round(served.complexity, 3),
+        "review_depth_so_far": len(served.opened),
+    }
+
+
+@app.post("/reviewer/start")
+def reviewer_start(
+    request: Request,
+    x_watchspan_session: str | None = Header(default=None),
+) -> dict:
+    """Put real approval requests in front of a real human and start the clock.
+
+    The seeded run demonstrates the thesis against a reviewer this repository
+    wrote, which a reviewer fairly described as a detector detecting its own
+    generator. This queue is routed through the same governance layer and
+    decided by whoever is holding the mouse.
+    """
+    rate_limit("/reviewer/start", request)
+    session_id, orchestrator = session.resolve(x_watchspan_session)
+    desk = _desk(session_id)
+
+    # Twelve because that is what the drift detector needs before it will say
+    # anything (watchspan/drift.py MIN_DECISIONS), and because the point of the
+    # exercise is to run longer than the reviewer's patience.
+    #
+    # Arrival times are spread across the preceding hour rather than stamped at
+    # one instant. Generating candidates in a tight loop made every one of them
+    # land inside the Sentinel's thirty-second burst window, so the queue
+    # builder was tripping the fatigue-exploitation detector with its own
+    # candidates and half the queue never reached a human.
+    rng = random.Random(hash(session_id) & 0xFFFF)
+    now = time.time()
+    queued = 0
+    for attempt in range(WANTED_QUEUE * 12):
+        if queued >= WANTED_QUEUE:
+            break
+        profile = rng.choice(REVIEW_PROFILES)
+        arrived = now - (WANTED_QUEUE * 12 - attempt) * 45.0
+        result = orchestrator.route_request(make_request(profile, rng, arrived))
+        if result.route != "escalate":
+            continue
+        desk.enqueue(result)
+        queued += 1
+
+    card = desk.next_card()
+    return {
+        "reviewer_id": reviewer_mod.reviewer_id_for(session_id),
+        "queue_length": queued,
+        "current": _card(card) if card else None,
+        "measured_here": (
+            "Watchspan issued this reviewer id and times these decisions itself. "
+            "Nothing in the request body can set the identity, the seconds taken "
+            "or the review depth, and the clock on each card starts when this "
+            "service hands it over rather than when the browser says so."
+        ),
+    }
+
+
+@app.post("/reviewer/open")
+def reviewer_open(
+    body: OpenBody, x_watchspan_session: str | None = Header(default=None)
+) -> dict:
+    """The reviewer expanded a detail section. Review depth is counted here."""
+    session_id, _ = session.resolve(x_watchspan_session)
+    return {"review_depth": _desk(session_id).opened(body.request_id, body.section)}
+
+
+@app.post("/reviewer/decide")
+def reviewer_decide(
+    body: DecideBody, x_watchspan_session: str | None = Header(default=None)
+) -> dict:
+    """Record a human decision, with the seconds and the depth measured here.
+
+    `POST /decisions` accepts `reviewer_id`, `decision_time_s` and `review_depth`
+    from the caller, which is fine for an integration reporting its own reviewers
+    and useless as evidence: it is the audited party supplying the audit input.
+    This path takes none of the three from the body.
+    """
+    session_id, orchestrator = session.resolve(x_watchspan_session)
+    desk = _desk(session_id)
+    served = desk.close(body.request_id)
+    if served is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"{body.request_id} is not open at this desk; it may have expired",
+        )
+
+    now = time.time()
+    decision = Decision(
+        request_id=served.request_id,
+        reviewer_id=reviewer_mod.reviewer_id_for(session_id),
+        approved=body.approved,
+        decision_time_s=round(now - served.served_at, 3),
+        review_depth=len(served.opened),
+        decided_at=now,
+        complexity=served.complexity,
+    )
+    outcome = orchestrator.record_decision(decision)
+    window = orchestrator.meter.state.team_window
+    approved_unread = [
+        d
+        for d in window.decisions
+        if d.approved and d.review_depth == 0 and d.decision_time_s < 3.0
+    ]
+    following = desk.next_card()
+    return {
+        "next": _card(following) if following else None,
+        "remaining": desk.remaining(),
+        "decision_time_s": decision.decision_time_s,
+        "review_depth": decision.review_depth,
+        "approved": decision.approved,
+        "risk_routed_on": round(served.risk_routed_on, 3),
+        "meter": outcome.get("meter"),
+        "drift_degraded": outcome.get("drift_degraded"),
+        "drift": outcome.get("drift"),
+        "decisions_recorded": len(window.decisions),
+        "approved_without_reading": len(approved_unread),
+        "median_decision_time_s": window.median_decision_time(),
+    }
 
 
 @app.get("/attention")
@@ -286,7 +510,9 @@ class LiveFleetBody(BaseModel):
 
 @app.post("/fleet/live")
 def fleet_live(
-    body: LiveFleetBody, x_watchspan_session: str | None = Header(default=None)
+    body: LiveFleetBody,
+    request: Request,
+    x_watchspan_session: str | None = Header(default=None),
 ) -> dict:
     """Let the real ADK fleet decide what to ask for, and govern what it asks.
 
@@ -298,7 +524,7 @@ def fleet_live(
     from fleet.live import run_live
 
     sid, orchestrator = session.resolve(x_watchspan_session)
-    rate_limit("/fleet/live", sid)
+    rate_limit("/fleet/live", request)
     from watchspan.telemetry import flush
 
     try:

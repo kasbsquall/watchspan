@@ -46,7 +46,11 @@ function detail(key: string, row: GeapProbe): string {
   // it never measured: "0 traces in the last hour" for a call that never
   // happened reads as a measurement. Say what went wrong instead.
   if (row.checked === false || row.how === "not_attempted") {
-    return String(row.error ?? row.detail ?? "not checked on this request");
+    // The error when there is one, and a short reason when the probe simply
+    // found the service unconfigured. Falling through to `detail` printed a
+    // two-line explanation of what the service does into a column of figures.
+    const err = String(row.error ?? "");
+    return err ? err.slice(0, 90) : "not configured on this deployment";
   }
   const s = (k: string) => String(row[k] ?? "");
   switch (key) {

@@ -11,11 +11,13 @@ import BudgetTimeline from "@/components/BudgetTimeline";
 import DriftAlert from "@/components/DriftAlert";
 import EvidenceExport from "@/components/EvidenceExport";
 import GeapStatus from "@/components/GeapStatus";
+import ReviewerDesk from "@/components/ReviewerDesk";
 import PolicyProposal from "@/components/PolicyProposal";
 import SentinelAlerts from "@/components/SentinelAlerts";
 import StampedAnyway from "@/components/StampedAnyway";
 import {
   getProposal,
+  RateLimited,
   runSimulation,
   type PendingProposal,
   type SimulationResponse,
@@ -34,6 +36,7 @@ export default function ControlRoom() {
   const [proposal, setProposal] = useState<PendingProposal | null>(null);
   const [proposalFetchFailed, setProposalFetchFailed] = useState(false);
   const [policyNote, setPolicyNote] = useState<string | null>(null);
+  const [problem, setProblem] = useState("");
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -55,8 +58,17 @@ export default function ControlRoom() {
       }
       setSim(result);
       setPhase("playing");
-    } catch {
-      if (!controller.signal.aborted) setPhase("error");
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      // A rate limit is the service working, not the service down. Telling a
+      // judge who pressed Run seven times that the backend is off is both wrong
+      // and unhelpful, since it hides the one thing they need to know: wait.
+      setProblem(
+        err instanceof RateLimited
+          ? err.detail
+          : "Could not connect to the Watchspan service. Check that the backend is running, then run again.",
+      );
+      setPhase("error");
     }
   }, []);
 
@@ -146,8 +158,7 @@ export default function ControlRoom() {
 
       {phase === "error" && (
         <div role="alert" className="mt-8 rounded-sm border border-alarm-500/40 bg-alarm-500/10 px-4 py-3 text-sm text-alarm-500">
-          Could not connect to the Watchspan service. Check that the backend is
-          running, then run again.
+          {problem}
         </div>
       )}
 
@@ -234,6 +245,7 @@ export default function ControlRoom() {
             />
           )}
           <ApprovalQueue events={visible} live={phase === "playing"} />
+          <ReviewerDesk />
         </div>
       </section>
 

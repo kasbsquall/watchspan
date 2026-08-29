@@ -538,3 +538,108 @@ def test_a_catalogued_action_keeps_its_score_until_the_caller_adds_something():
     # One word added, and the catalogue no longer describes the action.
     assert risk.assess("clear_staging_table_production").assessed > 0.7
     assert risk.assess("drop_deprecated_table_all_customers").assessed > 0.9
+
+
+# --- The reviewer console ----------------------------------------------------
+
+
+def _client():
+    from fastapi.testclient import TestClient
+
+    from api.main import app
+
+    return TestClient(app)
+
+
+def test_the_reviewer_console_measures_instead_of_accepting():
+    """Identity, seconds and depth all come from the server.
+
+    `POST /decisions` takes all three from the request body, which is fine for
+    an integration reporting its own reviewers and worthless as evidence: it is
+    the audited party supplying the audit input. A reviewer named that as the
+    only serious commercial objection to the product.
+    """
+    client = _client()
+    headers = {"x-watchspan-session": "test-desk-measured"}
+
+    started = client.post("/reviewer/start", headers=headers).json()
+    assert started["reviewer_id"].startswith("human-")
+    assert started["queue_length"] == 12
+    # One card at a time: handing the browser all twelve stamped every clock at
+    # once and measured the age of the queue instead of the reviewer.
+    assert started["current"] is not None
+    rid = started["current"]["request_id"]
+
+    # Depth counts distinct sections, so opening one twice does not inflate it.
+    assert client.post(
+        "/reviewer/open", json={"request_id": rid, "section": "basis"}, headers=headers
+    ).json()["review_depth"] == 1
+    assert client.post(
+        "/reviewer/open", json={"request_id": rid, "section": "basis"}, headers=headers
+    ).json()["review_depth"] == 1
+    assert client.post(
+        "/reviewer/open", json={"request_id": rid, "section": "history"}, headers=headers
+    ).json()["review_depth"] == 2
+
+    # The body carries only the verdict. There is nowhere to put a time, a depth
+    # or an identity, and anything extra is ignored rather than trusted.
+    decided = client.post(
+        "/reviewer/decide",
+        json={
+            "request_id": rid,
+            "approved": True,
+            "decision_time_s": 99.0,
+            "review_depth": 99,
+            "reviewer_id": "someone-else",
+        },
+        headers=headers,
+    ).json()
+    assert decided["review_depth"] == 2
+    assert decided["decision_time_s"] < 60.0
+    assert decided["decisions_recorded"] == 1
+
+
+def test_a_reviewer_id_is_stable_per_session_and_not_guessable_across_them():
+    from api.reviewer import reviewer_id_for
+
+    assert reviewer_id_for("session-a") == reviewer_id_for("session-a")
+    assert reviewer_id_for("session-a") != reviewer_id_for("session-b")
+
+
+def test_deciding_a_request_that_was_never_served_is_refused():
+    client = _client()
+    headers = {"x-watchspan-session": "test-desk-unknown"}
+    client.post("/reviewer/start", headers=headers)
+    response = client.post(
+        "/reviewer/decide",
+        json={"request_id": "never-served", "approved": True},
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+def test_drift_catches_a_reviewer_who_never_read_anything():
+    """Degradation is a decline, and a reviewer who stamped from request one has
+    nothing to decline from. Forty blind stamps used to read "within normal
+    range", which makes the worst case the invisible one."""
+    import time
+
+    from attention.signals import Decision, SignalWindow
+    from watchspan import drift
+
+    window = SignalWindow()
+    for i in range(drift.MIN_DECISIONS + 4):
+        window.add(
+            Decision(
+                request_id=f"r{i}",
+                reviewer_id="human",
+                approved=True,
+                decision_time_s=1.0,
+                review_depth=0,
+                decided_at=time.time() + i,
+                complexity=0.5,
+            )
+        )
+    verdict = drift.assess(window)
+    assert verdict.degraded
+    assert "no oversight to degrade" in verdict.reason

@@ -23,6 +23,11 @@ COMPLEXITY_TOLERANCE = 0.85
 APPROVAL_RATE_ALERT = 0.9
 # Newer-half mean review depth below this is a stamping signal.
 DEPTH_ALERT = 0.5
+# A reviewer who never read anything has nothing to decline from. Below these,
+# across the whole window rather than the newer half, oversight is absent
+# regardless of trend.
+FLAT_DEPTH = 0.2
+FLAT_TIME_S = 3.0
 
 
 @dataclass(frozen=True)
@@ -76,4 +81,24 @@ def assess(window: SignalWindow) -> DriftVerdict:
             ),
             evidence=evidence,
         )
+
+    # Degradation is a decline, and this detector was built to catch one. A
+    # reviewer probed it with forty consecutive blind stamps at one second each
+    # and it reported "within normal range", because there was no earlier
+    # behaviour to have declined from. A reviewer who was stamping from the
+    # first request is the worst case, not the invisible one.
+    window_depth = window.mean_review_depth()
+    window_time = window.median_decision_time()
+    if window_depth <= FLAT_DEPTH and window_time is not None and window_time <= FLAT_TIME_S:
+        evidence["window_mean_review_depth"] = window_depth
+        evidence["window_median_time_s"] = window_time
+        return DriftVerdict(
+            degraded=True,
+            reason=(
+                "no oversight to degrade: every decision in the window was taken "
+                "in under three seconds with nothing opened"
+            ),
+            evidence=evidence,
+        )
+
     return DriftVerdict(degraded=False, reason="within normal range", evidence=evidence)
