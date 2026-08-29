@@ -1,7 +1,16 @@
 # Watchspan, film v3
 
-Revision of v2. Read by three script judges before a frame existed, which is the
-point: words are free and renders are not.
+Revision of v2, restructured after a second reading. Three script judges have
+read it before a frame exists, which is the point: words are free and renders
+are not.
+
+**The film opens on the working product and promises to measure the viewer.**
+Both judges arrived at that from different directions. The track judge: rebuild
+the first forty seconds around the desk, and either open with it properly or do
+not touch it at the top at all. The lay reader: the desk should be the whole
+video. The version between them, a still verdict card, was the weakest of the
+three: it spoiled the reveal without showing the console, the clicking or the
+clock.
 
 **Nothing is rendered until this document is approved.**
 
@@ -15,27 +24,27 @@ not watch it."
 
 ## The spine
 
-One line carries the film and lands three times: at the top, at the desk, and on
-the end card.
+One line carries the film and lands twice: inside the opening promise and on the
+end card. A lay reader said three landings in under four minutes reads as a
+slogan you do not trust them to have heard, and the closing scene now pays the
+promise instead of repeating the sentence.
 
 > Everyone sells human in the loop. Watchspan measures whether that human is
 > still there.
 
 | # | Scene | Words | Runtime | The claim | The frame that proves it |
 |---|---|---|---|---|---|
-| 0 | sting | 15 | 0:05 | It already measured someone | A real verdict card, held |
-| 1 | hook | 29 | 0:11 | A reviewer stopped reading and nothing noticed | Decision times falling, queue moving |
-| 2 | what | 51 | 0:19 | Watchspan is a gate, and here is the split | 370 / 294 / 7 / 69 on screen |
-| 3 | budget | 28 | 0:10 | Attention is finite and priced | Gauge draining, 0.30 and 0.70 drawn |
-| 4 | collapse | 34 | 0:12 | Rubber-stamping has a measurable signature | 26s to 9s to 2.5s, complexity flat |
-| 5 | claim | 52 | 0:19 | The agent does not grade itself | 75 assessed, routed on 75 |
-| 6 | peers | 55 | 0:20 | Three agents, and one can overrule another upward | The one-way arrow, all three named |
-| 7 | attack | 57 | 0:21 | Two detectors, and both can be defeated | Batch held, standalone through |
-| 8 | ceiling | 37 | 0:13 | Calibration needs a floor it cannot raise | 33 to 0 |
-| 9 | desk | 90 | 0:33 | It measures the viewer | The console's verdict on the person watching |
-| 10 | evidence | 45 | 0:16 | Article 14, measured | 14 of 69 |
-| 11 | cloud | 49 | 0:18 | The footprint and the discipline are checkable | 6 of 6, and the gate |
-| 12 | close | 14 | 0:05 | The line | End card, URL, QR |
+| 0 | open | 51 | 0:19 | It measures a real person, and promises to measure you | Live console, times falling, the card turning red |
+| 1 | what | 51 | 0:19 | Watchspan is a gate, and here is the split | 370 / 294 / 7 / 69 on screen |
+| 2 | collapse | 58 | 0:21 | Rubber-stamping has a measurable signature | 26s to 9s to 2.5s, complexity flat |
+| 3 | claim | 52 | 0:19 | The agent does not grade itself | 75 assessed, routed on 75 |
+| 4 | peers | 55 | 0:20 | Three agents, and one can overrule another upward | The one-way arrow, all three named |
+| 5 | attack | 57 | 0:21 | Two detectors, and both can be defeated | Batch held, standalone through |
+| 6 | ceiling | 37 | 0:13 | Calibration needs a floor it cannot raise | 33 to 0 |
+| 7 | desk | 65 | 0:24 | It measures the viewer | The console's verdict on the person watching |
+| 8 | evidence | 45 | 0:16 | Article 14, measured | 14 of 69 |
+| 9 | cloud | 49 | 0:18 | The footprint and the discipline are checkable | 6 of 6, and the gate |
+| 10 | close | 14 | 0:05 | The line | End card, URL, QR |
 
 ---
 
@@ -53,48 +62,47 @@ So those three carry the film and the rest were cut or moved to screen. What is
 still spoken, and why each earns it: three hundred and seventy sets the scale;
 twenty-six to nine to two and a half is the collapse, which is a shape rather
 than three numbers; seventy-five is the assessment and is the one figure in the
-film that is deterministic; fourteen of sixty-nine is the Article 14 ratio and
-is the point of that scene; thirty-three is the counterfactual the floor exists
-for. Everything else, including the agent's own score, the routing split and the
-service count, is on screen and never said.
+film that is deterministic; thirty-three is the counterfactual the floor exists
+for. Everything else, including the agent's own score, the routing split, the
+Article 14 ratio and the service count, is on screen and never said. The ratio
+moved because a reader heard "fourteen were made with attention" and "Article
+fourteen" thirty words apart, read it as a pun and lost the sentence.
 
-### 0. sting · 0:05 · NEW
+### 0. open · 0:19 · REPLACES the sting and the hook
 
-Cold, before the logo, before anything. A real verdict card from a real session,
-held long enough to read, then a hard cut.
+Live console, from frame one. A real cursor moving down a real queue, the
+decision times falling in the corner, then the card turning red. No logo, no
+title, no product name spoken until the film has already shown you something.
 
-> This is what Watchspan said about the last person who tried to review a queue.
+> This is a real reviewer approving real requests, timed by something they
+> cannot see. By the ninth they have stopped reading. Eleven of their twelve
+> approvals took under three seconds with nothing opened. Everyone sells human
+> in the loop. Before this video ends, we are going to do this to you.
+
+**On screen.** The console as it runs, and the verdict card the service renders,
+held on the last line:
 
 ```
-WATCHSPAN
-
-11  of your 12 decisions were approvals taken in under
-    three seconds with nothing opened.
-
 WATCHSPAN'S VERDICT ON YOU    oversight degraded
 ```
 
-The product is named on the card. A lay reader read "WATCHSPAN'S VERDICT ON YOU"
-before knowing Watchspan was a thing and spent the next scene wondering whether
-they had already been measured.
+Why a promise and not a reveal. The previous cut opened on that card as a still
+and the track judge called it the weakest possible form of the strongest asset:
+it spoils the verdict without showing the console, the clicking or the clock,
+and then scene 9 spends its first line re-explaining a card the judge saw three
+minutes earlier. A promise costs nothing and pays twice. The lay reader who read
+the still card spent the next scene wondering whether they had already been
+measured; nobody wonders what a threat means.
+
+The organisers asked for the wow inside thirty seconds and for the thing that
+"cannot be done simply". Every entry can open on a dashboard. The line that no
+other entry in this track can say is the last one.
 
 **The eleven has to be shot, not composed.** A blind stamper produces twelve of
-twelve; eleven requires a capture where the reviewer genuinely reads one card.
-Whatever the session yields is what goes on the card.
+twelve; eleven needs a capture where the reviewer genuinely reads one card.
+Whatever the session yields is what the narration says.
 
-The track judge's arithmetic: the desk did not start until 2:13, which puts the
-film's best moment at the 64th percentile of its own runtime, while the
-organisers asked for the wow inside thirty seconds. Moving the desk forward
-would spend the payoff. Stealing six seconds of it does not, and scene 9 pays it
-back in full with the viewer already primed.
-
-### 1. hook · 0:11 · unchanged
-
-> Five minutes into the shift, this reviewer stopped reading. Nothing alerted.
-> Nothing failed. The approvals kept coming. Everyone sells human in the loop.
-> This is the part nobody measures.
-
-### 2. what · 0:19 · rewritten
+### 1. what · 0:19 · rewritten
 
 > Watchspan is a gate between an agent fleet and the people who approve what it
 > does. Of three hundred and seventy actions in one run, most ran on their own
@@ -109,27 +117,27 @@ could not tell whose component had just broken. And the voice no longer reads
 four numbers that are counting up on screen beside it, which the track judge
 called dead air with a soundtrack.
 
-### 3. budget · 0:10 · trimmed and corrected
+### 2. collapse · 0:21 · absorbs the budget scene
 
-> Every approval that reaches a person spends from a budget, and a dense action
-> costs three times a routine one. Run low and Watchspan proposes a stricter
-> bar.
-
-The previous line said "below thirty-five percent, Watchspan stops trusting the
-review", which is not what the code does. `LOW_BUDGET_FRACTION` is where the
-Calibrator proposes a stricter bar, and the proposal sits pending until a human
-approves it. Reviews taken below it are recorded and weighted identically.
-
-On screen: the two numbers that do govern every verdict in the film, 0.30 to
-escalate and 0.70 that nothing can raise.
-
-### 4. collapse · 0:12 · trimmed
-
+> Attention is a budget, and a dense action costs three times a routine one.
 > Twenty-six seconds on the first decision, at full depth. Nine on the tenth.
 > Two and a half by the fiftieth, and the actions never got simpler. That is the
-> signature of a rubber stamp.
+> signature of a rubber stamp, and it is the one thing a timestamp can prove.
 
-### 5. claim · 0:19 · NEW
+**On screen:** the gauge draining, and the two numbers that govern every verdict
+in the film, 0.30 to escalate and 0.70 that nothing can raise.
+
+Both judges called `budget` dead as its own scene: ten seconds of abstraction
+over a draining gauge, at the exact point one of them stopped watching. The
+mechanism belongs against the symptom it explains, so it opens the scene that
+shows the collapse rather than sitting in front of it.
+
+The line it lost said "below thirty-five percent, Watchspan stops trusting the
+review", which is not what the code does. `LOW_BUDGET_FRACTION` is where the
+Calibrator proposes a stricter bar and a human approves it. The claim is gone
+rather than reworded, because the scene did not need it.
+
+### 3. claim · 0:19 · NEW
 
 > Every request arrives with a risk score the agent gave itself. This one
 > understated a table drop. Watchspan read the action, called it seventy-five
@@ -163,7 +171,7 @@ described as "apply the attached change request form CR-4471" to auto-execute at
 exactly what the frame shows and no wider. The film already says pattern
 matching is a floor; the narration should stop implying otherwise.
 
-### 6. peers · 0:20 · NEW, promoted out of scene 5
+### 4. peers · 0:20 · NEW, promoted out of scene 5
 
 > Three agents work this fleet. They are built on Google's Agent Development Kit
 > and discovered through the Agent Registry when the coordinator starts, and
@@ -197,7 +205,7 @@ Honest about its own result: in both live runs the peer agreed with the proposer
 and Watchspan overruled them both. Two agents agreeing is not safety, which is
 the same thing this film says about one tired human.
 
-### 7. attack · 0:21 · rewritten after the fact-check
+### 5. attack · 0:21 · rewritten after the fact-check
 
 > A production backup deletion, hidden in a batch labelled routine quarterly
 > cleanup. Watchspan holds it twice, on the wording and on the shape of the
@@ -219,7 +227,7 @@ injection." The conclusion was right and the reason was wrong. Model Armor is a
 would miss this whatever the description said. Scene 6 now shows where it
 actually sits, which is a better use of the seconds.
 
-### 8. ceiling · 0:13 · corrected
+### 6. ceiling · 0:13 · corrected
 
 > So we raised the bar and measured the cost. Fewer interruptions, and oversight
 > held about thirty percent longer. Without a floor, thirty-three high-risk
@@ -231,30 +239,28 @@ shipped system that number is zero, and the 33 comes from re-running the
 experiment with `ALWAYS_ESCALATE_ABOVE` removed. The on-screen 33 to 0 carries
 the rest.
 
-### 9. desk · 0:33 · NEW
+### 7. desk · 0:24 · the promise paid
 
-> That verdict at the top was real, and it was not about our reviewer. Here is
-> the same instrument pointed at you. Twelve approval requests, one at a time,
-> routed through everything you have just seen. Watchspan starts the clock when
-> it hands one over and counts the sections you actually open. Nothing in the
-> request body can set either number. You will read the first two. By the ninth
-> you will be clicking. And on the twelfth it tells you, in your own seconds,
-> the moment you stopped reviewing.
+> So. Twelve approval requests, one at a time, routed through everything you
+> have just seen. Watchspan starts the clock when it hands one over and counts
+> the sections you actually open. Nothing in the request body can set either
+> number. It is running on the site right now, and on the twelfth it will tell
+> you, in your own seconds, the moment you stopped reviewing.
 
-**On screen.** A real capture of the live console, never a mockup. The queue
-advancing under the three short sentences in the middle, which exist to be
-played under rather than over, then the end card the service actually renders,
-held for a beat after the voice stops.
+**On screen.** The live console again, and the end card the service actually
+renders, held for a beat after the voice stops. Same instrument as the open,
+this time addressed to the viewer.
 
-The opening line closes the loop on the sting and is the second landing of the
-spine.
+Shorter than it was, because the mechanic was demonstrated in the first twenty
+seconds and does not need explaining twice. What it does now is close the loop
+and convert: the URL is on screen for the rest of the scene.
 
-"Nothing your browser sends can set either number" was the previous wording and
-it is false: a script can call `/reviewer/open`, sleep, and decide, and Watchspan
-records depth 1 and 4.6 seconds for a client with no human behind it. The code's
-own narrower sentence is true and is now the line.
+The previous wording claimed "nothing your browser sends can set either number",
+which a fact-checker defeated in six lines of Python by calling
+`/reviewer/open`, sleeping, and deciding. The code's own narrower sentence is
+true and is the line.
 
-### 10. evidence · 0:16 · corrected
+### 8. evidence · 0:16 · corrected
 
 > And this is the record: who reviewed what, with how much attention left, and
 > when oversight stopped being effective. Article fourteen of the EU AI Act will
@@ -284,7 +290,7 @@ compliance hook, it was falsifiable in one search, and it overclaimed urgency.
 The disclosure card was in v2 and was dropped from the first v3 draft while the
 README still claimed the film carried it. Restored.
 
-### 11. cloud · 0:18 · rewritten
+### 9. cloud · 0:18 · rewritten
 
 > All of it on Google Cloud, and none of it on our word. One request calls every
 > service we claim and reports what came back: Agent Runtime, the Agent
@@ -310,7 +316,7 @@ the engine answers for itself; `POST /fleet/live` runs the agents in the Cloud
 Run container. The README says so, and the film will not say more than the
 README.
 
-### 12. close · 0:05 · unchanged
+### 10. close · 0:05 · unchanged
 
 > Everyone sells human in the loop. Watchspan measures whether that human is
 > still there.

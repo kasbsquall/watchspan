@@ -28,8 +28,9 @@ jobs:
         # shooting script is now a separate file, and a generated file that
         # drifts from its source is worse than not splitting at all.
         run: |
+          python video/sync_storyboard.py
           python video/build_script.py
-          git diff --exit-code -- video/script.md
+          git diff --exit-code -- video/storyboard-v3.md video/script.md
 
       - name: Scene durations match the narration
         run: python video/check_timing.py
