@@ -34,7 +34,7 @@ the end card.
 | 8 | ceiling | 37 | 0:13 | Calibration needs a floor it cannot raise | 33 to 0 |
 | 9 | desk | 90 | 0:33 | It measures the viewer | The console's verdict on the person watching |
 | 10 | evidence | 45 | 0:16 | Article 14, measured | 14 of 69 |
-| 11 | cloud | 49 | 0:18 | The footprint and the discipline are checkable | 6 of 6, 44 tests |
+| 11 | cloud | 49 | 0:18 | The footprint and the discipline are checkable | 6 of 6, and the gate |
 | 12 | close | 14 | 0:05 | The line | End card, URL, QR |
 
 ---
@@ -261,13 +261,15 @@ own narrower sentence is true and is now the line.
 > require exactly this from December next year, and nobody has settled yet on
 > how you would prove it.
 
-**On screen:** the ratio, 14 of 69, with its own definition beside it, because a
-fact-checker pointed out that "attention left to give" means review depth above
-zero and more than a tenth of the budget remaining, and a judge will hear it as
-a careful review.
+**On screen:** the ratio, 14 of 69, with its definition beside it: "opened at
+least one detail section, with more than a tenth of the budget left".
 
-**Also on screen, and it belongs there:** "Reviewer behaviour is simulated from a
-declared model. The fleet, the API and the traces are real."
+A fact-checker pointed out that "attention left to give" means exactly that and
+a judge will hear it as a careful review, so the definition goes on the frame
+rather than being implied by the phrase.
+
+**Also on screen:** "Reviewer behaviour is simulated from a declared model. The
+fleet, the API and the traces are real."
 
 A lay reader heard "fourteen were made with attention" and "Article fourteen"
 thirty words apart, read it as a pun and lost the sentence. The ratio moves to

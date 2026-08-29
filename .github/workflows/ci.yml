@@ -22,6 +22,18 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install -r requirements.txt pytest
+      - name: The film's script matches its storyboard
+        # script.md is generated. Two script readers said the combined document
+        # buried the film under corrections to a version they never saw, so the
+        # shooting script is now a separate file, and a generated file that
+        # drifts from its source is worse than not splitting at all.
+        run: |
+          python video/build_script.py
+          git diff --exit-code -- video/script.md
+
+      - name: Scene durations match the narration
+        run: python video/check_timing.py
+
       - name: The README quotes the right test count
         # This said 30, then 37, against a suite that had grown to 44. It is the
         # first number a judge sees when they run the command the README tells
