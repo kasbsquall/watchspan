@@ -107,17 +107,17 @@ export const Video: React.FC = () => {
   return (
     <AbsoluteFill style={{background: C.ink950}}>
       <Series>
-        {/* The mix opens with a silent lead-in before the voice enters, so the
-            picture has to hold for exactly that long or every scene lands 1.6s
-            early against its own narration.
-
-            It used to hold on flat black. Two seconds of nothing, at the front of
-            a film whose judges decide in ten. The instrument now fades up during
-            the lead at the same 41% the hook opens on, so the first frame of the
-            film is an image and the cut into the hook is invisible. */}
-        <Series.Sequence durationInFrames={SCENES[0].startF}>
-          <Overture dur={SCENES[0].startF} />
-        </Series.Sequence>
+        {/* No lead-in. The mix used to open with 1.6 seconds of music before
+            the voice entered, and the picture held an attention gauge fading up
+            through it. Trimmed to a fifth of a second it left five frames of
+            that gauge flashing before the console, which reads as a stuck frame
+            from a previous cut rather than as a breath. The film now starts on
+            the first word, so this sequence only exists if a lead comes back. */}
+        {SCENES[0].startF > 0 && (
+          <Series.Sequence durationInFrames={SCENES[0].startF}>
+            <Overture dur={SCENES[0].startF} />
+          </Series.Sequence>
+        )}
         {SCENES.map((s) => {
           const Comp = MAP[s.id];
           const shot = SHOT[s.id] ?? {beats: [], step: 0.024, origin: '50% 50%'};

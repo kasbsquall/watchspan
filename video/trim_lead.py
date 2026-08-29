@@ -24,9 +24,11 @@ AUDIO = HERE / "remotion/public/final_audio.wav"
 TIMING_TS = HERE / "remotion/src/timing.ts"
 
 TARGET_S = 180.0
-# What is left in front of the first word. Not zero: a hard cut straight onto a
-# consonant reads as a dropped frame rather than as a decision.
-KEEP_LEAD_S = 0.18
+# Nothing in front of the first word. A fifth of a second left five frames of
+# the old opening on screen, an attention gauge at 41% flashing before the
+# console appeared, which reads as a stuck frame from the previous cut rather
+# than as a breath. The film starts on the first word.
+KEEP_LEAD_S = 0.0
 # What is left after the last word, for the end card and its QR to sit on.
 MIN_TAIL_S = 0.3
 FPS = 30

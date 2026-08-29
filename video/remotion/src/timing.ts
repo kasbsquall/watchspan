@@ -3,7 +3,8 @@ import {FPS} from './theme';
 
 export const VO = data.vo;
 // Set by trim_lead.py so the finished film is exactly 180 seconds.
-export const TAIL = 0.3;
+// Set by trim_lead.py so the finished film is exactly 180 seconds.
+export const TAIL = 0.479;
 export const TOTAL_FRAMES = Math.round((VO + TAIL) * FPS);
 
 type Raw = {id: string; start: number; end: number; dur: number};
