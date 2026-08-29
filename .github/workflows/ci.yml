@@ -1,0 +1,62 @@
+# The governance layer's own gate.
+#
+# A reviewer scored this project against the track's lifecycle wording and found
+# no CI, which is a fair reading of a repository whose whole argument is that
+# unchecked approval is not oversight. Nothing here needs Google Cloud
+# credentials: the deterministic core is the part that must never regress, and
+# it runs from a seed.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt pytest
+      - name: Tests
+        # No GOOGLE_CLOUD_PROJECT on purpose. Every probe that needs a real
+        # service degrades to its local backend without one, which is the path
+        # these tests exercise, and the trace exporter stays off instead of
+        # printing a 404 per flush.
+        run: python -m pytest -q
+
+      - name: The seeded run still produces the figures the README claims
+        run: |
+          python - <<'PY'
+          from fleet.simulator import run
+          from watchspan.orchestrator import Orchestrator
+          r = run(Orchestrator(), minutes=30, inject_attack=True)
+          got = (r.routed_total, r.escalated, r.auto_executed, r.paused_by_sentinel)
+          want = (370, 69, 294, 7)
+          assert got == want, f"figures drifted: {got} != {want}"
+          assert len(r.dangerous_stamped) == 51, len(r.dangerous_stamped)
+          assert r.drift_declared_at is not None
+          print("figures hold:", got, "stamped:", len(r.dangerous_stamped))
+          PY
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://watchspan-api-45ejdvuucq-uc.a.run.app
