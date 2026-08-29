@@ -92,6 +92,36 @@ def main() -> int:
         if not fleet["routed"]:
             problems.append("the fleet asked for nothing; there is no exchange to show")
 
+    # Scene 6's table. These were typed into the scene by hand and went stale:
+    # the film was showing 69 to 61 and an oversight window of 06:54 while the
+    # experiment produced 62 and 06:38. Same failure as the thirty-four, one
+    # layer down, so the numbers now come from the run that produces them.
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+    from video.threshold_experiment import high_risk_auto_executed, run as threshold_run
+
+    base, raised = threshold_run(0.30), threshold_run(0.45)
+    clock = lambda s: f"{int(s // 60):02d}:{int(s % 60):02d}"  # noqa: E731
+    evidence["threshold"] = {
+        "base": {
+            "threshold": "0.30",
+            "escalated": base["escalated"],
+            "meaningful": base["meaningful"],
+            "drift_at": clock(base["drift_at"]),
+            "stamped": base["dangerous_stamped"],
+        },
+        "raised": {
+            "threshold": "0.45",
+            "escalated": raised["escalated"],
+            "meaningful": raised["meaningful"],
+            "drift_at": clock(raised["drift_at"]),
+            "stamped": raised["dangerous_stamped"],
+        },
+        "unseen_without_floor": high_risk_auto_executed(0.45, 1.01),
+        "unseen_with_floor": high_risk_auto_executed(0.45, 0.7),
+    }
+    check("unseen with the floor", evidence["threshold"]["unseen_with_floor"], 0)
+    check("unseen without it", evidence["threshold"]["unseen_without_floor"], 33)
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(evidence, indent=1), encoding="utf-8")
     print(f"wrote {OUT.relative_to(pathlib.Path.cwd())}")

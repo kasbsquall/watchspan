@@ -23,7 +23,7 @@ WATCHSPAN'S VERDICT ON YOU    oversight degraded
 ```
 
 
-## 1. what · 0:15
+## 1. what · 0:14
 
 > Watchspan is a gate between an agent fleet and the people who approve what it does. Of three hundred and seventy actions in one run, most ran on their own with an audit log, a few were held by the Sentinel, our attack detector, and the rest went to a human.
 
@@ -36,7 +36,7 @@ WATCHSPAN'S VERDICT ON YOU    oversight degraded
 in the film, 0.30 to escalate and 0.70 that nothing can raise.
 
 
-## 3. claim · 0:18
+## 3. claim · 0:17
 
 > Every request arrives with a risk score the agent gave itself. This one understated a table drop. Watchspan read the action, called it seventy-five out of a hundred, and routed on its own number. Put an I-B-A-N in the name of a routine action and the catalogue does not save it either.
 

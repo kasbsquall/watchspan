@@ -2,7 +2,8 @@ import data from './data/scene_timing.json';
 import {FPS} from './theme';
 
 export const VO = data.vo;
-export const TAIL = 1.4;
+// Set by trim_lead.py so the finished film is exactly 180 seconds.
+export const TAIL = 0.3;
 export const TOTAL_FRAMES = Math.round((VO + TAIL) * FPS);
 
 type Raw = {id: string; start: number; end: number; dur: number};

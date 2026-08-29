@@ -4,6 +4,7 @@ import {Sfx} from '../lib/Sfx';
 import {Ground} from '../lib/Ground';
 import {Spot, Flip, Ping, Caret, Sweep, Rails, Kinetic} from '../lib/Life';
 import {narration} from '../lib/narration';
+import evidence from '../data/evidence.json';
 
 /* The defect a judge found, and its fix, in numbers.
 
@@ -15,6 +16,17 @@ import {narration} from '../lib/narration';
 
    Both are the same fix. Each row lands on the words that name it, and the last
    row flips when the voice says it flipped. */
+
+/* Read from the experiment that produces them. These four were typed in by
+   hand and went stale: the film showed 69 to 61 and an oversight window of
+   06:54 while `threshold_experiment.py` produced 62 and 06:38. That is the same
+   failure as the thirty-four this revision exists to fix, one layer down. */
+const T = evidence.threshold as {
+  base: {threshold: string; escalated: number; meaningful: number; drift_at: string; stamped: number};
+  raised: {threshold: string; escalated: number; meaningful: number; drift_at: string; stamped: number};
+  unseen_without_floor: number;
+  unseen_with_floor: number;
+};
 
 const Row: React.FC<{
   at: number;
@@ -134,31 +146,36 @@ export const Ceiling: React.FC = () => {
             fontFamily: MONO, fontSize: 22, color: C.ink500}}>
             <span style={{fontFamily: FONT.text, fontSize: 15, letterSpacing: '0.14em',
               textTransform: 'uppercase'}}>escalation threshold</span>
-            <span>0.30</span>
-            <span style={{color: C.ember, opacity: col}}>0.45</span>
+            <span>{T.base.threshold}</span>
+            <span style={{color: C.ember, opacity: col}}>{T.raised.threshold}</span>
           </div>
         </div>
 
         <div style={{marginTop: 6}}>
-          <Row at={FEWER}  until={HELD - 8}   label="interruptions to the human"       a="69"    b="61" />
-          <Row at={FEWER + 22} until={HELD - 8} label="reviews with attention left"    a="14"    b="14" />
-          <Row at={HELD}   until={UNSEEN - 8} label="oversight held for"               a="05:06" b="06:54" good />
+          <Row at={FEWER} until={HELD - 8} label="interruptions to the human"
+            a={String(T.base.escalated)} b={String(T.raised.escalated)} />
+          <Row at={FEWER + 22} until={HELD - 8} label="reviews with attention left"
+            a={String(T.base.meaningful)} b={String(T.raised.meaningful)} />
+          <Row at={HELD} until={UNSEEN - 8} label="oversight held for"
+            a={T.base.drift_at} b={T.raised.drift_at} good />
           {/* Included because leaving it out looked like curation. It is the least
               flattering figure the run produces and it belongs next to the ones
               that flatter. */}
           <Row at={HELD + 26} until={UNSEEN - 8}
-            label="high-risk actions the tired reviewer stamped anyway" a="51" b="47" />
+            label="high-risk actions the tired reviewer stamped anyway"
+            a={String(T.base.stamped)} b={String(T.raised.stamped)} />
           {/* The condition has to be in the label. Under the 0.45 column WITH the
-              floor in place this row is 0, not 34: the 34 is what the same run
-              does once ALWAYS_ESCALATE_ABOVE is removed. Sitting unqualified under
-              a column headed "0.45" it read as a consequence of the threshold
-              move, which is a different and false claim. */}
+              floor in place this row is 0: the other figure is what the same run
+              does once ALWAYS_ESCALATE_ABOVE is removed. Sitting unqualified
+              under a column headed "0.45" it read as a consequence of the
+              threshold move, which is a different and false claim. */}
           <Row at={UNSEEN} until={n.end}
-            label="high-risk actions running unseen, with no safety floor" a="0" b="34" bad
-            flipAt={ZERO} flipTo="0" />
+            label="high-risk actions running unseen, with no safety floor"
+            a={String(T.unseen_with_floor)} b={String(T.unseen_without_floor)} bad
+            flipAt={ZERO} flipTo={String(T.unseen_with_floor)} />
         </div>
 
-        {/* Why the 34 happened: the calibrated threshold walking up past the risk
+        {/* Why they ran unseen: the calibrated threshold walking up past the risk
             it was supposed to catch. Six seconds of narration explained this over
             a still table; now the bar climbs while the sentence says it does. */}
         <Climb at={CLIMBED} until={FLOOR - 10} />

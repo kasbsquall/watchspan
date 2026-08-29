@@ -36,9 +36,9 @@ promise instead of repeating the sentence.
 | # | Scene | Words | Runtime | The claim | The frame that proves it |
 |---|---|---|---|---|---|
 | 0 | open | 51 | 0:18 | It measures a real person, and promises to measure you | Live console, times falling, the card turning red |
-| 1 | what | 51 | 0:15 | Watchspan is a gate, and here is the split | 370 / 294 / 7 / 69 on screen |
+| 1 | what | 51 | 0:14 | Watchspan is a gate, and here is the split | 370 / 294 / 7 / 69 on screen |
 | 2 | collapse | 58 | 0:18 | Rubber-stamping has a measurable signature | 26s to 9s to 2.5s, complexity flat |
-| 3 | claim | 52 | 0:18 | The agent does not grade itself | 75 assessed, routed on 75 |
+| 3 | claim | 52 | 0:17 | The agent does not grade itself | 75 assessed, routed on 75 |
 | 4 | peers | 55 | 0:18 | Three agents, and one can overrule another upward | The one-way arrow, all three named |
 | 5 | attack | 57 | 0:19 | Two detectors, and both can be defeated | Batch held, standalone through |
 | 6 | ceiling | 37 | 0:13 | Calibration needs a floor it cannot raise | 33 to 0 |
@@ -103,7 +103,7 @@ other entry in this track can say is the last one.
 twelve; eleven needs a capture where the reviewer genuinely reads one card.
 Whatever the session yields is what the narration says.
 
-### 1. what · 0:15 · rewritten
+### 1. what · 0:14 · rewritten
 
 > Watchspan is a gate between an agent fleet and the people who approve what it
 > does. Of three hundred and seventy actions in one run, most ran on their own
@@ -138,7 +138,7 @@ review", which is not what the code does. `LOW_BUDGET_FRACTION` is where the
 Calibrator proposes a stricter bar and a human approves it. The claim is gone
 rather than reworded, because the scene did not need it.
 
-### 3. claim · 0:18 · NEW
+### 3. claim · 0:17 · NEW
 
 > Every request arrives with a risk score the agent gave itself. This one
 > understated a table drop. Watchspan read the action, called it seventy-five
