@@ -143,3 +143,31 @@ export async function runLiveFleet(
   if (!res.ok) throw new Error(`live fleet failed: ${res.status}`);
   return res.json();
 }
+
+/* The GEAP status endpoint, so the control room can show the footprint instead
+   of a README asserting it. Typed loosely on purpose: the panel renders what
+   the endpoint reports, and a probe that grows a field should not need a
+   frontend change to be visible. */
+export interface GeapProbe {
+  checked?: boolean;
+  ok?: boolean;
+  how?: "round_trip" | "config" | "not_attempted";
+  [field: string]: unknown;
+}
+
+export interface GeapSummary {
+  verified_by_live_call: number;
+  of_live_calls: number;
+  config_checks_ok: number;
+  note: string;
+}
+
+export type GeapStatus = Record<string, GeapProbe | undefined> & {
+  _summary?: GeapSummary;
+};
+
+export async function fetchGeapStatus(signal?: AbortSignal): Promise<GeapStatus> {
+  const res = await fetch(`${API}/geap/status`, { headers: headers(), signal });
+  if (!res.ok) throw new Error(`geap status failed: ${res.status}`);
+  return res.json();
+}

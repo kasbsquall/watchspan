@@ -10,8 +10,10 @@ import ApprovalQueue from "@/components/ApprovalQueue";
 import BudgetTimeline from "@/components/BudgetTimeline";
 import DriftAlert from "@/components/DriftAlert";
 import EvidenceExport from "@/components/EvidenceExport";
+import GeapStatus from "@/components/GeapStatus";
 import PolicyProposal from "@/components/PolicyProposal";
 import SentinelAlerts from "@/components/SentinelAlerts";
+import StampedAnyway from "@/components/StampedAnyway";
 import {
   getProposal,
   runSimulation,
@@ -192,6 +194,12 @@ export default function ControlRoom() {
               </div>
             ))}
           </dl>
+          <StampedAnyway
+            events={visible}
+            stampedIds={sim?.dangerous_stamped ?? null}
+            caught={sim ? sim.dangerous_caught.length : null}
+            live={phase === "playing"}
+          />
           <SentinelAlerts events={visible} live={phase === "playing"} />
           {/* Available before a run too: it does not depend on the seeded state,
               and a judge who wants to see a real agent act should not have to
@@ -229,7 +237,11 @@ export default function ControlRoom() {
         </div>
       </section>
 
-      <section className="rise mt-24 grid gap-x-12 gap-y-6 border-t border-ink-100/8 pt-8 md:grid-cols-2" style={{ ["--block" as string]: 3 }}>
+      <section className="rise mt-24 border-t border-ink-100/8 pt-8" style={{ ["--block" as string]: 3 }}>
+        <GeapStatus />
+      </section>
+
+      <section className="rise mt-16 grid gap-x-12 gap-y-6 border-t border-ink-100/8 pt-8 md:grid-cols-2" style={{ ["--block" as string]: 4 }}>
         <div>
           <PolicyProposal
             proposal={proposal}
