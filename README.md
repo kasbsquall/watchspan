@@ -87,7 +87,7 @@ computed fallbacks.
 ```bash
 # 1. Backend (Python 3.12+)
 pip install -r requirements.txt
-python -m pytest tests/          # 30 tests should pass
+python -m pytest tests/          # 44 tests should pass
 uvicorn api.main:app --port 8000
 
 # 2. Frontend (Node 20+), in a second terminal
@@ -117,7 +117,7 @@ pip install -r requirements.txt
 python -m pytest tests/ -q
 ```
 
-Expected: `37 passed`. The suite covers the attention budget, the drift
+Expected: `44 passed`. The suite covers the attention budget, the drift
 detector, the calibrated policy and its safety floor, the Sentinel, the
 Article 14 dossier, fleet discovery, peer review between agents, and the rename
 attack that once walked past the risk assessor.
@@ -248,7 +248,7 @@ web/          Next.js control room
 deploy/       Cloud Run script and the Agent Runtime deployment
 video/        Remotion project for the demo film
 docs/         Architecture, design notes, submission drafts
-tests/        30 tests over the deterministic core
+tests/        44 tests over the deterministic core
 ```
 
 ## What is real and what is simulated

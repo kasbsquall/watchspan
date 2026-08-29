@@ -48,10 +48,13 @@ def run_live(orchestrator, count: int = 3, timeout_s: float = 90.0) -> dict:
     from google.genai import types
 
     from fleet.agent_app import FLEET, root_agent
-    from fleet.peer_review import REVIEWS, review_key
+    from fleet import peer_review
 
     token = CURRENT_ORCHESTRATOR.set(orchestrator)
-    REVIEWS.clear()
+    reviews_token = peer_review.begin_run()
+    # Captured before the context is reset, because the response is built after
+    # the run and the store is scoped to it.
+    run_reviews: dict = {}
     asked: list[dict] = []
     try:
         runner = InMemoryRunner(agent=root_agent, app_name="watchspan-live")
@@ -73,6 +76,8 @@ def run_live(orchestrator, count: int = 3, timeout_s: float = 90.0) -> dict:
 
         asyncio.run(asyncio.wait_for(drive(), timeout=timeout_s))
     finally:
+        run_reviews = dict(peer_review.reviews())
+        peer_review.end_run(reviews_token)
         CURRENT_ORCHESTRATOR.reset(token)
 
     routed = [r for r in orchestrator.routed if r.request.request_id.startswith("adk-")]
@@ -81,7 +86,7 @@ def run_live(orchestrator, count: int = 3, timeout_s: float = 90.0) -> dict:
         "requests_the_fleet_chose_to_make": len(asked),
         "fleet_discovered_from": FLEET.source,
         "discovery_detail": FLEET.detail,
-        "peer_reviews": len(REVIEWS),
+        "peer_reviews": len(run_reviews),
         "routed": [
             {
                 "action": r.request.action,
@@ -108,7 +113,9 @@ def run_live(orchestrator, count: int = 3, timeout_s: float = 90.0) -> dict:
                 "effective_threshold": round(r.effective_threshold, 4),
                 "team_fraction": round(r.team_fraction, 4),
                 "alerts": [a.pattern for a in r.alerts],
-                "peer_review": REVIEWS.get(review_key(r.request.agent_id, r.request.action)),
+                "peer_review": peer_review.find_review(
+                    r.request.agent_id, r.request.action, run_reviews
+                ),
                 "description": r.request.description,
             }
             for r in routed[-20:]

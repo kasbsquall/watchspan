@@ -16,7 +16,10 @@ param(
   #     --format="value(spec.template.spec.containers[0].env)"
   [string]$AgentEngineId = $env:WATCHSPAN_AGENT_ENGINE_ID,
   [string]$ModelArmorTemplate = $env:WATCHSPAN_MODEL_ARMOR_TEMPLATE,
-  [string]$FleetServiceAccount = $env:WATCHSPAN_FLEET_SERVICE_ACCOUNT
+  [string]$FleetServiceAccount = $env:WATCHSPAN_FLEET_SERVICE_ACCOUNT,
+  # Signs reviewer identities. Left empty, one is generated and then reused from
+  # the running service on later deploys.
+  [string]$ReviewerSecret = $env:WATCHSPAN_REVIEWER_SECRET
 )
 
 $ErrorActionPreference = "Stop"
@@ -28,7 +31,28 @@ $apiEnv = "GOOGLE_CLOUD_PROJECT=$ProjectId,GOOGLE_CLOUD_LOCATION=$Region,GOOGLE_
 if ($AgentEngineId)       { $apiEnv += ",WATCHSPAN_AGENT_ENGINE_ID=$AgentEngineId" }
 if ($ModelArmorTemplate)  { $apiEnv += ",WATCHSPAN_MODEL_ARMOR_TEMPLATE=$ModelArmorTemplate" }
 if ($FleetServiceAccount) { $apiEnv += ",WATCHSPAN_FLEET_SERVICE_ACCOUNT=$FleetServiceAccount" }
-Write-Host "API env: $apiEnv"
+
+# The key that signs reviewer identities. Without this the service falls back to
+# a development value published in this repository, and a reviewer computed a
+# live reviewer id offline and matched it exactly. Generated once and reused on
+# later deploys, so ids stay stable for a given deployment.
+if (-not $ReviewerSecret) {
+  $existing = gcloud run services describe watchspan-api --project $ProjectId --region $Region `
+    --format "value(spec.template.spec.containers[0].env.filter(name='WATCHSPAN_REVIEWER_SECRET').extract(value))" 2>$null
+  if ($existing) {
+    $ReviewerSecret = $existing
+    Write-Host "Reusing the reviewer signing key already on the service."
+  } else {
+    $bytes = New-Object byte[] 32
+    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+    $ReviewerSecret = [Convert]::ToBase64String($bytes)
+    Write-Host "Generated a new reviewer signing key."
+  }
+}
+$apiEnv += ",WATCHSPAN_REVIEWER_SECRET=$ReviewerSecret"
+
+# Never print the key. Everything else in this string is non-secret config.
+Write-Host "API env: $(($apiEnv -split ',' | Where-Object { $_ -notlike 'WATCHSPAN_REVIEWER_SECRET=*' }) -join ',')"
 
 Write-Host "Deploying the Watchspan API..."
 gcloud run deploy watchspan-api `

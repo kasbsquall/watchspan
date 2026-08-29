@@ -52,6 +52,13 @@ function sessionId(): string {
   }
 }
 
+/* The service runs with --session-affinity because each browser session owns an
+   in-process orchestrator. Affinity travels in a cookie, and a fetch that does
+   not send credentials never returns it, so with two instances a judge's second
+   request could land on the one that has never heard of them and their run would
+   vanish. The flag was decoration until this. */
+const SEND: RequestInit = {credentials: "include"};
+
 function headers(json = false): HeadersInit {
   const h: Record<string, string> = {};
   if (json) h["Content-Type"] = "application/json";
@@ -97,6 +104,7 @@ export async function runSimulation(
   signal?: AbortSignal,
 ): Promise<SimulationResponse> {
   const res = await fetch(`${API}/simulate`, {
+    ...SEND,
     method: "POST",
     headers: headers(true),
     body: JSON.stringify({ minutes: 30, inject_attack: injectAttack, reset: true }),
@@ -109,7 +117,7 @@ export async function runSimulation(
 export async function getProposal(
   signal?: AbortSignal,
 ): Promise<PendingProposal | null> {
-  const res = await fetch(`${API}/proposal`, { headers: headers(), signal });
+  const res = await fetch(`${API}/proposal`, { ...SEND, headers: headers(), signal });
   if (!res.ok) throw new Error(`proposal failed: ${res.status}`);
   const data = await res.json();
   return data.pending;
@@ -120,6 +128,7 @@ export async function resolveProposal(
   approved: boolean,
 ): Promise<{ active_version: number; base_threshold: number }> {
   const res = await fetch(`${API}/proposal/${proposalId}/resolve`, {
+    ...SEND,
     method: "POST",
     headers: headers(true),
     body: JSON.stringify({ approved }),
@@ -129,7 +138,7 @@ export async function resolveProposal(
 }
 
 export async function fetchDossier(): Promise<Record<string, unknown>> {
-  const res = await fetch(`${API}/evidence/article14`, { headers: headers() });
+  const res = await fetch(`${API}/evidence/article14`, { ...SEND, headers: headers() });
   if (!res.ok) throw new Error(`dossier failed: ${res.status}`);
   return res.json();
 }
@@ -161,6 +170,7 @@ export async function runLiveFleet(
   signal?: AbortSignal,
 ): Promise<LiveFleetResponse> {
   const res = await fetch(`${API}/fleet/live`, {
+    ...SEND,
     method: "POST",
     headers: headers(true),
     body: JSON.stringify({ tasks }),
@@ -193,7 +203,7 @@ export type GeapStatus = Record<string, GeapProbe | undefined> & {
 };
 
 export async function fetchGeapStatus(signal?: AbortSignal): Promise<GeapStatus> {
-  const res = await fetch(`${API}/geap/status`, { headers: headers(), signal });
+  const res = await fetch(`${API}/geap/status`, { ...SEND, headers: headers(), signal });
   if (!res.ok) throw new Error(`geap status failed: ${res.status}`);
   return res.json();
 }
@@ -244,6 +254,7 @@ export interface ReviewOutcome {
 
 export async function startReview(signal?: AbortSignal): Promise<ReviewStart> {
   const res = await fetch(`${API}/reviewer/start`, {
+    ...SEND,
     method: "POST",
     headers: headers(true),
     // An explicit empty body, so the request always carries a Content-Length.
@@ -261,6 +272,7 @@ export async function openSection(
   section: string,
 ): Promise<number> {
   const res = await fetch(`${API}/reviewer/open`, {
+    ...SEND,
     method: "POST",
     headers: headers(true),
     body: JSON.stringify({ request_id: requestId, section }),
@@ -274,6 +286,7 @@ export async function decide(
   approved: boolean,
 ): Promise<ReviewOutcome> {
   const res = await fetch(`${API}/reviewer/decide`, {
+    ...SEND,
     method: "POST",
     headers: headers(true),
     body: JSON.stringify({ request_id: requestId, approved }),

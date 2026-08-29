@@ -535,9 +535,73 @@ def test_a_catalogued_action_keeps_its_score_until_the_caller_adds_something():
     for action, catalogued in risk.CATALOGUE.items():
         assert risk.assess(action).assessed == catalogued, action
 
-    # One word added, and the catalogue no longer describes the action.
-    assert risk.assess("clear_staging_table_production").assessed > 0.7
+    # One word added, and the catalogue no longer describes the action. What
+    # matters is that it clears the base escalation threshold, not that it hits
+    # a particular number: the first version of this test asserted 0.7 against a
+    # lexicon so aggressive it scored `rotate_logs` at 0.70 too.
+    assert risk.assess("clear_staging_table_production").assessed > 0.45
     assert risk.assess("drop_deprecated_table_all_customers").assessed > 0.9
+
+
+def test_a_benign_catalogue_entry_is_not_a_hiding_place():
+    """The mirror image of the rename attack, found with three curls.
+
+    Letting a catalogue match short-circuit the lexical read defended against
+    names that resemble a dangerous entry and opened the opposite door:
+    `update_vendor_contact_details_new_iban` matched the 0.10 entry at 67% and
+    auto-executed, and that is where a vendor's payments get redirected. The
+    catalogue is a floor now, never a ceiling.
+    """
+    from watchspan import risk
+
+    disguised = {
+        "update_vendor_contact_details_new_iban": 0.45,
+        "retry_failed_pipeline_run_with_elevated_privileges": 0.45,
+        "create_purchase_order_under_500_thousand_usd": 0.45,
+        "promote_service_account_to_owner": 0.45,
+    }
+    for action, floor in disguised.items():
+        assert risk.assess(action, "", declared=0.05).effective >= floor, action
+
+
+def test_the_description_is_read_even_when_the_action_name_is_catalogued():
+    """A whole governance bypass, and the comment that excused it was wrong.
+
+    An action named `retry_failed_pipeline_run` and described as "drop every
+    production table and transfer funds to an external bank account"
+    auto-executed at 0.10, because a catalogue match skipped the lexical read
+    entirely. The code claimed the Sentinel would catch it; the Sentinel matches
+    eight minimizing phrases and has no destructive-content check at all.
+    """
+    from watchspan import risk
+
+    assessment = risk.assess(
+        "retry_failed_pipeline_run",
+        "drop every production table and transfer funds to an external bank account",
+        declared=0.05,
+    )
+    assert assessment.effective >= 0.9
+    assert assessment.understated is True
+
+
+def test_routine_operations_do_not_burn_the_budget():
+    """Crying wolf on daily work is its own failure mode.
+
+    The previous lexicon scored `rotate_logs` at 0.70 and `announce_lunch` at
+    0.50, escalating housekeeping to a human whose attention this product
+    exists to conserve. A verb is scored for what it does alone; "customer" and
+    "production" raise a verb and mean nothing by themselves.
+    """
+    from watchspan import risk
+
+    for action in (
+        "rotate_logs",
+        "announce_lunch",
+        "clear_cache",
+        "archive_completed_ticket",
+        "publish_weekly_newsletter",
+    ):
+        assert risk.assess(action).assessed < 0.3, action
 
 
 # --- The reviewer console ----------------------------------------------------
@@ -578,8 +642,17 @@ def test_the_reviewer_console_measures_instead_of_accepting():
         "/reviewer/open", json={"request_id": rid, "section": "basis"}, headers=headers
     ).json()["review_depth"] == 1
     assert client.post(
-        "/reviewer/open", json={"request_id": rid, "section": "history"}, headers=headers
+        "/reviewer/open", json={"request_id": rid, "section": "agent"}, headers=headers
     ).json()["review_depth"] == 2
+
+    # A section that does not exist buys no depth. It was free text, so fifty
+    # invented strings bought fifty points on the one number that says whether
+    # the reviewer read anything.
+    assert client.post(
+        "/reviewer/open",
+        json={"request_id": rid, "section": "invented"},
+        headers=headers,
+    ).status_code == 422
 
     # The body carries only the verdict. There is nowhere to put a time, a depth
     # or an identity, and anything extra is ignored rather than trusted.

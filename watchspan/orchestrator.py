@@ -54,7 +54,7 @@ class Orchestrator:
             "route_request",
             agent_id=request.agent_id,
             action=request.action,
-            risk_score=request.risk_score,
+            risk_declared=request.risk_score,
         ):
             return self._route_request(request)
 
@@ -97,7 +97,17 @@ class Orchestrator:
                 "event": "route",
                 "request_id": request.request_id,
                 "agent_id": request.agent_id,
-                "risk_score": request.risk_score,
+                "risk_declared_by_caller": request.risk_score,
+                # The number the decision was actually made on. The log used to
+                # carry only the caller's claim, so an entry could read
+                # "risk_score: 0.05, route: escalate" with nothing in the trail
+                # explaining the contradiction, and the single most important
+                # number the system computes was absent from the record an
+                # auditor would read.
+                "risk_assessed_by_watchspan": assessment.assessed,
+                "risk_routed_on": assessment.effective,
+                "caller_understated": assessment.understated,
+                "action_recognised": assessment.recognised,
                 "route": route,
                 "effective_threshold": result.effective_threshold,
                 "team_fraction": result.team_fraction,
@@ -120,7 +130,27 @@ class Orchestrator:
 
     def _record_decision(self, decision: Decision) -> dict:
         meter_out = self.meter.record_decision(decision)
-        verdict = drift_mod.assess(self.meter.state.team_window)
+
+        # Judge THIS reviewer, not the pool they were dropped into.
+        #
+        # This read `team_window`, which mixes the simulated reviewer's 69
+        # decisions with the human's. A reviewer took the console queue, stamped
+        # all twelve blind, and Watchspan told them "oversight holding": the
+        # simulator's careful early decisions kept the pooled window above the
+        # flat-behaviour floor, so the branch built to catch exactly that case
+        # could not fire. The product whose reason to exist is detecting
+        # rubber-stamping watched someone rubber-stamp everything and passed
+        # them.
+        #
+        # Per-reviewer windows were already being collected in meter.py and read
+        # by nothing. A verdict attributed to a named reviewer has to be that
+        # reviewer's verdict, or the Article 14 record is mislabelled rather
+        # than merely weak, and mislabelled provenance is the one thing an
+        # auditor cannot forgive.
+        window = self.meter.state.reviewer_windows.get(
+            decision.reviewer_id, self.meter.state.team_window
+        )
+        verdict = drift_mod.assess(window)
 
         outcome = {
             "meter": meter_out,

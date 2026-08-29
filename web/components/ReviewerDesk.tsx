@@ -242,9 +242,17 @@ export default function ReviewerDesk() {
                     {isOpen && (
                       <p className="pb-2 pl-5 text-[13px] leading-relaxed text-ink-300">
                         {section.id === "basis"
-                          ? card.assessment_basis ||
-                            "No basis recorded for this action."
-                          : `The agent declared this a ${(card.risk_declared_by_agent * 100).toFixed(0)} of 100, at complexity ${(card.complexity * 100).toFixed(0)}.`}
+                          ? card.assessment_basis
+                              ? // The basis string is written in 0-to-1 risk and
+                                // the card header is written in 0-to-100. Three
+                                // renderings of one quantity on one card is how
+                                // a reviewer stops trusting any of them.
+                                card.assessment_basis.replace(
+                                  /(\d\.\d{2})/g,
+                                  (m) => `${Math.round(parseFloat(m) * 100)} of 100`,
+                                )
+                              : "No basis recorded for this action."
+                          : `The agent called this a ${(card.risk_declared_by_agent * 100).toFixed(0)} of 100. Watchspan routed it on ${(card.risk_routed_on * 100).toFixed(0)}.`}
                       </p>
                     )}
                   </div>

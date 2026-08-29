@@ -24,13 +24,69 @@ reviewer is never the proposer and never a fixed judge.
 
 from __future__ import annotations
 
+import contextvars
 import json
 import re
 
 # Written by request_peer_review, read by submit_approval_request in the same
-# turn. Keyed by proposing agent and action, so two agents proposing the same
-# action do not read each other's review.
+# turn. Per run, not per process: this was a module global that `run_live`
+# cleared at the start of every call, so two judges hitting /fleet/live at once
+# wiped each other's reviews. Session isolation was built carefully for the
+# orchestrator and skipped here.
+_REVIEWS: contextvars.ContextVar = contextvars.ContextVar(
+    "watchspan_peer_reviews", default=None
+)
+# Fallback for direct use outside a run, and what the tests address.
 REVIEWS: dict[str, dict] = {}
+
+
+def reviews() -> dict:
+    """This run's reviews, or the process-wide fallback outside one."""
+    current = _REVIEWS.get()
+    return REVIEWS if current is None else current
+
+
+def begin_run() -> object:
+    """Give this run its own review store. Returns a token for `end_run`."""
+    return _REVIEWS.set({})
+
+
+def end_run(token) -> None:
+    _REVIEWS.reset(token)
+
+
+def find_review(agent_id: str, action: str, store: dict | None = None) -> dict | None:
+    """This agent's review of this action, tolerating the model renaming it.
+
+    Reviews were looked up by an exact `agent:action` key, which required the
+    model to emit a byte-identical action string across two separate tool calls.
+    It does not. A reviewer watched a peer raise a table drop and the raise get
+    discarded with no error, because the agent called it one thing when asking
+    for review and another when submitting. The ratchet silently no-opped and
+    the response still carried `raised_the_risk: true`, which reads as a
+    fabrication rather than as the bug it was.
+
+    Exact match first, then the best token overlap among this agent's reviews,
+    on the same half-overlap rule the risk assessor uses for the same reason.
+    """
+    store = reviews() if store is None else store
+    exact = store.get(review_key(agent_id, action))
+    if exact is not None:
+        return exact
+
+    want = _tokens(action)
+    if not want:
+        return None
+    best, best_score = None, 0.0
+    prefix = f"{agent_id}:"
+    for key, review in store.items():
+        if not key.startswith(prefix):
+            continue
+        have = _tokens(key[len(prefix):])
+        overlap = len(want & have) / len(want | have) if (want | have) else 0.0
+        if overlap > best_score:
+            best, best_score = review, overlap
+    return best if best_score >= 0.5 else None
 
 REVIEW_INSTRUCTION = (
     "You are reviewing another agent's proposed action before it reaches the "
@@ -41,6 +97,10 @@ REVIEW_INSTRUCTION = (
     "Reply with JSON only, no prose around it:\n"
     '{"risk": <0.0 to 1.0>, "verdict": "endorse" or "object", "concern": "<one short sentence>"}'
 )
+
+
+def _tokens(text: str) -> set[str]:
+    return {t for t in re.split(r"[^a-z0-9]+", text.lower()) if t}
 
 
 def review_key(agent_id: str, action: str) -> str:
@@ -145,5 +205,5 @@ async def request_peer_review(
         "concern": concern,
         "raised_the_risk": peer_risk > float(proposed_risk) + 0.05,
     }
-    REVIEWS[review_key(str(proposing_agent), str(action))] = result
+    reviews()[review_key(str(proposing_agent), str(action))] = result
     return result

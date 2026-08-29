@@ -35,6 +35,11 @@ from dataclasses import dataclass, field
 # the honest limit of what this can claim: it proves two decisions came from the
 # same reviewer and that the id was minted here, not that a named person exists.
 _SECRET = os.environ.get("WATCHSPAN_REVIEWER_SECRET", "watchspan-local-dev").encode()
+# The default is a development value published in this repository. A reviewer
+# computed a live reviewer id offline and it matched, because the deploy script
+# never set the variable. It does now; this fallback exists so a local checkout
+# runs without configuration, and `/geap/status` reports which one is in use.
+SECRET_IS_DEFAULT = "WATCHSPAN_REVIEWER_SECRET" not in os.environ
 
 # How long a served request stays open before the reviewer is considered to have
 # walked away. Longer than anyone reads for, short enough that a stale row does
@@ -45,9 +50,14 @@ SERVE_TTL_S = 900.0
 def reviewer_id_for(session_id: str) -> str:
     """A stable, unforgeable reviewer id for this browser session.
 
-    Not accepted from the caller. `POST /decisions` used to take `reviewer_id`
-    as a free string, so any client could write decisions into any reviewer's
-    ledger, or invent a fresh reviewer to escape a drained budget.
+    Not accepted from the caller, which stops one client writing decisions into
+    another reviewer's ledger. Being exact about the limit, because an earlier
+    version of this docstring overclaimed and a reviewer caught it: the session
+    id is a header the caller chooses, so anyone can mint themselves a fresh
+    reviewer with a fresh budget. What this guarantees is that an id was issued
+    here and that two decisions carrying the same one came from the same
+    session. Binding it to a real person needs a user directory this demo does
+    not have.
     """
     digest = hmac.new(_SECRET, session_id.encode(), hashlib.sha256).hexdigest()
     return f"human-{digest[:10]}"
@@ -88,6 +98,11 @@ class Desk:
         self._open: dict[str, Served] = {}
         # Routed and waiting, in arrival order. Never sent to the browser.
         self._waiting: list = []
+
+    def reset(self) -> None:
+        """Clear the desk before a new queue, so two batches cannot stack."""
+        self._open.clear()
+        self._waiting.clear()
 
     def enqueue(self, result) -> None:
         """Hold a routed request until the reviewer is ready for it."""

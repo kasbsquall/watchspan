@@ -74,13 +74,28 @@ def _model_armor_screen(text: str, template: str) -> bool:
 
 def screen_prompt(text: str) -> bool:
     """True when the prompt must be blocked."""
+    return screen_prompt_verbose(text)[0]
+
+
+def screen_prompt_verbose(text: str) -> tuple[bool, bool, str]:
+    """(block, the service actually answered, what happened).
+
+    The second value exists because `/geap/status` was deriving both `ok` and
+    `how: round_trip` from two environment variables. A reviewer pointed a fake
+    project at a template that does not exist and the panel still reported a
+    verified live call, since this function fails closed and returns True either
+    way. A guardrail that blocks on failure is the right behaviour and a status
+    page that reads a block as proof of a round trip is not: the caller has to
+    be able to tell "it answered and said block" from "it never answered".
+    """
     template = _template()
     if not model_armor_available() or template is None:
-        return _local_screen(text)
+        return _local_screen(text), False, "not configured; screened locally"
     try:
-        return _model_armor_screen(text, template)
-    except Exception:
-        return True  # a configured guardrail that cannot answer blocks
+        return _model_armor_screen(text, template), True, "answered"
+    except Exception as exc:  # noqa: BLE001 - the verdict is the point, not the trace
+        # A configured guardrail that cannot answer blocks.
+        return True, False, f"unreachable ({type(exc).__name__}); blocked by default"
 
 
 def model_armor_before_model(callback_context, llm_request):

@@ -39,6 +39,7 @@ def make_request(
         risk_score=max(0.0, min(1.0, risk + jitter)),
         complexity=max(0.0, min(1.0, complexity + jitter)),
         batch_id=batch_id,
+        description=ACTION_DESCRIPTIONS.get(action, ""),
         created_at=now,
     )
 
@@ -88,7 +89,7 @@ def submit_approval_request(
     import time
 
     from fleet.live import CURRENT_ORCHESTRATOR, next_request_id
-    from fleet.peer_review import REVIEWS, review_key
+    from fleet.peer_review import find_review
 
     risk_score = max(0.0, min(1.0, float(risk_score)))
     declared_risk = risk_score
@@ -96,7 +97,7 @@ def submit_approval_request(
     # A peer that read this action and scored it higher wins. The review is
     # binding upwards only: a colleague cannot be talked into lowering the
     # number, which is what makes asking for one worth anything.
-    peer = REVIEWS.get(review_key(str(agent_id), str(action)))
+    peer = find_review(str(agent_id), str(action))
     if peer and peer.get("peer_risk", 0.0) > risk_score:
         risk_score = float(peer["peer_risk"])
         description = f"{description} [peer {peer['peer_agent']}: {peer.get('concern','')}]".strip()
@@ -184,3 +185,86 @@ def build_adk_agent(profile: AgentProfile):
         tools=[submit_approval_request, request_peer_review],
         before_model_callback=model_armor_before_model,
     )
+
+
+# What each catalogued action would actually do, in the one sentence a reviewer
+# reads before deciding. The reviewer console served cards with an empty
+# description: the screen built to measure whether a human read the request was
+# giving them nothing to read, which a reviewer noticed and which makes the
+# measurement meaningless as well as unfair.
+ACTION_DESCRIPTIONS: dict[str, str] = {
+    # procurement
+    "create_purchase_order_under_500": (
+        "Raise a purchase order for 480 USD with an existing, already-approved "
+        "supplier. Within the standing delegation of authority."
+    ),
+    "renew_existing_vendor_contract": (
+        "Renew a support contract for another twelve months on the same terms "
+        "and the same annual value as the expiring one."
+    ),
+    "update_vendor_contact_details": (
+        "Change the named contact and phone number on a supplier record. "
+        "Payment details are not touched."
+    ),
+    "change_vendor_bank_account": (
+        "Change the bank account that this supplier's invoices are paid into, "
+        "on the strength of an emailed request. Every future payment to them "
+        "goes to the new account, and reversing a payment already sent is not "
+        "usually possible."
+    ),
+    "approve_payment_terms_extension": (
+        "Extend this supplier's payment terms from 30 to 60 days. Cash timing "
+        "changes; nothing about where the money goes does."
+    ),
+    # data ops
+    "retry_failed_pipeline_run": (
+        "Re-run a nightly pipeline job that failed on a transient error. Same "
+        "inputs, same outputs, safe to repeat."
+    ),
+    "run_backfill_last_7_days": (
+        "Recompute the last seven days of the reporting table from source "
+        "events. Read-heavy, and it overwrites derived rows only."
+    ),
+    "apply_schema_patch_additive": (
+        "Add two nullable columns to an analytics table. Existing rows and "
+        "queries are unaffected."
+    ),
+    "clear_staging_table": (
+        "Empty a staging table between pipeline runs. Staging holds no "
+        "customer data and is rebuilt on the next run."
+    ),
+    "drop_deprecated_table": (
+        "Drop a table marked deprecated three releases ago. Nothing in the "
+        "current codebase reads it, and there is no undo once it is gone."
+    ),
+    "delete_production_backup_set": (
+        "Delete a quarterly backup set from production storage to reclaim "
+        "space. If a restore is needed for that quarter afterwards, there is "
+        "nothing to restore from."
+    ),
+    # comms
+    "send_internal_status_update": (
+        "Post the weekly pipeline status to an internal channel. Staff only."
+    ),
+    "post_scheduled_social_update": (
+        "Publish a scheduled product post to the company's social accounts at "
+        "the planned time."
+    ),
+    "reply_to_customer_ticket": (
+        "Send a reply on an open support ticket to the customer who raised it."
+    ),
+    "send_bulk_customer_email": (
+        "Send one message to the full customer list. It cannot be recalled "
+        "once it has left, and the list is not segmented."
+    ),
+    "publish_incident_statement": (
+        "Publish a public statement about an ongoing incident, on the company "
+        "blog and status page. It will be quoted, and a correction later does "
+        "not replace the first version people read."
+    ),
+}
+
+
+def describe(action: str) -> str:
+    """The reviewer-facing sentence for an action, empty when uncatalogued."""
+    return ACTION_DESCRIPTIONS.get(action, "")
