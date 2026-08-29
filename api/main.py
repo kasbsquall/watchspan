@@ -325,8 +325,14 @@ def agent_descriptor(service_id: str, request: Request) -> dict:
     from fleet import registry
 
     # Built from the request, so the card's url is correct wherever this runs
-    # rather than depending on an environment variable nobody set.
+    # rather than depending on an environment variable nobody set. Cloud Run
+    # terminates TLS in front of the container, so base_url says http and only
+    # the forwarded header knows the truth; a card advertising http on a
+    # https-only service is a card that does not resolve.
     api_url = str(request.base_url).rstrip("/")
+    proto = request.headers.get("x-forwarded-proto", "")
+    if proto == "https" and api_url.startswith("http://"):
+        api_url = "https://" + api_url[len("http://"):]
     cards = {sid: body for sid, body in registry.service_payloads(api_url)}
     body = cards.get(service_id)
     if body is None:
