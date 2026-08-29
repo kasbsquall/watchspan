@@ -11,7 +11,7 @@ import os
 import time
 from collections import OrderedDict
 
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -312,6 +312,48 @@ def fleet_live(
     return out
 
 
+@app.get("/agents/{service_id}")
+def agent_descriptor(service_id: str, request: Request) -> dict:
+    """The live descriptor a Registry card points at.
+
+    A2A discovery is only worth anything if following a card gets you somewhere.
+    The cards used to advertise `/fleet/{id}` and `/governance/{id}`, which
+    returned 404, so the Registry catalogued seven agents that could not be
+    reached from their own entries. This serves the card the Registry holds plus
+    what the agent does at runtime and where its work actually happens.
+    """
+    from fleet import registry
+
+    # Built from the request, so the card's url is correct wherever this runs
+    # rather than depending on an environment variable nobody set.
+    api_url = str(request.base_url).rstrip("/")
+    cards = {sid: body for sid, body in registry.service_payloads(api_url)}
+    body = cards.get(service_id)
+    if body is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"no agent {service_id!r}; known: {sorted(cards)}",
+        )
+
+    # Where this agent's work is observable, rather than a generic pointer.
+    invocations = {
+        "watchspan-fleet-procurement": "POST /fleet/live",
+        "watchspan-fleet-data-ops": "POST /fleet/live",
+        "watchspan-fleet-comms": "POST /fleet/live",
+        "watchspan-meter": "GET /attention",
+        "watchspan-drift": "GET /drift",
+        "watchspan-calibrator": "GET /proposal",
+        "watchspan-sentinel": "GET /audit",
+    }
+    return {
+        "service_id": service_id,
+        "agent_card": body["agentSpec"]["content"],
+        "invoke": invocations.get(service_id, ""),
+        "governed_by": "Watchspan. Every consequential action is routed, priced "
+                       "against the reviewer's remaining attention, and traced.",
+    }
+
+
 @app.get("/geap/status")
 def geap_status() -> dict:
     """Every Google Cloud claim this project makes, checked live, one request.
@@ -404,11 +446,68 @@ def geap_status() -> dict:
         }
 
     def cloud_trace() -> dict:
+        """Ask Cloud Trace what it actually received.
+
+        This used to report `telemetry.enabled()`, which says the exporter was
+        configured, not that a single span ever arrived. A reviewer called it a
+        self-graded exam and was right. Listing the traces the project holds for
+        the last hour is the difference between "we set up tracing" and "here is
+        the trace id, go and read it".
+        """
+        import datetime
+
+        from fleet import registry
         from watchspan import telemetry
 
+        project = os.environ["GOOGLE_CLOUD_PROJECT"]
+        start = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=1)
+        response = registry._session().get(
+            f"https://cloudtrace.googleapis.com/v1/projects/{project}/traces",
+            params={"startTime": start.isoformat().replace("+00:00", "Z"), "pageSize": 5},
+            timeout=20,
+        )
+        response.raise_for_status()
+        traces = response.json().get("traces", [])
+        latest = traces[0].get("traceId", "") if traces else ""
         return {
-            "ok": telemetry.enabled(),
+            "ok": bool(traces),
+            "exporter_configured": telemetry.enabled(),
+            "traces_in_the_last_hour": len(traces),
+            "latest_trace_id": latest,
+            "read_it_at": (
+                f"https://console.cloud.google.com/traces/list?project={project}"
+                if latest else ""
+            ),
             "detail": "a span per routing and per human decision",
+        }
+
+    def agent_runtime() -> dict:
+        """Fetch the deployed Agent Engine resource rather than checking a variable.
+
+        The env-var check answered "someone set WATCHSPAN_AGENT_ENGINE_ID",
+        which is true whether or not anything is deployed behind it.
+        """
+        from fleet import registry
+
+        engine = os.environ.get("WATCHSPAN_AGENT_ENGINE_ID", "")
+        if not engine:
+            # No round trip happened, so it must not be counted as one.
+            return {"ok": False, "how": "not_attempted",
+                    "detail": "WATCHSPAN_AGENT_ENGINE_ID is not set"}
+        project = os.environ["GOOGLE_CLOUD_PROJECT"]
+        location = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
+        name = f"projects/{project}/locations/{location}/reasoningEngines/{engine}"
+        response = registry._session().get(
+            f"https://{location}-aiplatform.googleapis.com/v1/{name}", timeout=20
+        )
+        response.raise_for_status()
+        body = response.json()
+        return {
+            "ok": True,
+            "engine_id": engine,
+            "display_name": body.get("displayName", ""),
+            "created": body.get("createTime", ""),
+            "detail": "hosts the ADK fleet; this API is the Cloud Run path",
         }
 
     probe("cloud_run", cloud_run)
@@ -417,20 +516,17 @@ def geap_status() -> dict:
     probe("model_armor", model_armor)
     probe("agent_registry", agent_registry)
     probe("cloud_trace", cloud_trace)
-    out["agent_runtime"] = {
-        "checked": True,
-        "ok": bool(os.environ.get("WATCHSPAN_AGENT_ENGINE_ID")),
-        "how": "config",
-        "engine_id": os.environ.get("WATCHSPAN_AGENT_ENGINE_ID", ""),
-        "detail": "hosts the ADK fleet; this API is the Cloud Run path",
-    }
+    probe("agent_runtime", agent_runtime)
     # Say how each answer was obtained. Counting a config check the same as a
     # live round-trip is exactly the self-graded exam this endpoint exists to
     # avoid being, and a reader deserves to know which is which.
-    for name in ("cloud_run", "cloud_trace"):
-        out.setdefault(name, {})["how"] = "config"
-    for name in ("vertex_ai_gemini", "memory_bank", "model_armor", "agent_registry"):
-        out.setdefault(name, {})["how"] = "round_trip"
+    out.setdefault("cloud_run", {})["how"] = "config"
+    for name in ("vertex_ai_gemini", "memory_bank", "model_armor", "agent_registry",
+                 "cloud_trace", "agent_runtime"):
+        # setdefault, not assignment: a probe that reported how it answered
+        # keeps its own label. A failed probe that never left the process must
+        # not be filed under round_trip.
+        out.setdefault(name, {}).setdefault("how", "round_trip")
     live = [k for k, v in out.items() if not k.startswith("_") and v.get("how") == "round_trip"]
     out["_summary"] = {
         "verified_by_live_call": sum(1 for k in live if out[k].get("ok")),

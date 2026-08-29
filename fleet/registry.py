@@ -92,7 +92,14 @@ def _agent_card(
 
 
 def service_payloads(api_url: str) -> list[tuple[str, dict]]:
-    """(service_id, service body) pairs for the whole fleet."""
+    """(service_id, service body) pairs for the whole fleet.
+
+    Each card's `url` is where that agent can actually be reached. It used to
+    point at `/fleet/{id}` and `/governance/{id}`, neither of which existed, so
+    a reader who followed a card out of the Registry got a 404. `GET /agents/{id}`
+    serves the live descriptor, which closes the loop: search the Registry, take
+    the card, follow its url, and the agent answers for itself.
+    """
     payloads: list[tuple[str, dict]] = []
 
     for profile in (
@@ -113,7 +120,7 @@ def service_payloads(api_url: str) -> list[tuple[str, dict]]:
                         "content": _agent_card(
                             profile.display_name,
                             profile.description,
-                            f"{api_url}/fleet/{profile.agent_id}",
+                            f"{api_url}/agents/{service_id}",
                             skill_id,
                             f"{profile.description} Every consequential action "
                             "emits an approval request governed by Watchspan.",
@@ -135,7 +142,7 @@ def service_payloads(api_url: str) -> list[tuple[str, dict]]:
                         "content": _agent_card(
                             display,
                             description,
-                            f"{api_url}/governance/{service_id}",
+                            f"{api_url}/agents/{service_id}",
                             skill_id,
                             skill_desc,
                         ),
