@@ -40,12 +40,28 @@ Every duration below is word count divided by that rate. The first draft of
 this document guessed the durations and came out forty-nine seconds long, which
 is the same mistake the film's own figures made.
 
-**Spoken total: 473 words, 2:51.** With the 1.6 second silent lead-in and the
-ten inter-scene gaps, the finished file lands at **2:55**.
+**The cap is 4:00 and it is hard.** From the organisers' own session: "we won't
+watch past that 4-minute mark. Everything that you put after 4 minutes, we will
+not watch it", and "some of you will submit like a 20-minute video, but we will
+only watch 4 minutes of it". It is a limit on what gets watched, not on what can
+be uploaded, so overrunning loses the close rather than the submission.
 
-**Confirm the event's stated cap before recording.** If it is 2:00, cut
-`budget` and fold `peers` back out of scene 5; the film survives that at 2:12.
-If there is no cap, nothing here needs to grow.
+**Spoken total: 564 words, 3:24.** With the 1.6 second lead-in and the
+inter-scene gaps, the finished file lands at **3:28**, thirty-two seconds under
+the cap. `video/check_timing.py` recomputes this from the narration in this file
+and fails if the document and its own scenes disagree, which is how the first
+draft came to claim 2:51 while running 3:40.
+
+An earlier draft ran 2:55 on the assumption of a three-minute cap. The recovered
+time goes where it converts: the desk, which is the only scene that has to play
+rather than be described, plus some back into `attack` and `claim`.
+
+### On the voice
+
+The same session included "don't use AI voices, it feels less genuine to me",
+from the person who walked through the rubric, and presentation is a scored
+criterion. Recorded here because it is worth knowing and worth revisiting: the
+decision for this cut is to keep the synthesised narration.
 
 ---
 
@@ -63,10 +79,10 @@ and on the end card.
 | 2 | what | 42 | 0:15 | Watchspan routes a fleet three ways | 370 / 294 / 7 / 69 counting up |
 | 3 | budget | 28 | 0:10 | Attention is finite and priced | The gauge draining, the 35% floor drawn |
 | 4 | collapse | 39 | 0:14 | Rubber-stamping has a measurable signature | 26s → 9s → 2.5s, complexity flat |
-| 5 | claim | 71 | 0:26 | Nobody grades their own work, agents included | 40 declared, 75 assessed, routed on 75 |
-| 6 | attack | 53 | 0:19 | Pattern matching is a floor | The reworded batch passing the Sentinel |
+| 5 | claim | 95 | 0:34 | Nobody grades their own work, agents included | 40 declared, 75 assessed, routed on 75 |
+| 6 | attack | 79 | 0:29 | Pattern matching is a floor | The reworded batch passing the Sentinel |
 | 7 | ceiling | 45 | 0:16 | Calibration needs a floor it cannot raise | 33 → 0 |
-| 8 | desk | 61 | 0:22 | It measures the viewer | The console's verdict on the person watching |
+| 8 | desk | 102 | 0:37 | It measures the viewer | The console's verdict on the person watching |
 | 9 | evidence | 43 | 0:16 | Article 14, measured | 14 of 69 |
 | 10 | cloud | 48 | 0:17 | The footprint is checkable | 6 of 6, with a trace id |
 | 11 | close | 14 | 0:05 | The line | End card, URL, QR |
@@ -112,15 +128,17 @@ in the film.
 > Nine on the tenth. Two and a half by the fiftieth, and the actions never got
 > simpler. That gap is the signature of a rubber stamp.
 
-### 5. claim · 0:26 · NEW
+### 5. claim · 0:34 · NEW
 
 Two beats in one scene, because they are one idea.
 
 > Every request arrives with a risk score the agent gave itself. An agent called
 > a table drop a forty out of a hundred. Watchspan read the action, called it
-> seventy-five, and routed on its own number. The agents review each other too,
-> and a peer can raise a score and never lower it. Both times we ran it live,
-> the peer agreed with the proposer. Two agents agreeing is not safety.
+> seventy-five, and routed on its own number. Rename it to sound routine and the
+> answer does not move. The agents review each other as well. Before anything
+> destructive, one asks a peer for an independent score, and a peer can raise
+> that score and can never lower it. Both times we ran it live, the peer agreed
+> with the proposer. Two agents agreeing is not safety.
 
 **On screen, beat one.** Two columns.
 `drop_deprecated_staging_table` · declared by agent **40** · assessed by
@@ -148,17 +166,20 @@ This beat is honest about its own result and that is why it is in the film. A
 peer review that always caught things would be the weaker scene, and the
 reviewer who scored the track said so in almost those words.
 
-### 6. attack · 0:19 · compressed from 0:36
+### 6. attack · 0:29 · compressed from 0:36
 
 > A production backup deletion, hidden in a batch labelled routine quarterly
-> cleanup. Watchspan holds it. Reworded, the Sentinel sees nothing. It still
-> reaches a human on risk alone, and the pattern meant to catch it is gone.
-> Model Armor never sees this traffic: it is an attack on the person, not the
-> model.
+> cleanup. Watchspan holds it. Now the same request, reworded. The Sentinel sees
+> nothing. It still reaches a human on its risk score alone, and the pattern
+> that was supposed to catch it is gone. Pattern matching is a floor, and any
+> honest version of this product says so. Model Armor never sees this traffic,
+> because nothing here is a prompt injection. It is an attack on the person.
 
 v2 spent thirty-six seconds here, a fifth of the film, and its last four
 sentences restated the first three. The admission that the Sentinel failed
-stays, because it is the most credible thing in the scene.
+stays, because it is the most credible thing in the scene, and the organisers
+asked entrants in this track to show "what kind of control are you applying"
+rather than a clean win.
 
 ### 7. ceiling · 0:16 · two figures corrected
 
@@ -169,13 +190,20 @@ stays, because it is the most credible thing in the scene.
 
 v2 said thirty-four and thirty-five percent. Measured: 33 and 29.9%.
 
-### 8. desk · 0:22 · NEW
+### 8. desk · 0:37 · NEW
 
-> Everything you have watched is us measuring a reviewer we wrote. Here is the
-> same instrument pointed at you. Twelve real requests, one at a time. Watchspan
-> starts the clock and counts what you open, and nothing your browser sends can
-> set either number. Stamp your way through and it will tell you, in your own
-> seconds, when you stopped reviewing.
+> Everything you have watched is us measuring a reviewer we wrote. So here is
+> the same instrument, pointed at you. Twelve real approval requests, one at a
+> time, routed through everything you have just seen. Watchspan starts the clock
+> when it hands one over, and counts the detail sections you actually open.
+> Nothing your browser sends can set either number. You will read the first two.
+> By the fifth you will be skimming. By the ninth you will be clicking. And on
+> the twelfth it tells you, in your own seconds and under your own reviewer id,
+> the moment you stopped reviewing.
+
+The three short sentences in the middle exist to be played under, not over. They
+are the only stretch of the film where the capture carries and the voice steps
+back, and the cut should let the queue advance visibly across them.
 
 **On screen.** Screen capture of the live console, not a mockup. The queue
 advancing, then the end card exactly as the deployed service renders it:
@@ -189,8 +217,9 @@ WATCHSPAN'S VERDICT ON YOU    oversight degraded
 REVIEWER                      human-350ca66c8f
 ```
 
-Third landing of the spine line, and the strongest twenty seconds available to
-the film. It needs a real capture session before it can be cut.
+Third landing of the spine line, and the strongest thirty-five seconds available
+to the film. It needs a real capture session before it can be cut, and the
+verdict should hold on screen for a beat after the narration stops.
 
 ### 9. evidence · 0:16 · unchanged
 
