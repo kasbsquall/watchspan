@@ -10,11 +10,11 @@ requests arrive fifty times a day, the first gets read, the tenth gets
 skimmed, and the fiftieth gets stamped before the sentence is finished. The
 control still exists on paper; it stopped meaning anything. The pattern is
 already cataloged as an attack technique (ATR-2026-00118, Human Approval
-Fatigue Exploitation), and EU AI Act Article 14, in force since August 2,
-2026, demands oversight that is effective rather than decorative. Article 99
-puts non-compliance with that obligation in the 15 million euro or 3% of global
-turnover tier. Nobody can prove the difference. Watchspan exists to
-prove it with numbers.
+Fatigue Exploitation), and EU AI Act Article 14 will demand oversight that is
+effective rather than decorative from 2 December 2027, the date the Digital
+Omnibus on AI moved it to. Article 99 puts non-compliance with that obligation
+in the 15 million euro or 3% of global turnover tier. Nobody can prove the
+difference. Watchspan exists to prove it with numbers.
 
 ## What it does
 
@@ -158,6 +158,6 @@ Checklist for submission day:
 - [x] API URL: https://watchspan-api-45ejdvuucq-uc.a.run.app
 - [x] Repo public: https://github.com/kasbsquall/watchspan
 - [x] Architecture diagram exported (architecture.png, from docs/ARCHITECTURE.md)
-- [x] Demo video, public: https://www.youtube.com/watch?v=5WEkPN-muDI
+- [x] Demo video, public: https://www.youtube.com/watch?v=18UuxNz4yA4
 - [ ] Social post with #AllThingsAgenticHackathon
 - [ ] Optional blog post declaring it was created for this hackathon

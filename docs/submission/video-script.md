@@ -11,7 +11,7 @@ Visual: control room idle, gauge empty.
 "Every agent framework solved safety the same way: make the agent ask a
 human. Here is what actually happens. The first approval gets read. The tenth
 gets skimmed. The fiftieth gets stamped before the sentence is finished. The
-control still exists on paper; it stopped meaning anything. Since August 2,
+control still exists on paper; it stopped meaning anything. From December 2027,
 2026, EU AI Act Article 14 requires human oversight to be effective, not
 decorative, and nobody can prove the difference. Watchspan proves it with
 numbers."

@@ -14,7 +14,7 @@ Every agent framework ships "human in the loop". None can tell you when the huma
 
 Watchspan meters reviewer attention as a finite budget and catches the moment approvals turn into rubber stamps.
 
-https://www.youtube.com/watch?v=5WEkPN-muDI
+https://www.youtube.com/watch?v=18UuxNz4yA4
 
 #AllThingsAgenticHackathon
 ```
@@ -26,7 +26,7 @@ Todos venden "un humano en el ciclo". Ninguno dice cuándo ese humano dejó de l
 
 Watchspan mide su atención como un presupuesto finito y detecta el momento en que aprobar se vuelve un sello.
 
-https://www.youtube.com/watch?v=5WEkPN-muDI
+https://www.youtube.com/watch?v=18UuxNz4yA4
 
 #AllThingsAgenticHackathon
 ```
@@ -49,7 +49,7 @@ Article 14 now requires.
 
 Built with Google ADK, Gemini 3.5 Flash on Vertex AI, and Cloud Run.
 
-Demo video: https://www.youtube.com/watch?v=5WEkPN-muDI
+Demo video: https://www.youtube.com/watch?v=18UuxNz4yA4
 Repo: https://github.com/kasbsquall/watchspan
 
 **Spanish**
@@ -65,5 +65,5 @@ Artículo 14 del EU AI Act.
 
 Construido con Google ADK, Gemini 3.5 Flash en Vertex AI y Cloud Run.
 
-Video: https://www.youtube.com/watch?v=5WEkPN-muDI
+Video: https://www.youtube.com/watch?v=18UuxNz4yA4
 Repo: https://github.com/kasbsquall/watchspan

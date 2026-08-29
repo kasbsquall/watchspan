@@ -12,12 +12,20 @@ Built for the All Things Agentic Hackathon (Google Cloud), track:
 |---|---|
 | **Live control room** | https://watchspan-web-45ejdvuucq-uc.a.run.app |
 | **API** | https://watchspan-api-45ejdvuucq-uc.a.run.app |
-| **Demo video** | https://www.youtube.com/watch?v=5WEkPN-muDI |
+| **Demo video** | https://www.youtube.com/watch?v=18UuxNz4yA4 (3:00) |
 | **Architecture** | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | **Required stack** | Gemini 3.5 Flash via Vertex AI · Google ADK · Cloud Run |
 
 Both Cloud Run services scale to zero, so a cold first request takes a few
 seconds while the instance wakes.
+
+The film opens on a real session against the deployed service: a reviewer
+working a queue, timed by Watchspan, ending on its verdict about them. Eleven of
+twelve approvals under three seconds with nothing opened is what that session
+produced, not what it was written to say. Every figure it shows is fetched from
+the running API or from `video/threshold_experiment.py` at build time and
+asserted against the narration before a frame renders, because two earlier cuts
+quoted numbers the code had stopped producing.
 
 ![The Watchspan governance loop](docs/architecture.png)
 
@@ -32,8 +40,12 @@ gets read, the tenth gets skimmed, and the fiftieth gets stamped. The control
 still exists on paper. It just stopped meaning anything. Human oversight has a
 capacity, and that capacity runs out. Attackers already exploit it (the
 pattern is cataloged as [ATR-2026-00118, Human Approval Fatigue Exploitation](https://github.com/Agent-Threat-Rule/agent-threat-rules/blob/main/rules/agent-manipulation/ATR-2026-00118-approval-fatigue.yaml)),
-and EU AI Act Article 14, in force since August 2, 2026, requires oversight to
-be effective, not decorative, with no accepted way to prove the difference.
+and EU AI Act Article 14 will require oversight to be effective rather than
+decorative from 2 December 2027, with no accepted way to prove the difference.
+The date moved: the Digital Omnibus on AI, in force 27 July 2026, deferred the
+Annex III high-risk obligations, human oversight among them, from 2 August 2026.
+A fact-checker caught this claim in the demo film before it was recorded and it
+was wrong here too.
 
 ## What Watchspan does
 
@@ -344,16 +356,18 @@ Findings from wiring this against the live platform and from adversarial review,
 kept because they are the parts that were not obvious:
 
 - **Escalating less is not automatically safer.** Raising the threshold from
-  0.30 to 0.45 cuts interruptions and holds oversight 35% longer, but it does
-  NOT produce more attentive reviews: the count stays at 14 either way, and the
-  ratio only improves because the denominator shrinks. Worse, without a floor it
-  sent 33 high-risk actions to auto-execution. `ALWAYS_ESCALATE_ABOVE` exists
+  0.30 to 0.45 cuts interruptions from 69 to 62 and holds oversight about 30%
+  longer, and it does NOT produce more attentive reviews: the count stays at 14
+  either way, and the ratio only improves because the denominator shrinks.
+  Worse, without a floor it sent 33 high-risk actions to auto-execution. `ALWAYS_ESCALATE_ABOVE` exists
   because of that measurement. See `video/threshold_experiment.py`.
 - **Model Armor and the Sentinel cover different attacks.** Model Armor blocks
   prompt injection and correctly lets "this is routine, just approve everything"
   through, because that sentence attacks the reviewer, not the model.
-- **The Sentinel is a floor, not a ceiling.** Rewording the same dangerous
-  action past its phrase list works. The attention budget is the layer that does
+- **The Sentinel is a floor, not a ceiling, and it takes two moves to clear.**
+  Rewording gets past the phrase list, and the same request inside a batch is
+  still held, because `batch_smuggling` reads the risk shape of a batch and
+  never the wording. Only a reworded standalone request escapes both. The attention budget is the layer that does
   not care how the request is worded.
 
 ## License
