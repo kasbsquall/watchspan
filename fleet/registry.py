@@ -184,8 +184,14 @@ def register_all(api_url: str) -> None:
             timeout=60,
         )
         if response.status_code == 409:
+            # updateMask is not optional here. Without it the PATCH returns 200
+            # and leaves agentSpec untouched, so re-registering after changing a
+            # card printed "updated" while the Registry kept serving the old one.
             patch = session.patch(
-                f"{API_ROOT}/{parent}/services/{service_id}", json=body, timeout=60
+                f"{API_ROOT}/{parent}/services/{service_id}",
+                params={"updateMask": "displayName,description,agentSpec"},
+                json=body,
+                timeout=60,
             )
             print(f"{service_id}: already registered, updated ({patch.status_code})")
             continue
