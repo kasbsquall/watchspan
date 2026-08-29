@@ -22,6 +22,12 @@ class ApprovalRequest:
     batch_id: str | None = None
     description: str = ""
     created_at: float = 0.0  # unix seconds
+    # What the caller declared before a peer review raised it. `risk_score` is
+    # the number the request is routed on, so once a peer's higher score wins,
+    # `risk_score` is no longer the declaration and a response that labels it
+    # "declared by agent" is lying about its own column. None when nothing
+    # revised it, in which case the declaration is `risk_score`.
+    declared_risk: float | None = None
 
 
 @dataclass(frozen=True)

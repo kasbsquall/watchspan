@@ -86,7 +86,19 @@ def run_live(orchestrator, count: int = 3, timeout_s: float = 90.0) -> dict:
             {
                 "action": r.request.action,
                 "agent_id": r.request.agent_id,
-                "risk_declared_by_agent": round(r.request.risk_score, 3),
+                # The declaration, not what was submitted. Reporting
+                # request.risk_score here published the post-peer number under a
+                # column headed "declared by agent", so when a peer raised the
+                # score the two numbers came out equal and `raised_the_risk`
+                # read like a fabrication. The mechanism was right; the label
+                # was wrong.
+                "risk_declared_by_agent": round(
+                    r.request.declared_risk
+                    if r.request.declared_risk is not None
+                    else r.request.risk_score,
+                    3,
+                ),
+                "risk_submitted_after_peer": round(r.request.risk_score, 3),
                 "risk_assessed_by_watchspan": (
                     None if r.assessment is None else r.assessment.assessed
                 ),

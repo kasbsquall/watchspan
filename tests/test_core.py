@@ -455,3 +455,86 @@ def test_peer_is_never_the_proposing_agent():
         peer = _pick_peer(profile.agent_id)
         assert peer is not None
         assert peer.agent_id != profile.agent_id
+
+
+# --- The rename attack -------------------------------------------------------
+
+
+def test_renaming_an_action_does_not_get_it_past_the_gate():
+    """The defect a reviewer proved in two curls.
+
+    `change_vendor_bank_account` was held at 0.85 and
+    `update_supplier_remittance_details`, the same action reworded, auto-executed
+    at the 0.05 the caller declared. The verb list had `delete` and `drop` and
+    not `remove`, `sunset` or `deprovision`, so a rename was all it took.
+    """
+    from watchspan import risk
+
+    renamed = [
+        "update_supplier_remittance_details",
+        "remove_all_customer_records",
+        "deprovision_all_mfa_enrollments",
+        "promote_service_account_to_owner",
+        "sunset_legacy_customer_ledger",
+        "initiate_ach_settlement_to_new_beneficiary",
+    ]
+    for action in renamed:
+        a = risk.assess(action, "", declared=0.05)
+        assert a.recognised, action
+        assert a.effective >= 0.45, f"{action} scored {a.effective}"
+        assert a.understated is True, action
+
+
+def test_an_unrecognised_action_is_not_certified_honest():
+    """Absence of a match is not a clearance.
+
+    `understated` compared assessment against declaration, so an action nobody
+    recognised scored 0.0 and came back `caller_understated: false`: a negative
+    result printed as an endorsement, in exactly the case where Watchspan had no
+    idea what the action would do.
+    """
+    from watchspan import risk
+
+    a = risk.assess("refresh_widget_thumbnail_cache", "", declared=0.05)
+    assert a.recognised is False
+    assert a.understated is None, "an unclassified action must not be graded honest"
+    assert a.effective >= risk.UNRECOGNISED_RISK
+
+
+def test_watchspan_never_auto_executes_what_it_cannot_classify():
+    """An unknown blast radius is escalated, whatever the caller declared."""
+    import time
+
+    from attention.signals import ApprovalRequest
+    from watchspan.orchestrator import Orchestrator
+
+    result = Orchestrator().route_request(
+        ApprovalRequest(
+            request_id="unknown-1",
+            agent_id="data_ops",
+            action="reconcile_widget_shards",
+            risk_score=0.01,
+            complexity=0.1,
+            created_at=time.time(),
+        )
+    )
+    assert result.route == "escalate"
+    assert result.assessment is not None and result.assessment.recognised is False
+
+
+def test_a_catalogued_action_keeps_its_score_until_the_caller_adds_something():
+    """The lexicon is a guess for unknown actions, not an override for known ones.
+
+    Letting it override scored `clear_staging_table` at 0.60 and
+    `reply_to_customer_ticket` at 0.50, which is a governance layer crying wolf
+    on routine work and draining the reviewer it exists to protect. The match
+    holds only while the caller adds no risk word the catalogue entry lacks.
+    """
+    from watchspan import risk
+
+    for action, catalogued in risk.CATALOGUE.items():
+        assert risk.assess(action).assessed == catalogued, action
+
+    # One word added, and the catalogue no longer describes the action.
+    assert risk.assess("clear_staging_table_production").assessed > 0.7
+    assert risk.assess("drop_deprecated_table_all_customers").assessed > 0.9

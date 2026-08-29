@@ -71,6 +71,13 @@ class Orchestrator:
         alerts = self.sentinel.inspect(request)
         if alerts:
             route = "paused_sentinel"
+        elif not assessment.recognised:
+            # Watchspan could not establish what this action does. An unknown
+            # blast radius arriving from an agent that chose its own wording is
+            # not a safe action, and the previous version treated it as one: it
+            # scored 0.0, auto-executed on the caller's word, and wrote
+            # `caller_understated: false` on the way out. Unknown is escalated.
+            route = "escalate"
         elif self.calibrator.policy.should_escalate(assessment.effective, team_fraction):
             route = "escalate"
         else:

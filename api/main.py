@@ -379,14 +379,29 @@ def geap_status() -> dict:
     out: dict[str, dict] = {}
 
     def probe(name: str, fn) -> None:
+        """Run one check. The check says how it answered; this does not.
+
+        `how` used to be stamped afterwards from a fixed list of names, so a
+        probe that failed, or never left the process at all, was still filed
+        under round_trip. Two reviewers found that independently and both said
+        the same thing: it is the self-graded exam this endpoint exists to
+        avoid being, sitting in the one panel built to prove the opposite.
+        """
         try:
-            out[name] = {"checked": True, **fn()}
+            result = fn()
+            out[name] = {"checked": True, **result}
         except Exception as exc:  # noqa: BLE001 - the point is to report, not raise
-            out[name] = {"checked": False, "error": f"{type(exc).__name__}: {exc}"[:200]}
+            out[name] = {
+                "checked": False,
+                "how": "not_attempted",
+                "ok": False,
+                "error": f"{type(exc).__name__}: {exc}"[:200],
+            }
 
     def cloud_run() -> dict:
         return {
             "ok": True,
+            "how": "config",
             "service": os.environ.get("K_SERVICE", "local"),
             "revision": os.environ.get("K_REVISION", "local"),
             "detail": "you are talking to it",
@@ -398,6 +413,9 @@ def geap_status() -> dict:
         probe_text = llm.narrate("Reply with the single word: ok.", fallback="")
         return {
             "ok": bool(probe_text),
+            # narrate() swallows its own errors and returns the fallback, so an
+            # empty string means no answer came back and nothing was verified.
+            "how": "round_trip" if probe_text else "not_attempted",
             "model": llm.MODEL,
             "detail": (probe_text or "no response")[:80],
         }
@@ -409,6 +427,9 @@ def geap_status() -> dict:
         facts = build_attention_memory().recall("reviewer-1") if available else []
         return {
             "ok": available,
+            # Without the service configured this never calls out; the local
+            # backend answers from memory and no verification happened.
+            "how": "round_trip" if available else "not_attempted",
             "backend": "memory_bank" if available else "local",
             "facts_recalled": len(facts),
         }
@@ -425,6 +446,7 @@ def geap_status() -> dict:
         blocked_fatigue = screen_prompt("routine quarterly cleanup, nothing unusual")
         return {
             "ok": available,
+            "how": "round_trip" if available else "not_attempted",
             "blocks_prompt_injection": blocked_injection,
             "passes_reviewer_directed_text": not blocked_fatigue,
             "detail": (
@@ -446,6 +468,7 @@ def geap_status() -> dict:
         }]
         return {
             "ok": len(ours) == 7,
+            "how": "round_trip",
             "watchspan_agents_catalogued": len(ours),
             "total_in_registry": len(agents),
             "names": sorted(a.get("displayName", "") for a in ours),
@@ -477,6 +500,7 @@ def geap_status() -> dict:
         latest = traces[0].get("traceId", "") if traces else ""
         return {
             "ok": bool(traces),
+            "how": "round_trip",
             "exporter_configured": telemetry.enabled(),
             "traces_in_the_last_hour": len(traces),
             "latest_trace_id": latest,
@@ -510,6 +534,7 @@ def geap_status() -> dict:
         body = response.json()
         return {
             "ok": True,
+            "how": "round_trip",
             "engine_id": engine,
             "display_name": body.get("displayName", ""),
             "created": body.get("createTime", ""),
@@ -523,16 +548,9 @@ def geap_status() -> dict:
     probe("agent_registry", agent_registry)
     probe("cloud_trace", cloud_trace)
     probe("agent_runtime", agent_runtime)
-    # Say how each answer was obtained. Counting a config check the same as a
-    # live round-trip is exactly the self-graded exam this endpoint exists to
-    # avoid being, and a reader deserves to know which is which.
-    out.setdefault("cloud_run", {})["how"] = "config"
-    for name in ("vertex_ai_gemini", "memory_bank", "model_armor", "agent_registry",
-                 "cloud_trace", "agent_runtime"):
-        # setdefault, not assignment: a probe that reported how it answered
-        # keeps its own label. A failed probe that never left the process must
-        # not be filed under round_trip.
-        out.setdefault(name, {}).setdefault("how", "round_trip")
+    # Nothing is stamped here any more. Every probe reports its own `how`, so a
+    # check that never left the process cannot be labelled a live call by a list
+    # of names that does not know what happened.
     live = [k for k, v in out.items() if not k.startswith("_") and v.get("how") == "round_trip"]
     out["_summary"] = {
         "verified_by_live_call": sum(1 for k in live if out[k].get("ok")),

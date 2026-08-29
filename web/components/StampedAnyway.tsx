@@ -33,10 +33,14 @@ export default function StampedAnyway({
   // that has not happened on screen.
   const seen = new Set(stampedIds ?? []);
   const stamped = events.filter((e) => seen.has(e.request_id));
+  // Sorted by risk to lead with the worst, then put back in time order for
+  // display. Ranked-but-printed-with-timestamps read as a sorting bug: the
+  // three rows came out 26:44, 17:46, 18:19 and a reviewer said so.
   const worst = stamped
     .slice()
     .sort((a, b) => b.risk_score - a.risk_score)
-    .slice(0, 3);
+    .slice(0, 3)
+    .sort((a, b) => a.at - b.at);
   const hasRun = stampedIds !== null;
 
   return (
@@ -78,7 +82,11 @@ export default function StampedAnyway({
           </p>
 
           {worst.length > 0 && (
-            <ul className="mt-3 border-t border-ink-100/8 pt-1">
+            <>
+              <div className="mt-3 border-t border-ink-100/8 pt-2 text-[10px] uppercase tracking-[0.16em] text-ink-600">
+                the {worst.length} highest-risk of {stamped.length}
+              </div>
+              <ul className="mt-1">
               {worst.map((e, i) => (
                 <li
                   key={e.request_id}
@@ -96,7 +104,8 @@ export default function StampedAnyway({
                   </span>
                 </li>
               ))}
-            </ul>
+              </ul>
+            </>
           )}
         </>
       )}

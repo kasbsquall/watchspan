@@ -42,6 +42,12 @@ const ORDER = [
 ];
 
 function detail(key: string, row: GeapProbe): string {
+  // A probe that threw has no figures, and the fields below would render zeros
+  // it never measured: "0 traces in the last hour" for a call that never
+  // happened reads as a measurement. Say what went wrong instead.
+  if (row.checked === false || row.how === "not_attempted") {
+    return String(row.error ?? row.detail ?? "not checked on this request");
+  }
   const s = (k: string) => String(row[k] ?? "");
   switch (key) {
     case "agent_runtime":

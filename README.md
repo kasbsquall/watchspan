@@ -117,9 +117,10 @@ pip install -r requirements.txt
 python -m pytest tests/ -q
 ```
 
-Expected: `30 passed`. The suite covers the attention budget, the drift
-detector, the calibrated policy and its safety floor, the Sentinel, and the
-Article 14 dossier.
+Expected: `37 passed`. The suite covers the attention budget, the drift
+detector, the calibrated policy and its safety floor, the Sentinel, the
+Article 14 dossier, fleet discovery, peer review between agents, and the rename
+attack that once walked past the risk assessor.
 
 ```bash
 uvicorn api.main:app --port 8000
@@ -138,10 +139,16 @@ Reproduce the threshold finding quoted under "Things worth knowing":
 python video/threshold_experiment.py
 ```
 
-Expected: interruptions fall from 69 to 61, oversight holds 35% longer
-(306.9s to 414.2s), attentive reviews stay at 14 under both policies, and
-removing `ALWAYS_ESCALATE_ABOVE` at the higher threshold sends 34 actions
+Expected: interruptions fall from 69 to 62, oversight holds 29.9% longer
+(306.9s to 398.7s), attentive reviews stay at 14 under both policies, and
+removing `ALWAYS_ESCALATE_ABOVE` at the higher threshold sends 33 actions
 above risk 0.70 straight to auto-execution.
+
+Those five figures were wrong here until a reviewer ran the command this README
+tells you to run and printed the difference. On a project whose argument is that
+an assertion without a verifiable number is worthless, that is the worst place
+to have carried a stale number, and `.github/workflows/ci.yml` now fails the
+build if any of them move.
 
 To test the deployed instance instead, the live control room is at
 https://watchspan-web-45ejdvuucq-uc.a.run.app and needs no credentials. Select
@@ -269,8 +276,12 @@ human decision is a Cloud Trace span carrying the numbers that justified it.
 Every figure in the film and in this README comes from a run of the code here,
 and `/simulate` on the deployed service returns them to the last decimal.
 
-**Real, on the other path:** the ADK fleet runs on Agent Runtime, with Model
-Armor screening its model input as a `before_model_callback`. Model Armor is
+**Real, on the other path:** the ADK fleet is deployed to Agent Runtime and the
+engine answers for itself in `/geap/status` with its name and creation time.
+Being exact about what that means, because a reviewer checked and the prose was
+looser than the code: `POST /fleet/live` runs the agents in this Cloud Run
+container through `InMemoryRunner`, not by invoking the deployed engine. Model
+Armor screens their model input as a `before_model_callback` on either path. Model Armor is
 deliberately not in front of this API, and the film explains why: the reworded
 deletion is not a prompt injection, so Model Armor is the wrong control for it.
 That is what the Sentinel is for. The Agent Registry is not a side catalogue:

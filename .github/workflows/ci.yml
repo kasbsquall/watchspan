@@ -40,7 +40,26 @@ jobs:
           assert got == want, f"figures drifted: {got} != {want}"
           assert len(r.dangerous_stamped) == 51, len(r.dangerous_stamped)
           assert r.drift_declared_at is not None
+          assert round(r.drift_declared_at, 4) == 306.9133, r.drift_declared_at
           print("figures hold:", got, "stamped:", len(r.dangerous_stamped))
+          PY
+
+      - name: The threshold experiment still produces the figures the README quotes
+        # These five were wrong in the README until a reviewer ran the command
+        # the README tells you to run. The point of this project is that an
+        # assertion without a verifiable number is worthless, so the numbers it
+        # publishes are gated rather than trusted.
+        run: |
+          python - <<'PY'
+          from video.threshold_experiment import run, high_risk_auto_executed
+          base, raised = run(0.30), run(0.45)
+          assert base["escalated"] == 69 and raised["escalated"] == 62, (base, raised)
+          assert base["meaningful"] == 14 and raised["meaningful"] == 14
+          assert round(base["drift_at"], 1) == 306.9, base["drift_at"]
+          assert round(raised["drift_at"], 1) == 398.7, raised["drift_at"]
+          assert high_risk_auto_executed(0.45, 1.01) == 33
+          assert high_risk_auto_executed(0.45, 0.7) == 0
+          print("threshold figures hold")
           PY
 
   web:

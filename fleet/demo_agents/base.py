@@ -91,6 +91,7 @@ def submit_approval_request(
     from fleet.peer_review import REVIEWS, review_key
 
     risk_score = max(0.0, min(1.0, float(risk_score)))
+    declared_risk = risk_score
 
     # A peer that read this action and scored it higher wins. The review is
     # binding upwards only: a colleague cannot be talked into lowering the
@@ -114,6 +115,7 @@ def submit_approval_request(
                 risk_score=risk_score,
                 complexity=max(0.0, min(1.0, float(complexity))),
                 batch_id=None,
+                declared_risk=declared_risk,
                 description=str(description),
                 created_at=time.time(),
             )
@@ -123,6 +125,7 @@ def submit_approval_request(
             "effective_threshold": result.effective_threshold,
             "team_fraction": result.team_fraction,
             "alerts": [a.pattern for a in result.alerts],
+            "risk_declared": declared_risk,
             "risk_submitted": risk_score,
             "peer_review": peer,
         }
