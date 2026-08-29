@@ -375,3 +375,83 @@ def test_assessment_never_lowers_what_the_caller_declared():
     a = assess("send_incident_response", "Send a note to the customer.", declared=0.9)
     assert a.effective == 0.9, "the higher of the two, always"
     assert not a.understated
+
+
+# --- Fleet discovery and peer review -----------------------------------------
+
+
+def test_discovery_falls_back_without_taking_the_fleet_down(monkeypatch):
+    """An unreachable Registry degrades to local profiles and says so.
+
+    Discovery is how the fleet is assembled, so a Registry outage must not be
+    able to empty it. The failure has to be visible in the response rather than
+    silently indistinguishable from a successful lookup.
+    """
+    from fleet import discovery, registry
+
+    def explode():
+        raise RuntimeError("registry down")
+
+    monkeypatch.setattr(registry, "_session", explode)
+    result = discovery.discover()
+    assert result.source == "local_fallback"
+    assert "unreachable" in result.detail
+    assert len(result.profiles) == len(discovery.HOSTED)
+
+
+def test_peer_review_is_binding_upwards_only():
+    """A peer can raise the submitted risk and cannot lower it."""
+    from fleet.demo_agents import base
+    from fleet.peer_review import REVIEWS, review_key
+
+    captured = {}
+
+    class Recorder:
+        def route_request(self, request):
+            captured["risk"] = request.risk_score
+            captured["description"] = request.description
+
+            class R:
+                route = "escalate"
+                effective_threshold = 0.5
+                team_fraction = 0.5
+                alerts: list = []
+
+            return R()
+
+    from fleet import live
+
+    token = live.CURRENT_ORCHESTRATOR.set(Recorder())
+    try:
+        REVIEWS.clear()
+        REVIEWS[review_key("data_ops", "drop_table")] = {
+            "peer_agent": "comms",
+            "peer_risk": 0.8,
+            "concern": "irreversible",
+        }
+        base.submit_approval_request("data_ops", "drop_table", 0.2, 0.4, "drops a table")
+        assert captured["risk"] == 0.8
+        assert "comms" in captured["description"]
+
+        # A lenient peer cannot talk the number down.
+        REVIEWS[review_key("data_ops", "drop_table")] = {
+            "peer_agent": "comms",
+            "peer_risk": 0.1,
+            "concern": "looks fine",
+        }
+        base.submit_approval_request("data_ops", "drop_table", 0.7, 0.4, "drops a table")
+        assert captured["risk"] == 0.7
+    finally:
+        live.CURRENT_ORCHESTRATOR.reset(token)
+        REVIEWS.clear()
+
+
+def test_peer_is_never_the_proposing_agent():
+    """The reviewer rotates and is never the agent whose work is reviewed."""
+    from fleet.discovery import discover
+    from fleet.peer_review import _pick_peer
+
+    for profile in discover().profiles:
+        peer = _pick_peer(profile.agent_id)
+        assert peer is not None
+        assert peer.agent_id != profile.agent_id

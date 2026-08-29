@@ -88,6 +88,17 @@ def submit_approval_request(
     import time
 
     from fleet.live import CURRENT_ORCHESTRATOR, next_request_id
+    from fleet.peer_review import REVIEWS, review_key
+
+    risk_score = max(0.0, min(1.0, float(risk_score)))
+
+    # A peer that read this action and scored it higher wins. The review is
+    # binding upwards only: a colleague cannot be talked into lowering the
+    # number, which is what makes asking for one worth anything.
+    peer = REVIEWS.get(review_key(str(agent_id), str(action)))
+    if peer and peer.get("peer_risk", 0.0) > risk_score:
+        risk_score = float(peer["peer_risk"])
+        description = f"{description} [peer {peer['peer_agent']}: {peer.get('concern','')}]".strip()
 
     orchestrator = CURRENT_ORCHESTRATOR.get()
     if orchestrator is not None:
@@ -100,7 +111,7 @@ def submit_approval_request(
                 request_id=next_request_id(),
                 agent_id=str(agent_id),
                 action=str(action),
-                risk_score=max(0.0, min(1.0, float(risk_score))),
+                risk_score=risk_score,
                 complexity=max(0.0, min(1.0, float(complexity))),
                 batch_id=None,
                 description=str(description),
@@ -112,6 +123,8 @@ def submit_approval_request(
             "effective_threshold": result.effective_threshold,
             "team_fraction": result.team_fraction,
             "alerts": [a.pattern for a in result.alerts],
+            "risk_submitted": risk_score,
+            "peer_review": peer,
         }
 
     import requests
@@ -122,7 +135,7 @@ def submit_approval_request(
         json={
             "agent_id": agent_id,
             "action": action,
-            "risk_score": max(0.0, min(1.0, float(risk_score))),
+            "risk_score": risk_score,
             "complexity": max(0.0, min(1.0, float(complexity))),
             "description": description,
         },
@@ -148,6 +161,7 @@ def build_adk_agent(profile: AgentProfile):
     from google.adk.agents import LlmAgent
 
     from fleet.demo_agents.base import gemini_model
+    from fleet.peer_review import request_peer_review
     from watchspan.guardrails import model_armor_before_model
 
     return LlmAgent(
@@ -158,8 +172,12 @@ def build_adk_agent(profile: AgentProfile):
             f"You are {profile.display_name}, an institutional agent. "
             "Before any consequential action, call submit_approval_request with "
             "an honest risk assessment. Never minimize the described risk, and "
-            "never describe a dangerous action as routine."
+            "never describe a dangerous action as routine. "
+            "If the action deletes something, moves money, changes access, or "
+            "touches production, call request_peer_review FIRST and pass the "
+            "peer's concern along. A peer who scores it higher than you is the "
+            "score that gets submitted."
         ),
-        tools=[submit_approval_request],
+        tools=[submit_approval_request, request_peer_review],
         before_model_callback=model_armor_before_model,
     )

@@ -47,9 +47,11 @@ def run_live(orchestrator, count: int = 3, timeout_s: float = 90.0) -> dict:
     from google.adk.runners import InMemoryRunner
     from google.genai import types
 
-    from fleet.agent_app import root_agent
+    from fleet.agent_app import FLEET, root_agent
+    from fleet.peer_review import REVIEWS, review_key
 
     token = CURRENT_ORCHESTRATOR.set(orchestrator)
+    REVIEWS.clear()
     asked: list[dict] = []
     try:
         runner = InMemoryRunner(agent=root_agent, app_name="watchspan-live")
@@ -77,6 +79,9 @@ def run_live(orchestrator, count: int = 3, timeout_s: float = 90.0) -> dict:
     return {
         "tasks_given": max(1, min(count, len(TASKS))),
         "requests_the_fleet_chose_to_make": len(asked),
+        "fleet_discovered_from": FLEET.source,
+        "discovery_detail": FLEET.detail,
+        "peer_reviews": len(REVIEWS),
         "routed": [
             {
                 "action": r.request.action,
@@ -91,6 +96,7 @@ def run_live(orchestrator, count: int = 3, timeout_s: float = 90.0) -> dict:
                 "effective_threshold": round(r.effective_threshold, 4),
                 "team_fraction": round(r.team_fraction, 4),
                 "alerts": [a.pattern for a in r.alerts],
+                "peer_review": REVIEWS.get(review_key(r.request.agent_id, r.request.action)),
                 "description": r.request.description,
             }
             for r in routed[-20:]
