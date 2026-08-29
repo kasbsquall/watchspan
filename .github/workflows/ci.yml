@@ -47,7 +47,7 @@ jobs:
           count = int(re.search(r"(\d+) tests? collected", out).group(1))
           readme = pathlib.Path("README.md").read_text(encoding="utf-8")
           quoted = {int(n) for n in re.findall(r"`(\d+) passed`", readme)}
-          quoted |= {int(n) for n in re.findall(r"(\d+) tests", readme)}
+          quoted |= {int(n) for n in re.findall(r"(\d+) tests\b", readme)}
           assert quoted == {count}, f"README says {quoted}, suite has {count}"
           print("README and the suite agree on", count)
           PY
