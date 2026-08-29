@@ -246,6 +246,10 @@ export async function startReview(signal?: AbortSignal): Promise<ReviewStart> {
   const res = await fetch(`${API}/reviewer/start`, {
     method: "POST",
     headers: headers(true),
+    // An explicit empty body, so the request always carries a Content-Length.
+    // Google's front end answers a bodyless POST with its own 411 page, which
+    // reads as the app being broken rather than as the caller omitting a header.
+    body: "{}",
     signal,
   });
   await guard(res, "review start");

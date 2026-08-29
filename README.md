@@ -298,8 +298,15 @@ proposer scored a table drop 0.30, the peer read it and also said 0.30, and what
 escalated it was Watchspan's own assessment at 0.75. Two agents agreeing is not
 safety, which is the same claim this project makes about a tired reviewer.
 
-**Real, and measured on you:** press **Take the queue** in the control room, or
-`POST /reviewer/start`. Twelve real approval requests, routed through the same
+**Real, and measured on you:** press **Take the queue** in the control room, or:
+
+```bash
+curl -s -X POST https://watchspan-api-45ejdvuucq-uc.a.run.app/reviewer/start   -H "content-type: application/json" -d "{}"
+```
+
+The `-d "{}"` is not optional. Google's front end rejects a POST with no
+Content-Length before it reaches this service, and its 411 page reads like the
+app is down. Twelve real approval requests, routed through the same
 governance layer, decided by whoever is holding the mouse. Watchspan issues the
 reviewer id and signs it, starts the clock when it hands a card over, and counts
 the detail sections actually opened. `POST /reviewer/decide` carries a verdict
