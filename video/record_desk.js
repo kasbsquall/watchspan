@@ -23,6 +23,13 @@ const { chromium } = require('playwright');
 const URL = process.env.WATCHSPAN_WEB || 'https://watchspan-web-45ejdvuucq-uc.a.run.app';
 const OUT = 'rec/desk';
 
+// Framing. An init script cannot carry this: it runs before the document is
+// parsed and the style element does not survive it, which is why an earlier
+// version reported a zoom of 1 and only the frames said so. Applied as early as
+// the DOM allows instead, and the load is cut off the front of the clip, which
+// the film needed anyway because it opens on a composed shot.
+const ZOOM = 1.55;
+
 const CURSOR = `
   const dot = document.createElement('div');
   dot.id = '__cursor';
@@ -73,12 +80,13 @@ async function glideTo(page, locator, steps = 22) {
     colorScheme: 'dark',
   });
   const page = await ctx.newPage();
+  const startedAt = Date.now();
   await page.addInitScript(CURSOR);
 
-  await page.goto(URL, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(1200);
+  await page.goto(URL, { waitUntil: 'domcontentloaded' });
 
-  const ZOOM = 1.55;
+  // Verified rather than assumed. An earlier version set this and it did not
+  // take, and nothing reported it until the frames were inspected one by one.
   const applied = await page.evaluate((z) => {
     document.documentElement.style.zoom = String(z);
     return getComputedStyle(document.documentElement).zoom;
@@ -87,7 +95,13 @@ async function glideTo(page, locator, steps = 22) {
     throw new Error(`page zoom did not apply: got ${applied}`);
   }
   console.log('zoom applied:', applied);
-  await page.waitForTimeout(600);
+  await page.waitForLoadState('networkidle');
+
+  // Sit on the framed desk long enough for the page to be still, so the clip
+  // can be cut into a film that opens on a composed shot rather than a load.
+  await centreDesk(page);
+  await page.waitForTimeout(1400);
+  const cutFrom = (Date.now() - startedAt) / 1000;
 
   const take = page.getByRole('button', { name: /Take the queue/i });
   await glideTo(page, take);
@@ -153,5 +167,7 @@ async function glideTo(page, locator, steps = 22) {
 
   await ctx.close();
   await browser.close();
+  // Where a clean cut begins, so the delivered clip never opens on a page load.
+  console.log('CUT_FROM', cutFrom.toFixed(2));
   console.log('written to', OUT);
 })();

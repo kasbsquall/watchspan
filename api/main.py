@@ -480,7 +480,9 @@ def attention(x_watchspan_session: str | None = Header(default=None)) -> dict:
 @app.get("/drift")
 def drift_declarations(x_watchspan_session: str | None = Header(default=None)) -> dict:
     _, orchestrator = session.resolve(x_watchspan_session)
-    return {"declarations": orchestrator.drift_declarations}
+    # Gemini writes the wording here rather than during the run, so pressing Run
+    # does not wait on a model call for a string the control room never shows.
+    return {"declarations": orchestrator.narrate_declarations()}
 
 
 @app.get("/proposal")

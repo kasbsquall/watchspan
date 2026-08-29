@@ -118,6 +118,23 @@ class Orchestrator:
         )
         return result
 
+    def narrate_declarations(self) -> list[dict]:
+        """Fill in the Gemini narrative for any declaration that lacks one.
+
+        Called from `GET /drift`, so the cost lands on the reader rather than on
+        every click of Run. Written once and kept, because a declaration whose
+        wording changes each time it is fetched is not a record.
+        """
+        for declaration in self.drift_declarations:
+            if declaration.get("narrative") is None:
+                declaration["narrative"] = llm.narrate(
+                    "In two sentences, plain English, declare that human "
+                    f"oversight degraded to rubber-stamping. Evidence: "
+                    f"{declaration['evidence']}",
+                    fallback=declaration["reason"],
+                )
+        return self.drift_declarations
+
     def record_decision(self, decision: Decision) -> dict:
         with span(
             "record_decision",
@@ -161,15 +178,18 @@ class Orchestrator:
         # decision while it persists.
         if verdict.degraded and not self.drift_active:
             self.drift_active = True
+            # The narrative is written by Gemini when someone asks for it, not
+            # while the caller waits. This call sat on the critical path of
+            # POST /simulate and nothing rendered its output: the banner shows
+            # the deterministic `reason`, and the Article 14 dossier writes its
+            # own narrative at export time. A judge's first click took thirteen
+            # seconds, and roughly nine of them were a model call for a string
+            # the page never displayed. See `narrate_declarations`.
             declaration = {
                 "at": decision.decided_at,
                 "reason": verdict.reason,
                 "evidence": verdict.evidence,
-                "narrative": llm.narrate(
-                    "In two sentences, plain English, declare that human "
-                    f"oversight degraded to rubber-stamping. Evidence: {verdict.evidence}",
-                    fallback=verdict.reason,
-                ),
+                "narrative": None,
             }
             self.drift_declarations.append(declaration)
             self.audit_log.append({"event": "drift_declared", **declaration})
