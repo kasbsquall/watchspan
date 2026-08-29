@@ -109,6 +109,12 @@ MITIGATING = {
     "deprecated", "dry", "simulated", "mock",
 }
 MITIGATION = 0.3
+# Mitigation reduces a verb and cannot erase it. Without this floor
+# `archive_deprecated_staging_table` scored exactly 0.00 while still counting as
+# recognised, so it skipped the unrecognised safety net and auto-executed on
+# whatever the caller declared. A word that says "this is not the real thing"
+# lowers the reading; it does not turn a destructive verb into no verb.
+MITIGATION_FLOOR = 0.5
 
 # Scope and magnitude. Deleting a record and deleting all records differ by the
 # word between them, and a purchase order "under 500" is a different action from
@@ -209,7 +215,7 @@ def _lexical(words: set[str], named: set[str]) -> tuple[float, str]:
     # drop, so a mitigating word standing next to a real object is ignored
     # rather than handing the caller a way to cancel out their own risk.
     if (named & MITIGATING) and not critical and not context:
-        total -= MITIGATION
+        total = max(total - MITIGATION, base * MITIGATION_FLOOR)
 
     named = ", ".join(sorted(verbs) + sorted(critical) + sorted(context))
     detail = f"destructive language: {named}"

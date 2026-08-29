@@ -46,9 +46,9 @@ not watch it", and "some of you will submit like a 20-minute video, but we will
 only watch 4 minutes of it". It is a limit on what gets watched, not on what can
 be uploaded, so overrunning loses the close rather than the submission.
 
-**Spoken total: 564 words, 3:24.** With the 1.6 second lead-in and the
-inter-scene gaps, the finished file lands at **3:28**, thirty-two seconds under
-the cap. `video/check_timing.py` recomputes this from the narration in this file
+**Spoken total: 574 words, 3:28.** With the 1.6 second lead-in and the
+inter-scene gaps, the finished file lands at **3:32**, twenty-eight seconds
+under the cap. `video/check_timing.py` recomputes this from the narration in this file
 and fails if the document and its own scenes disagree, which is how the first
 draft came to claim 2:51 while running 3:40.
 
@@ -77,14 +77,14 @@ and on the end card.
 |---|---|---|---|---|---|
 | 1 | hook | 29 | 0:11 | A reviewer stopped reading and nothing noticed | The queue moving while decision times fall |
 | 2 | what | 42 | 0:15 | Watchspan routes a fleet three ways | 370 / 294 / 7 / 69 counting up |
-| 3 | budget | 28 | 0:10 | Attention is finite and priced | The gauge draining, the 35% floor drawn |
+| 3 | budget | 36 | 0:13 | Attention is finite and priced | The gauge draining, the 35% floor drawn |
 | 4 | collapse | 39 | 0:14 | Rubber-stamping has a measurable signature | 26s → 9s → 2.5s, complexity flat |
-| 5 | claim | 95 | 0:34 | Nobody grades their own work, agents included | 40 declared, 75 assessed, routed on 75 |
-| 6 | attack | 79 | 0:29 | Pattern matching is a floor | The reworded batch passing the Sentinel |
-| 7 | ceiling | 45 | 0:16 | Calibration needs a floor it cannot raise | 33 → 0 |
-| 8 | desk | 102 | 0:37 | It measures the viewer | The console's verdict on the person watching |
-| 9 | evidence | 43 | 0:16 | Article 14, measured | 14 of 69 |
-| 10 | cloud | 48 | 0:17 | The footprint is checkable | 6 of 6, with a trace id |
+| 5 | claim | 97 | 0:35 | Nobody grades their own work, agents included | 40 declared, 75 assessed, routed on 75 |
+| 6 | attack | 78 | 0:28 | Pattern matching is a floor | The reworded batch passing the Sentinel |
+| 7 | ceiling | 48 | 0:17 | Calibration needs a floor it cannot raise | 33 → 0 |
+| 8 | desk | 103 | 0:37 | It measures the viewer | The console's verdict on the person watching |
+| 9 | evidence | 47 | 0:17 | Article 14, measured | 14 of 69 |
+| 10 | cloud | 41 | 0:15 | The footprint is checkable | 6 of 6, with a trace id |
 | 11 | close | 14 | 0:05 | The line | End card, URL, QR |
 
 ---
@@ -112,15 +112,22 @@ Cut: "Then it measures whether that human was still paying attention." The hook
 already said it and the desk now proves it, so saying it a third time here
 spends five seconds on a promissory note.
 
-### 3. budget · 0:10 · trimmed
+### 3. budget · 0:13 · trimmed
 
-> Attention is not free. Every approval spends from a budget, and a dense action
-> costs three times a routine one. Below thirty-five percent, Watchspan stops
-> trusting the review.
+> Every approval that reaches a person spends from a budget, and a dense
+> action costs three times a routine one. Below thirty-five percent, Watchspan
+> proposes raising the bar, and a human has to approve that proposal.
 
-The 35% floor is drawn on the gauge rather than described, because a reviewer
-pointed out that a rule governing every verdict in the film should be readable
-in the film.
+A fact-checker caught the previous line. "Below thirty-five percent, Watchspan
+stops trusting the review" is not what the code does: `LOW_BUDGET_FRACTION` is
+where the Calibrator proposes a stricter bar, and the proposal sits pending
+until a human approves it. Reviews taken below 35% are recorded and weighted
+identically. The rules that actually govern verdicts are the 0.30 base
+threshold and the 0.70 floor, and both belong on screen.
+
+Also cut: "Attention is not free", the first of five sentences that defined
+something by what it is not. A lay reader counted the tic across the script
+and called it one of the more recognisable signatures of generated copy.
 
 ### 4. collapse · 0:14 · trimmed
 
@@ -128,23 +135,32 @@ in the film.
 > Nine on the tenth. Two and a half by the fiftieth, and the actions never got
 > simpler. That gap is the signature of a rubber stamp.
 
-### 5. claim · 0:34 · NEW
+### 5. claim · 0:35 · NEW
 
 Two beats in one scene, because they are one idea.
 
-> Every request arrives with a risk score the agent gave itself. An agent called
-> a table drop a forty out of a hundred. Watchspan read the action, called it
-> seventy-five, and routed on its own number. Rename it to sound routine and the
-> answer does not move. The agents review each other as well. Before anything
-> destructive, one asks a peer for an independent score, and a peer can raise
-> that score and can never lower it. Both times we ran it live, the peer agreed
-> with the proposer. Two agents agreeing is not safety.
+> Every request arrives with a risk score the agent gave itself. This one
+> understated a table drop. Watchspan read the action, called it seventy-five
+> out of a hundred, and routed on its own number. Dress a dangerous action up
+> as a routine one and the catalogue does not save it. Three agents work this
+> fleet, and before anything destructive one of them asks a peer for an
+> independent score. A peer can raise that score and can never lower it. Both
+> times we ran it live the peer agreed with the proposer, and Watchspan
+> overruled them both.
 
 **On screen, beat one.** Two columns.
-`drop_deprecated_staging_table` · declared by agent **40** · assessed by
-Watchspan **75** · routed on **75** · `caller_understated: true`.
+`drop_deprecated_staging_table` · declared by the agent · assessed by
+Watchspan **75** · routed on **75** · `agent_understated: true`.
 
-Then the rename, as plain text and not narrated, verified live:
+The declared figure goes on screen and is never spoken. A fact-checker ran the
+fleet twice and got 0.40 and 0.35 for the same task, and `risk.py`'s own
+docstring records 0.40, 0.50 and 0.30 across three runs. The 75 is
+deterministic and safe to say aloud; the number the model happened to pick is
+not, and a voiceover fixes it permanently. Note also that this endpoint spells
+the field `agent_understated` while `/requests` spells it `caller_understated`,
+so the frame has to use the one it is actually showing.
+
+Then the disguise, as plain text and not narrated, verified live:
 
 ```
 update_vendor_contact_details            catalogued at 10   auto-run
@@ -166,29 +182,48 @@ This beat is honest about its own result and that is why it is in the film. A
 peer review that always caught things would be the weaker scene, and the
 reviewer who scored the track said so in almost those words.
 
-### 6. attack · 0:29 · compressed from 0:36
+### 6. attack · 0:28 · compressed from 0:36
 
 > A production backup deletion, hidden in a batch labelled routine quarterly
-> cleanup. Watchspan holds it. Now the same request, reworded. The Sentinel sees
-> nothing. It still reaches a human on its risk score alone, and the pattern
-> that was supposed to catch it is gone. Pattern matching is a floor, and any
-> honest version of this product says so. Model Armor never sees this traffic,
-> because nothing here is a prompt injection. It is an attack on the person.
+> cleanup. Watchspan holds it twice over, once on the wording and once on the
+> shape of the batch. Reword it and the language detector goes quiet. Pull it
+> out of the batch and the second one goes quiet too. It still reaches a human
+> on its risk score alone, with both patterns gone. Model Armor guards the
+> model's input, and none of this goes near a model.
 
-v2 spent thirty-six seconds here, a fifth of the film, and its last four
-sentences restated the first three. The admission that the Sentinel failed
-stays, because it is the most credible thing in the scene, and the organisers
-asked entrants in this track to show "what kind of control are you applying"
-rather than a clean win.
+Two corrections from the fact-check, and the scene is stronger for both.
 
-### 7. ceiling · 0:16 · two figures corrected
+The reworded batch is **still held**. `batch_smuggling` fires on the risk shape
+of a batch and never reads the wording, so rewording alone defeats one detector
+and not the other. Verified with low-risk fillers: batch plus minimizing
+wording is held on two alerts, batch plus neutral wording is held on one, and
+only the standalone reworded request escalates with no alerts at all. Shooting
+it as "reworded and it walks past" would have put a frame on screen that
+contradicts the voice over it.
+
+And "because nothing here is a prompt injection" was the wrong reason. Model
+Armor is attached as a `before_model_callback` on the ADK agents and is not on
+the request path at all, so it would not see this traffic whatever the
+description said. That is a placement fact and the script was dressing it as a
+content fact.
+
+The admission that a detector failed stays. The organisers asked this track to
+show "what kind of control are you applying" rather than a clean win.
+
+### 7. ceiling · 0:17 · two figures corrected
 
 > So we raised the bar and measured what it cost. Fewer interruptions, and
-> oversight held about thirty percent longer. But thirty-three high-risk actions
-> started running unseen. So the calibration has a floor it cannot raise. Risk
-> above seventy reaches a person however tired they are.
+> oversight held about thirty percent longer. Without a floor, thirty-three
+> high-risk actions would have run unseen. So the calibration has a
+> floor it cannot raise. Risk above seventy reaches a person however tired they
+> are.
 
 v2 said thirty-four and thirty-five percent. Measured: 33 and 29.9%.
+
+"Started running unseen" was the past tense about a counterfactual. In the
+shipped system that number is zero; the 33 comes from re-running the experiment
+with `ALWAYS_ESCALATE_ABOVE` removed. Two words fix it and the scene keeps its
+point.
 
 ### 8. desk · 0:37 · NEW
 
@@ -196,7 +231,8 @@ v2 said thirty-four and thirty-five percent. Measured: 33 and 29.9%.
 > the same instrument, pointed at you. Twelve real approval requests, one at a
 > time, routed through everything you have just seen. Watchspan starts the clock
 > when it hands one over, and counts the detail sections you actually open.
-> Nothing your browser sends can set either number. You will read the first two.
+> Nothing in the request body can set either number. You will read the first
+> two.
 > By the fifth you will be skimming. By the ninth you will be clicking. And on
 > the twelfth it tells you, in your own seconds and under your own reviewer id,
 > the moment you stopped reviewing.
@@ -221,19 +257,18 @@ Third landing of the spine line, and the strongest thirty-five seconds available
 to the film. It needs a real capture session before it can be cut, and the
 verdict should hold on screen for a beat after the narration stops.
 
-### 9. evidence · 0:16 · unchanged
+### 9. evidence · 0:17 · unchanged
 
 > And this is the record. Of sixty-nine decisions that reached a human, fourteen
-> were made with attention left to give. Article fourteen of the EU AI Act has
-> required effective oversight since August. This is what effective looks like
-> when you measure it.
+> were made with attention left to give. Article fourteen of the EU AI Act will
+> require effective human oversight from December next year, and nobody has
+> agreed yet on how you would prove it.
 
-### 10. cloud · 0:17 · rewritten from a list into a proof
+### 10. cloud · 0:15 · rewritten from a list into a proof
 
-> All of it on Google Cloud, and you can check rather than take our word for it.
-> One request calls every service we claim. Six of six answered live, Agent
-> Runtime, Memory Bank and Model Armor among them, with the trace id for the
-> decision you just watched.
+> All of it on Google Cloud. One request calls every service we claim, and
+> answers for each one: Agent Runtime, the Agent Registry, Memory Bank, Model
+> Armor, Gemini and Cloud Trace, six of six, with a trace id you can open.
 
 v2 listed services over a diagram, which is an assertion with a picture behind
 it. This shows `GET /geap/status` returning, with `verified_by_live_call: 6`
@@ -265,6 +300,49 @@ End card holds five seconds: the mark, the live URL, and a QR beside it.
 5. **A full voiceover re-record.** Seven scenes change and two are new, and
    scene boundaries are derived from the real audio, so a patched track breaks
    every boundary after the edit.
+
+## What three script readers changed
+
+Read before a frame existed, which is the point: words are free and renders are
+not. A track judge with the organisers' own rubric, a tired non-specialist, and
+a fact-checker told to run something for every number in the film.
+
+**Three statements were false and are gone.**
+
+`Article fourteen has required effective oversight since August` is legally
+wrong today. The Digital Omnibus on AI, in force 27 July 2026, moved the
+Annex III high-risk obligations, human oversight among them, from 2 August 2026
+to 2 December 2027. Checked against two independent sources. It was the film's
+compliance hook, it was falsifiable in one search, and it overclaimed urgency.
+
+`Rename it to sound routine and the answer does not move` was falsified by the
+fleet itself. The same table drop scores 0.75 as `drop_deprecated_staging_table`
+and 0.45 as `delete_staging_deprecated_table`, which is what the live agent
+called it on the checker's second run. The claim that survives is the other
+direction, which the on-screen pair actually shows: dressing a dangerous action
+up as a benign catalogued one does not buy the benign score.
+
+`Nothing your browser sends can set either number` is defeatable in six lines of
+Python: call `/reviewer/open`, sleep, decide. The code's own narrower sentence is
+true and is now the line.
+
+**Two frames could not have been shot as described.** The reworded batch is
+still held, because `batch_smuggling` reads risk shape and never wording. And
+the spoken "forty" is a number the model picks fresh each run.
+
+**One defect was in the product, not the script.** The Cloud Trace probe counted
+traces in the preceding hour, so a judge opening the status page during a quiet
+stretch saw five of six and an empty trace id under a voice saying six of six.
+Fixed and deployed: the probe reports that Cloud Trace answered, which is what
+`round_trip` means everywhere else on that page.
+
+**Still open, and the reason this is a draft.** The lay reader could not tell
+what the Sentinel is, because the film names it only when it fails. Model Armor,
+prompt injection and GEAP arrive undefined. The film speaks roughly twenty
+numbers and a tired viewer retained three. The desk does not start until 2:13,
+which the track judge called putting the wow at the 64th percentile of the
+runtime, and their fix is a six-second cold sting of the verdict card at 0:00
+that scene 8 pays off in full. None of that is applied here.
 
 ## Deliberately left out
 
