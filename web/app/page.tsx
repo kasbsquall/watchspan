@@ -163,7 +163,11 @@ export default function ControlRoom() {
       )}
 
       <div className="rise mt-10" style={{ ["--block" as string]: 1 }}>
-        <DriftAlert declaredAt={sim?.drift_declared_at ?? null} active={!!driftPassed} />
+        <DriftAlert
+            declaredAt={sim?.drift_declared_at ?? null}
+            active={!!driftPassed}
+            measured={visible.length > 0}
+          />
       </div>
 
       <section className="mt-8 grid items-start gap-x-12 gap-y-10 lg:grid-cols-[320px_1fr]">
